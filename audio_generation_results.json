@@ -1,0 +1,42 @@
+{
+  "little_fox": {
+    "title": "The Little Fox",
+    "status": "Generated",
+    "path": "static/audio/little_fox.mp3"
+  },
+  "three_little_pigs": {
+    "title": "Three Little Pigs",
+    "status": "Generated",
+    "path": "static/audio/three_little_pigs.mp3"
+  },
+  "brown_bear": {
+    "title": "Brown Bear",
+    "status": "Generated",
+    "path": "static/audio/brown_bear.mp3"
+  },
+  "wild_things": {
+    "title": "Where the Wild Things Are",
+    "status": "Generated",
+    "path": "static/audio/wild_things.mp3"
+  },
+  "black_sheep": {
+    "title": "Baa Baa Black Sheep",
+    "status": "Generated",
+    "path": "static/audio/black_sheep.mp3"
+  },
+  "hickory_dickory": {
+    "title": "Hickory Dickory Dock",
+    "status": "Generated",
+    "path": "static/audio/hickory_dickory.mp3"
+  },
+  "bo_peep": {
+    "title": "Little Bo-Peep",
+    "status": "Generated",
+    "path": "static/audio/bo_peep.mp3"
+  },
+  "jack_jill": {
+    "title": "Jack and Jill",
+    "status": "Generated",
+    "path": "static/audio/jack_jill.mp3"
+  }
+}
