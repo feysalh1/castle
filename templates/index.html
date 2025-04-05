@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Girl - Interactive Storytime</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="app-title">Baby Girl</h1>
+            <div class="app-subtitle">Interactive Storytime</div>
+        </header>
+        
+        <main>
+            <!-- Mode Selection Screen (Initial View) -->
+            <div id="mode-selection" class="section active">
+                <h2>Choose Your Mode</h2>
+                <div class="mode-buttons">
+                    <button id="story-mode-btn" class="mode-btn">
+                        <div class="mode-icon">📖</div>
+                        <div class="mode-label">Story Mode</div>
+                    </button>
+                    <button id="game-mode-btn" class="mode-btn">
+                        <div class="mode-icon">🎮</div>
+                        <div class="mode-label">Game Mode</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Story Mode Section -->
+            <div id="story-mode" class="section">
+                <div class="navigation-bar">
+                    <button id="back-to-modes-btn" class="back-btn">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <h2>Story Mode</h2>
+                </div>
+                
+                <div class="story-selection">
+                    <label for="story-dropdown">Choose a Story:</label>
+                    <select id="story-dropdown" class="form-select">
+                        <option value="little_fox">The Little Fox</option>
+                        <option value="three_little_pigs">Three Little Pigs</option>
+                        <option value="brown_bear">Brown Bear</option>
+                        <option value="wild_things">Where the Wild Things Are</option>
+                        <option value="black_sheep">Baa Baa Black Sheep</option>
+                        <option value="hickory_dickory">Hickory Dickory Dock</option>
+                        <option value="bo_peep">Little Bo-Peep</option>
+                        <option value="jack_jill">Jack and Jill</option>
+                    </select>
+                </div>
+
+                <div class="story-content">
+                    <div class="story-image-container">
+                        <img id="story-image" src="{{ url_for('static', filename='images/little_fox.svg') }}" alt="Story Illustration">
+                    </div>
+                    <h3 id="story-title">The Little Fox</h3>
+                    <div id="story-text" class="story-text">
+                        <!-- Story text will be dynamically updated via JavaScript -->
+                    </div>
+                    <button id="play-story-btn" class="play-btn">
+                        <i class="fas fa-play"></i> Play Story
+                    </button>
+                    <audio id="story-audio" controls style="display: none;">
+                        <source id="audio-source" src="" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+            </div>
+
+            <!-- Game Mode Section -->
+            <div id="game-mode" class="section">
+                <div class="navigation-bar">
+                    <button id="back-to-modes-from-game-btn" class="back-btn">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <h2>Game Mode</h2>
+                </div>
+                
+                <div class="game-container">
+                    <iframe 
+                        src="https://www.cbc.ca/kids/games/view/puzzle-animals" 
+                        title="Animal Puzzle Game"
+                        allow="fullscreen"
+                        class="game-frame">
+                    </iframe>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Baby Girl Interactive Storytime App</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.26/Tone.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

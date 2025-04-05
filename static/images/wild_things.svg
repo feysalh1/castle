@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <!-- Background - forest setting -->
+  <rect width="300" height="300" fill="#a5d6a7" />
+  
+  <!-- Moon -->
+  <circle cx="40" cy="50" r="20" fill="#fff9c4" />
+  
+  <!-- Trees -->
+  <rect x="20" y="180" width="15" height="120" fill="#795548" />
+  <polygon points="27.5,100 0,180 55,180" fill="#1b5e20" />
+  <polygon points="27.5,120 5,180 50,180" fill="#2e7d32" />
+  <polygon points="27.5,140 10,180 45,180" fill="#388e3c" />
+  
+  <rect x="250" y="170" width="15" height="130" fill="#795548" />
+  <polygon points="257.5,90 230,170 285,170" fill="#1b5e20" />
+  <polygon points="257.5,110 235,170 280,170" fill="#2e7d32" />
+  <polygon points="257.5,130 240,170 275,170" fill="#388e3c" />
+  
+  <rect x="120" y="200" width="10" height="100" fill="#795548" />
+  <circle cx="125" cy="170" r="30" fill="#388e3c" />
+  
+  <rect x="200" y="190" width="10" height="110" fill="#795548" />
+  <circle cx="205" cy="160" r="30" fill="#388e3c" />
+  
+  <!-- Wild Thing 1 -->
+  <circle cx="150" cy="180" r="35" fill="#ffcc80" />
+  <polygon points="130,155 120,130 135,150" fill="#ffcc80" />
+  <polygon points="170,155 180,130 165,150" fill="#ffcc80" />
+  <circle cx="140" cy="170" r="5" fill="yellow" />
+  <circle cx="140" cy="170" r="2" fill="black" />
+  <circle cx="160" cy="170" r="5" fill="yellow" />
+  <circle cx="160" cy="170" r="2" fill="black" />
+  <path d="M140,190 Q150,200 160,190" fill="none" stroke="black" stroke-width="2" />
+  
+  <path d="M120,180 Q100,200 110,220" fill="none" stroke="#ffcc80" stroke-width="8" />
+  <path d="M180,180 Q200,200 190,220" fill="none" stroke="#ffcc80" stroke-width="8" />
+  <path d="M150,215 Q150,240 170,250" fill="none" stroke="#ffcc80" stroke-width="8" />
+  <path d="M150,215 Q150,240 130,250" fill="none" stroke="#ffcc80" stroke-width="8" />
+  
+  <!-- Wild Thing 2 - smaller -->
+  <circle cx="90" cy="220" r="25" fill="#ce93d8" />
+  <polygon points="75,205 65,185 80,202" fill="#ce93d8" />
+  <polygon points="105,205 115,185 100,202" fill="#ce93d8" />
+  <circle cx="82" cy="215" r="4" fill="yellow" />
+  <circle cx="82" cy="215" r="2" fill="black" />
+  <circle cx="98" cy="215" r="4" fill="yellow" />
+  <circle cx="98" cy="215" r="2" fill="black" />
+  <path d="M85,225 Q90,230 95,225" fill="none" stroke="black" stroke-width="2" />
+  
+  <path d="M90,245 Q90,260 105,265" fill="none" stroke="#ce93d8" stroke-width="6" />
+  <path d="M90,245 Q90,260 75,265" fill="none" stroke="#ce93d8" stroke-width="6" />
+  
+  <!-- Wild Thing 3 - on the right -->
+  <circle cx="220" cy="210" r="25" fill="#81d4fa" />
+  <polygon points="205,195 195,175 210,192" fill="#81d4fa" />
+  <polygon points="235,195 245,175 230,192" fill="#81d4fa" />
+  <circle cx="212" cy="205" r="4" fill="yellow" />
+  <circle cx="212" cy="205" r="2" fill="black" />
+  <circle cx="228" cy="205" r="4" fill="yellow" />
+  <circle cx="228" cy="205" r="2" fill="black" />
+  <path d="M215,215 Q220,220 225,215" fill="none" stroke="black" stroke-width="2" />
+  
+  <path d="M220,235 Q220,250 235,255" fill="none" stroke="#81d4fa" stroke-width="6" />
+  <path d="M220,235 Q220,250 205,255" fill="none" stroke="#81d4fa" stroke-width="6" />
+  
+  <!-- Max in his wolf suit -->
+  <circle cx="40" cy="220" r="15" fill="#eeeeee" />
+  <polygon points="35,210 25,200 35,215" fill="#eeeeee" />
+  <polygon points="45,210 55,200 45,215" fill="#eeeeee" />
+  <circle cx="35" cy="215" r="2" fill="black" />
+  <circle cx="45" cy="215" r="2" fill="black" />
+  <path d="M35,223 Q40,225 45,223" fill="none" stroke="black" stroke-width="1" />
+  
+  <rect x="40" y="235" width="2" height="30" fill="#eeeeee" />
+  <rect x="35" y="235" width="2" height="30" fill="#eeeeee" />
+  <rect x="45" y="235" width="2" height="30" fill="#eeeeee" />
+  
+  <!-- Story Title -->
+  <text x="150" y="30" font-family="Comic Sans MS, Arial" font-size="16" fill="white" text-anchor="middle">Where the Wild Things Are</text>
+</svg>

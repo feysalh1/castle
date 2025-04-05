@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <!-- Background -->
+  <rect width="300" height="300" fill="#e6f7ff" />
+  
+  <!-- Ground -->
+  <rect x="0" y="230" width="300" height="70" fill="#8bdc6f" />
+  
+  <!-- Sun -->
+  <circle cx="40" cy="50" r="20" fill="#ffd670" />
+  <line x1="40" y1="20" x2="40" y2="10" stroke="#ffd670" stroke-width="2" />
+  <line x1="40" y1="80" x2="40" y2="90" stroke="#ffd670" stroke-width="2" />
+  <line x1="10" y1="50" x2="0" y2="50" stroke="#ffd670" stroke-width="2" />
+  <line x1="70" y1="50" x2="80" y2="50" stroke="#ffd670" stroke-width="2" />
+  
+  <!-- Brown Bear -->
+  <ellipse cx="150" cy="200" rx="70" ry="40" fill="#8d6e63" />
+  <circle cx="150" cy="150" r="50" fill="#8d6e63" />
+  
+  <!-- Bear Ears -->
+  <circle cx="120" cy="110" r="15" fill="#6d4c41" />
+  <circle cx="180" cy="110" r="15" fill="#6d4c41" />
+  <circle cx="120" cy="110" r="7" fill="#ffecb3" />
+  <circle cx="180" cy="110" r="7" fill="#ffecb3" />
+  
+  <!-- Bear Face -->
+  <ellipse cx="150" cy="150" rx="25" ry="15" fill="#6d4c41" />
+  <circle cx="135" cy="140" r="5" fill="black" />
+  <circle cx="165" cy="140" r="5" fill="black" />
+  <ellipse cx="150" cy="155" rx="8" ry="5" fill="black" />
+  
+  <!-- Bear Paws -->
+  <ellipse cx="100" cy="230" rx="15" ry="10" fill="#6d4c41" />
+  <ellipse cx="200" cy="230" rx="15" ry="10" fill="#6d4c41" />
+  
+  <!-- Red Bird -->
+  <circle cx="250" cy="150" r="20" fill="#e53935" />
+  <polygon points="260,135 270,125 260,140" fill="#e53935" />
+  <circle cx="245" cy="145" r="3" fill="white" />
+  <circle cx="245" cy="145" r="1" fill="black" />
+  <polygon points="255,155 280,155 255,160" fill="#ff8f00" />
+  <path d="M230,150 Q245,170 260,150" fill="none" stroke="#e53935" stroke-width="8" />
+  
+  <!-- Yellow Duck -->
+  <circle cx="50" cy="180" r="20" fill="#ffeb3b" />
+  <polygon points="60,170 80,165 60,175" fill="#ff8f00" />
+  <circle cx="45" cy="175" r="3" fill="black" />
+  
+  <!-- Animal Labels -->
+  <text x="150" y="260" font-family="Comic Sans MS, Arial" font-size="14" fill="#6d4c41" text-anchor="middle">Brown Bear</text>
+  <text x="250" y="185" font-family="Comic Sans MS, Arial" font-size="10" fill="#e53935" text-anchor="middle">Red Bird</text>
+  <text x="50" cy="215" font-family="Comic Sans MS, Arial" font-size="10" fill="#ff8f00" text-anchor="middle">Yellow Duck</text>
+  
+  <!-- Story Title -->
+  <text x="150" y="30" font-family="Comic Sans MS, Arial" font-size="20" fill="#6d4c41" text-anchor="middle">Brown Bear</text>
+</svg>

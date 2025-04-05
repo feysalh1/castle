@@ -1,0 +1,14 @@
+This directory contains audio files for the Baby Girl interactive storytime app.
+
+The following audio files should be placed here:
+- little_fox.mp3
+- three_little_pigs.mp3
+- brown_bear.mp3
+- wild_things.mp3
+- black_sheep.mp3
+- hickory_dickory.mp3
+- bo_peep.mp3
+- jack_jill.mp3
+
+Note: Audio files will need to be provided separately as this application doesn't include the actual audio files.
+The application is designed to work with MP3 files named according to the pattern above.

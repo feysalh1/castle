@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <!-- Background -->
+  <rect width="300" height="300" fill="#e6f7ff" />
+  
+  <!-- Sun -->
+  <circle cx="250" cy="50" r="30" fill="#ffd670" />
+  <line x1="250" y1="10" x2="250" y2="0" stroke="#ffd670" stroke-width="3" />
+  <line x1="250" y1="90" x2="250" y2="100" stroke="#ffd670" stroke-width="3" />
+  <line x1="210" y1="50" x2="200" y2="50" stroke="#ffd670" stroke-width="3" />
+  <line x1="290" y1="50" x2="300" y2="50" stroke="#ffd670" stroke-width="3" />
+  <line x1="222" y1="22" x2="215" y2="15" stroke="#ffd670" stroke-width="3" />
+  <line x1="278" y1="78" x2="285" y2="85" stroke="#ffd670" stroke-width="3" />
+  <line x1="222" y1="78" x2="215" y2="85" stroke="#ffd670" stroke-width="3" />
+  <line x1="278" y1="22" x2="285" y2="15" stroke="#ffd670" stroke-width="3" />
+  
+  <!-- Ground -->
+  <rect x="0" y="230" width="300" height="70" fill="#8bdc6f" />
+  
+  <!-- Trees -->
+  <rect x="30" y="170" width="15" height="60" fill="#8b4513" />
+  <circle cx="38" cy="150" r="30" fill="#4caf50" />
+  
+  <rect x="240" y="180" width="15" height="50" fill="#8b4513" />
+  <circle cx="248" cy="160" r="25" fill="#4caf50" />
+  
+  <!-- Fox Body -->
+  <ellipse cx="150" cy="220" rx="45" ry="25" fill="#ff7043" />
+  
+  <!-- Fox Legs -->
+  <rect x="120" y="235" width="10" height="20" rx="5" fill="#ff5722" />
+  <rect x="135" y="235" width="10" height="20" rx="5" fill="#ff5722" />
+  <rect x="155" y="235" width="10" height="20" rx="5" fill="#ff5722" />
+  <rect x="170" y="235" width="10" height="20" rx="5" fill="#ff5722" />
+  
+  <!-- Fox Tail -->
+  <path d="M190,220 C220,210 230,190 220,170 C215,160 200,180 190,220 Z" fill="#ff7043" />
+  <path d="M190,220 C220,210 230,190 220,170" fill="none" stroke="#ff5722" stroke-width="2" />
+  
+  <!-- Fox Head -->
+  <ellipse cx="110" cy="210" rx="30" ry="25" fill="#ff7043" />
+  
+  <!-- Fox Ears -->
+  <polygon points="95,195 85,175 105,185" fill="#ff7043" />
+  <polygon points="125,195 135,175 115,185" fill="#ff7043" />
+  <polygon points="95,195 90,180 100,187" fill="#fff" />
+  <polygon points="125,195 130,180 120,187" fill="#fff" />
+  
+  <!-- Fox Face -->
+  <ellipse cx="95" cy="210" rx="5" ry="5" fill="black" />
+  <ellipse cx="125" cy="210" rx="5" ry="5" fill="black" />
+  <ellipse cx="110" cy="220" rx="7" ry="5" fill="#fff" />
+  <path d="M95,228 Q110,235 125,228" fill="none" stroke="black" stroke-width="2" />
+  
+  <!-- Bird in nest -->
+  <circle cx="248" cy="145" r="8" fill="#90caf9" />
+  <circle cx="248" cy="140" r="5" fill="#ffecb3" />
+  <ellipse cx="248" cy="152" rx="12" ry="5" fill="#8b4513" />
+  
+  <!-- Story Title -->
+  <text x="150" y="30" font-family="Comic Sans MS, Arial" font-size="20" fill="#ff5722" text-anchor="middle">The Little Fox</text>
+</svg>
