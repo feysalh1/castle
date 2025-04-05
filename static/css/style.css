@@ -20,6 +20,14 @@ html, body {
     height: 100%;
     font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', sans-serif;
     background-color: var(--background-color);
+    background-image: url("https://img.freepik.com/free-vector/hand-drawn-childish-background_23-2149493306.jpg");
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    background-image: url('https://img.freepik.com/free-vector/hand-drawn-childish-background_23-2149493306.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
     color: var(--text-color);
 }
 
@@ -63,7 +71,7 @@ main {
     align-items: center;
     padding: 20px;
     border-radius: var(--border-radius);
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.9);
     box-shadow: var(--shadow);
     margin-bottom: 20px;
 }
@@ -90,7 +98,7 @@ main {
     padding: 30px 20px;
     border: none;
     border-radius: var(--border-radius);
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.9);
     box-shadow: var(--shadow);
     cursor: pointer;
     transition: transform 0.3s, box-shadow 0.3s;
