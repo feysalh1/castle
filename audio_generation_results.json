@@ -1,42 +1,42 @@
 {
   "little_fox": {
     "title": "The Little Fox",
-    "status": "Generated",
-    "path": "static/audio/little_fox.mp3"
+    "status": "Error",
+    "error": "Command '['ffmpeg', '-i', 'static/audio/little_fox.mp3', '-acodec', 'libmp3lame', '-q:a', '2', '-filter:a', 'volume=1.5,treble=5:0.3,bass=5:0.3', 'static/audio/little_fox.mp3.new.mp3']' returned non-zero exit status 222."
   },
   "three_little_pigs": {
     "title": "Three Little Pigs",
-    "status": "Generated",
-    "path": "static/audio/three_little_pigs.mp3"
+    "status": "Error",
+    "error": "Command '['ffmpeg', '-i', 'static/audio/three_little_pigs.mp3', '-acodec', 'libmp3lame', '-q:a', '2', '-filter:a', 'volume=1.5,treble=5:0.3,bass=5:0.3', 'static/audio/three_little_pigs.mp3.new.mp3']' returned non-zero exit status 222."
   },
   "brown_bear": {
     "title": "Brown Bear",
-    "status": "Generated",
-    "path": "static/audio/brown_bear.mp3"
+    "status": "Error",
+    "error": "Command '['ffmpeg', '-i', 'static/audio/brown_bear.mp3', '-acodec', 'libmp3lame', '-q:a', '2', '-filter:a', 'volume=1.5,treble=5:0.3,bass=5:0.3', 'static/audio/brown_bear.mp3.new.mp3']' returned non-zero exit status 222."
   },
   "wild_things": {
     "title": "Where the Wild Things Are",
-    "status": "Generated",
-    "path": "static/audio/wild_things.mp3"
+    "status": "Error",
+    "error": "Command '['ffmpeg', '-i', 'static/audio/wild_things.mp3', '-acodec', 'libmp3lame', '-q:a', '2', '-filter:a', 'volume=1.5,treble=5:0.3,bass=5:0.3', 'static/audio/wild_things.mp3.new.mp3']' returned non-zero exit status 222."
   },
   "black_sheep": {
     "title": "Baa Baa Black Sheep",
-    "status": "Generated",
-    "path": "static/audio/black_sheep.mp3"
+    "status": "Error",
+    "error": "Command '['ffmpeg', '-i', 'static/audio/black_sheep.mp3', '-acodec', 'libmp3lame', '-q:a', '2', '-filter:a', 'volume=1.5,treble=5:0.3,bass=5:0.3', 'static/audio/black_sheep.mp3.new.mp3']' returned non-zero exit status 222."
   },
   "hickory_dickory": {
     "title": "Hickory Dickory Dock",
-    "status": "Generated",
-    "path": "static/audio/hickory_dickory.mp3"
+    "status": "Error",
+    "error": "Command '['ffmpeg', '-i', 'static/audio/hickory_dickory.mp3', '-acodec', 'libmp3lame', '-q:a', '2', '-filter:a', 'volume=1.5,treble=5:0.3,bass=5:0.3', 'static/audio/hickory_dickory.mp3.new.mp3']' returned non-zero exit status 222."
   },
   "bo_peep": {
     "title": "Little Bo-Peep",
-    "status": "Generated",
-    "path": "static/audio/bo_peep.mp3"
+    "status": "Error",
+    "error": "Command '['ffmpeg', '-i', 'static/audio/bo_peep.mp3', '-acodec', 'libmp3lame', '-q:a', '2', '-filter:a', 'volume=1.5,treble=5:0.3,bass=5:0.3', 'static/audio/bo_peep.mp3.new.mp3']' returned non-zero exit status 222."
   },
   "jack_jill": {
     "title": "Jack and Jill",
-    "status": "Generated",
-    "path": "static/audio/jack_jill.mp3"
+    "status": "Error",
+    "error": "Command '['ffmpeg', '-i', 'static/audio/jack_jill.mp3', '-acodec', 'libmp3lame', '-q:a', '2', '-filter:a', 'volume=1.5,treble=5:0.3,bass=5:0.3', 'static/audio/jack_jill.mp3.new.mp3']' returned non-zero exit status 222."
   }
 }
