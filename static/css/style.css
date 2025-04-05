@@ -20,11 +20,7 @@ html, body {
     height: 100%;
     font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', sans-serif;
     background-color: var(--background-color);
-    background-image: url("https://img.freepik.com/free-vector/hand-drawn-childish-background_23-2149493306.jpg");
-    background-size: cover;
-    background-attachment: fixed;
-    background-position: center;
-    background-image: url('https://img.freepik.com/free-vector/hand-drawn-childish-background_23-2149493306.jpg');
+    background-image: url('/static/images/background/baby_girl.jpg');
     background-size: cover;
     background-attachment: fixed;
     background-position: center;
