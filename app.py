@@ -77,6 +77,11 @@ csrf.exempt('/api/generate-pairing-code')
 csrf.exempt('/api/generate-voice')
 csrf.exempt('/api/voices')
 csrf.exempt('/api/session-stats')
+csrf.exempt('/api/ask-assistant')
+csrf.exempt('/api/generate-story')
+csrf.exempt('/api/answer-question')
+csrf.exempt('/api/parent-tip')
+csrf.exempt('/api/track-event')
 
 # Configure database
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
@@ -110,6 +115,10 @@ def load_user(user_id):
     except:
         return None
 
+
+# Import and register ChatGPT routes
+from chatgpt_routes import chatgpt_bp
+app.register_blueprint(chatgpt_bp)
 
 # Create database tables
 with app.app_context():
