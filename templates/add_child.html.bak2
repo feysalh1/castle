@@ -62,100 +62,6 @@
             border-color: var(--primary-color);
             background-color: rgba(106, 48, 147, 0.1);
         }
-        
-        .pin-toggle {
-            margin-top: 10px;
-            text-align: center;
-        }
-        
-        .pin-toggle label {
-            cursor: pointer;
-            color: #4a6da7;
-        }
-        
-        .pin-toggle label:hover {
-            text-decoration: underline;
-        }
-        
-        .pin-number-display {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 40px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #4a6da7;
-            margin-bottom: 10px;
-            visibility: hidden;
-        }
-        
-        .pin-number-display.visible {
-            visibility: visible;
-        }
-        
-        .pin-container {
-            margin: 15px 0;
-        }
-        
-        .pin-display {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 15px;
-        }
-        
-        .pin-dot {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            background-color: #ddd;
-            margin: 0 8px;
-            transition: background-color 0.3s;
-        }
-        
-        .pin-dot.filled {
-            background-color: #4a6da7;
-        }
-        
-        .pin-pad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            max-width: 240px;
-            margin: 0 auto;
-        }
-        
-        .pin-button {
-            background-color: #f0f0f0;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 12px;
-            font-size: 18px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .pin-button:hover {
-            background-color: #e0e0e0;
-        }
-        
-        .pin-button:active {
-            transform: scale(0.95);
-        }
-        
-        .pin-actions {
-            text-align: center;
-            margin-top: 10px;
-        }
-        
-        .pin-clear {
-            color: #4a6da7;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        .pin-clear:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 <body>
@@ -190,7 +96,7 @@
                     <p>Create a new account for your child</p>
                 </div>
                 
-                <form class="auth-form" method="POST" action="{{ url_for('add_child') }}" id="addChildForm">
+                <form class="auth-form" method="POST" action="{{ url_for('add_child') }}">
                     <!-- CSRF Token -->
                     {{ form.hidden_tag() if form else '<input type="hidden" name="csrf_token" value="' + csrf_token() + '"/>' }}
                     
@@ -218,41 +124,11 @@
                     
                     <div class="form-group">
                         <label for="pin">PIN Code (4 digits)</label>
-                        <input type="hidden" id="pin" name="pin" required>
-                        <div class="help-text">A simple 4-digit PIN for your child to login with</div>
-                        
-                        <div class="pin-container">
-                            <div class="pin-number-display" id="pinNumberDisplay"></div>
-                            <div class="pin-display">
-                                <div class="pin-dot" id="dot1"></div>
-                                <div class="pin-dot" id="dot2"></div>
-                                <div class="pin-dot" id="dot3"></div>
-                                <div class="pin-dot" id="dot4"></div>
-                            </div>
-                            
-                            <div class="pin-toggle">
-                                <label><input type="checkbox" id="showPin" onchange="togglePinVisibility()"> Show PIN</label>
-                            </div>
-                            
-                            <div class="pin-pad">
-                                <button type="button" class="pin-button" onclick="addPin(1)">1</button>
-                                <button type="button" class="pin-button" onclick="addPin(2)">2</button>
-                                <button type="button" class="pin-button" onclick="addPin(3)">3</button>
-                                <button type="button" class="pin-button" onclick="addPin(4)">4</button>
-                                <button type="button" class="pin-button" onclick="addPin(5)">5</button>
-                                <button type="button" class="pin-button" onclick="addPin(6)">6</button>
-                                <button type="button" class="pin-button" onclick="addPin(7)">7</button>
-                                <button type="button" class="pin-button" onclick="addPin(8)">8</button>
-                                <button type="button" class="pin-button" onclick="addPin(9)">9</button>
-                                <button type="button" class="pin-button" style="visibility: hidden;"></button>
-                                <button type="button" class="pin-button" onclick="addPin(0)">0</button>
-                                <button type="button" class="pin-button" style="visibility: hidden;"></button>
-                            </div>
-                            
-                            <div class="pin-actions">
-                                <span class="pin-clear" onclick="clearPin()">Clear PIN</span>
-                            </div>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="pin" name="pin" pattern="[0-9]{4}" maxlength="4" required>
+                            <span class="show-password-toggle" onclick="togglePasswordVisibility('pin')">Show</span>
                         </div>
+                        <div class="help-text">A simple 4-digit PIN for your child to login with</div>
                     </div>
                     
                     <div class="form-group">
@@ -289,7 +165,7 @@
                     </div>
                     
                     <div class="form-actions">
-                        <button type="submit" class="btn" onclick="validateForm(event)">Create Child Account</button>
+                        <button type="submit" class="btn">Create Child Account</button>
                     </div>
                 </form>
                 
@@ -307,54 +183,17 @@
     </footer>
     
     <script>
-        let currentPin = '';
-        let showingPin = false;
-        
-        function addPin(number) {
-            if (currentPin.length < 4) {
-                currentPin += number;
-                updatePinDisplay();
-            }
-        }
-        
-        function clearPin() {
-            currentPin = '';
-            updatePinDisplay();
-        }
-        
-        function updatePinDisplay() {
-            // Update dots
-            for (let i = 1; i <= 4; i++) {
-                const dot = document.getElementById(`dot${i}`);
-                dot.classList.toggle('filled', i <= currentPin.length);
-            }
+        function togglePasswordVisibility(fieldId) {
+            const passwordInput = document.getElementById(fieldId);
+            const toggleButton = passwordInput.parentElement.querySelector('.show-password-toggle');
             
-            // Update pin number display
-            document.getElementById('pinNumberDisplay').textContent = currentPin;
-            
-            // Update hidden input
-            document.getElementById('pin').value = currentPin;
-        }
-        
-        function togglePinVisibility() {
-            showingPin = document.getElementById('showPin').checked;
-            const pinDisplay = document.getElementById('pinNumberDisplay');
-            
-            if (showingPin) {
-                pinDisplay.classList.add('visible');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleButton.textContent = 'Hide';
             } else {
-                pinDisplay.classList.remove('visible');
+                passwordInput.type = 'password';
+                toggleButton.textContent = 'Show';
             }
-        }
-        
-        function validateForm(event) {
-            if (currentPin.length !== 4) {
-                event.preventDefault();
-                alert('Please enter a 4-digit PIN for the child account.');
-                return false;
-            }
-            
-            return true;
         }
     </script>
     
