@@ -3,220 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Child Dashboard - Children's Castle</title>
+    <title>{{ child.display_name }}'s Dashboard - Children's Castle</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/child-dashboard.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading-animations.css') }}">
+    <style>
+        .child-header {
+            background-color: rgba(180, 220, 255, 0.8);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            border: 2px solid white;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .child-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .child-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid var(--accent-color);
+        }
+        
+        .child-avatar img {
+            width: 90%;
+            height: 90%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        
+        .child-name {
+            font-size: 2rem;
+            color: var(--primary-dark);
+            margin: 0;
+        }
+        
+        .child-age {
+            color: var(--accent-dark);
+            font-size: 1.1rem;
+            margin: 5px 0;
+        }
+        
+        .mode-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .mode-card {
+            flex: 1;
+            max-width: 300px;
+            height: 300px;
+            background-color: rgba(180, 220, 255, 0.8);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            text-align: center;
+            box-shadow: var(--box-shadow);
+            border: 3px solid white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform var(--transition-speed);
+        }
+        
+        .mode-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .mode-card.story {
+            background-color: rgba(120, 200, 255, 0.8);
+        }
+        
+        .mode-card.game {
+            background-color: rgba(255, 180, 120, 0.8);
+        }
+        
+        .mode-card.rewards {
+            background-color: rgba(180, 255, 150, 0.8);
+        }
+        
+        .mode-icon {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+        }
+        
+        .mode-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary-dark);
+        }
+        
+        .mode-description {
+            font-size: 1rem;
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+        }
+        
+        .return-parent {
+            margin-top: 40px;
+            text-align: center;
+        }
+        
+        .return-parent a {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            transition: background-color var(--transition-speed);
+        }
+        
+        .return-parent a:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        @media (max-width: 768px) {
+            .mode-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .mode-card {
+                width: 80%;
+                max-width: none;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
 </head>
-<body class="child-dashboard">
-    <!-- Decorative clouds -->
-    <div class="cloud cloud-1"></div>
-    <div class="cloud cloud-2"></div>
-    <div class="cloud cloud-3"></div>
-    
-    <header class="child-header">
-        <div class="logo">
-            <h1>Children's Castle</h1>
-            <small>Developed for Menira</small>
-        </div>
-        <div class="nav-buttons">
-            <a href="{{ url_for('rewards') }}" class="btn">My Rewards</a>
-            <a href="{{ url_for('logout') }}" class="btn">Sign Out</a>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>Children's Castle</h1>
+                <small>Developed for Menira</small>
+            </div>
         </div>
     </header>
     
-    <main class="dashboard-main">
-        <h2 class="greeting">Hello, {{ current_user.display_name }}!</h2>
-        
-        <div class="mode-selection">
-            <div class="mode-card">
-                <div class="mode-card-bg" style="background-image: url('{{ url_for('static', filename='images/icons/book.svg') }}')"></div>
-                <div class="mode-card-content">
-                    <img src="{{ url_for('static', filename='images/icons/book.svg') }}" alt="Story Mode" class="mode-icon">
-                    <h3>Story Mode</h3>
-                    <p>Read fun stories!</p>
-                    <a href="{{ url_for('story_mode') }}" class="btn">Start Reading</a>
-                </div>
+    <main>
+        <div class="container">
+            <!-- Flash Messages -->
+            <div class="flash-messages">
+                {% for message in get_flashed_messages(with_categories=true) %}
+                    <div class="flash {{ message[0] }}">
+                        {{ message[1] }}
+                    </div>
+                {% endfor %}
             </div>
             
-            <div class="mode-card">
-                <div class="mode-card-bg" style="background-image: url('{{ url_for('static', filename='images/icons/game.svg') }}')"></div>
-                <div class="mode-card-content">
-                    <img src="{{ url_for('static', filename='images/icons/game.svg') }}" alt="Game Mode" class="mode-icon">
-                    <h3>Game Mode</h3>
-                    <p>Play fun games!</p>
-                    <a href="{{ url_for('game_mode') }}" class="btn">Start Playing</a>
+            <div class="child-header">
+                <div class="child-info">
+                    <div class="child-avatar">
+                        <img src="{{ url_for('static', filename='images/avatars/' + child.avatar) }}" alt="{{ child.display_name }}'s Avatar">
+                    </div>
+                    <div>
+                        <h2 class="child-name">{{ child.display_name }}</h2>
+                        <p class="child-age">Age: {{ child.age }}</p>
+                    </div>
                 </div>
+                
+                <p>What would you like to do today?</p>
             </div>
-        </div>
-        
-        <div class="progress-section">
-            <h3>My Progress</h3>
             
-            <div class="progress-cards">
-                <div class="progress-card">
-                    <h4>Stories Read</h4>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar-fill" style="width: 30%"></div>
+            <div class="mode-container">
+                <a href="{{ url_for('story_mode') }}" class="mode-card story">
+                    <div class="mode-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
                     </div>
-                    <div class="progress-stat">
-                        <span>Completed: 3</span>
-                        <span>Total: 10</span>
-                    </div>
-                </div>
+                    <div class="mode-title">Story Mode</div>
+                    <div class="mode-description">Read and listen to fun stories!</div>
+                </a>
                 
-                <div class="progress-card">
-                    <h4>Games Played</h4>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar-fill" style="width: 40%"></div>
+                <a href="{{ url_for('game_mode') }}" class="mode-card game">
+                    <div class="mode-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
                     </div>
-                    <div class="progress-stat">
-                        <span>Completed: 4</span>
-                        <span>Total: 10</span>
-                    </div>
-                </div>
+                    <div class="mode-title">Game Mode</div>
+                    <div class="mode-description">Play fun games and learn!</div>
+                </a>
                 
-                <div class="progress-card">
-                    <h4>Badges Earned</h4>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar-fill" style="width: 20%"></div>
+                <a href="{{ url_for('rewards') }}" class="mode-card rewards">
+                    <div class="mode-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
                     </div>
-                    <div class="progress-stat">
-                        <span>Earned: 5</span>
-                        <span>Total: 25</span>
-                    </div>
-                </div>
-                
-                <div class="progress-card">
-                    <h4>Stars Collected</h4>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar-fill" style="width: 50%"></div>
-                    </div>
-                    <div class="progress-stat">
-                        <span class="star-count">50</span>
-                        <span>⭐</span>
-                    </div>
-                </div>
+                    <div class="mode-title">Rewards</div>
+                    <div class="mode-description">See all your achievements!</div>
+                </a>
             </div>
-        </div>
-        
-        <div class="recent-section">
-            <h3>Recently Played</h3>
             
-            <div class="recent-items">
-                <div class="recent-item">
-                    <div class="recent-item-image">
-                        <img src="{{ url_for('static', filename='images/stories/little_fox/page1.svg') }}" alt="The Little Fox">
-                    </div>
-                    <h4>The Little Fox</h4>
-                    <p>Story</p>
-                </div>
-                
-                <div class="recent-item">
-                    <div class="recent-item-image">
-                        <img src="{{ url_for('static', filename='images/games/shape-match.svg') }}" alt="Shape Matching">
-                    </div>
-                    <h4>Shape Matching</h4>
-                    <p>Game</p>
-                </div>
-                
-                <div class="recent-item">
-                    <div class="recent-item-image">
-                        <img src="{{ url_for('static', filename='images/stories/three_little_pigs/page1.svg') }}" alt="Three Little Pigs">
-                    </div>
-                    <h4>Three Little Pigs</h4>
-                    <p>Story</p>
-                </div>
-                
-                <div class="recent-item">
-                    <div class="recent-item-image">
-                        <img src="{{ url_for('static', filename='images/games/coloring.svg') }}" alt="Coloring Fun">
-                    </div>
-                    <h4>Coloring Fun</h4>
-                    <p>Game</p>
-                </div>
+            <div class="return-parent">
+                <a href="{{ url_for('parent_dashboard') }}">Return to Parent Dashboard</a>
             </div>
         </div>
     </main>
     
-    <footer class="dashboard-footer">
-        <p>&copy; 2025 Children's Castle. All rights reserved.</p>
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Children's Castle. All rights reserved.</p>
+        </div>
     </footer>
     
     <script src="{{ url_for('static', filename='js/loading-animations.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/rewards.js') }}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize the loading animations
-            initLoadingSystem();
-            
-            // Update progress bars based on actual data
-            fetch('/api/get-progress')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const progress = data.progress;
-                        
-                        // Count stories and games
-                        const stories = progress.filter(item => item.content_type === 'story');
-                        const games = progress.filter(item => item.content_type === 'game');
-                        
-                        // Count completed items
-                        const completedStories = stories.filter(item => item.completed).length;
-                        const completedGames = games.filter(item => item.completed).length;
-                        
-                        // Update progress bars
-                        updateProgressBar('Stories Read', completedStories, 12); // 12 total stories
-                        updateProgressBar('Games Played', completedGames, 8); // 8 total games
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching progress:', error);
-                });
-            
-            // Get rewards data
-            fetch('/api/get-rewards')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Update badges count
-                        updateProgressBar('Badges Earned', data.rewards.length, 25); // Estimate total badges
-                        
-                        // Update stars (estimate based on badges)
-                        const stars = data.rewards.length * 5; // Each badge is worth ~5 stars
-                        document.querySelector('.star-count').textContent = stars;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching rewards:', error);
-                });
-            
-            // Function to update progress bars
-            function updateProgressBar(title, value, total) {
-                const progressCards = document.querySelectorAll('.progress-card');
-                
-                progressCards.forEach(card => {
-                    if (card.querySelector('h4').textContent === title) {
-                        const percentage = (value / total) * 100;
-                        card.querySelector('.progress-bar-fill').style.width = `${percentage}%`;
-                        
-                        const statSpans = card.querySelectorAll('.progress-stat span');
-                        if (statSpans.length >= 2) {
-                            if (title === 'Stars Collected') {
-                                statSpans[0].textContent = value;
-                            } else {
-                                statSpans[0].textContent = `Completed: ${value}`;
-                                statSpans[1].textContent = `Total: ${total}`;
-                            }
-                        }
-                    }
-                });
-            }
-            
-            // Get recent activity for the "Recently Played" section
-            // This would typically be populated from the server
-            // For now, we'll just use the placeholder data
-        });
-    </script>
 </body>
 </html>
