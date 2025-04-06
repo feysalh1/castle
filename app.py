@@ -2,12 +2,15 @@ import os
 import logging
 import json
 import re
-from datetime import datetime, timedelta
-from flask import Flask, render_template, redirect, url_for, flash, request, session, jsonify, send_file
+import qrcode
+import io
+from datetime import datetime, timedelta, date
+from flask import Flask, render_template, redirect, url_for, flash, request, session, jsonify, send_file, abort
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_wtf.csrf import CSRFProtect
 from dotenv import load_dotenv
+from sqlalchemy.exc import SQLAlchemyError
 
 # Load environment variables from .env file
 load_dotenv()
@@ -19,8 +22,10 @@ AUDIO_DIR = "static/audio"
 
 from models import (
     db, Parent, Child, ParentSettings, Progress, Reward, Session,
-    LearningGoal, StoryQueue, SkillProgress, WeeklyReport, DevicePairing
+    LearningGoal, StoryQueue, SkillProgress, WeeklyReport, DevicePairing,
+    DailyReport, Milestone, Event, ErrorLog
 )
+from reports import generate_daily_report, generate_weekly_report, get_report_data_for_period, generate_chart_data
 
 def detect_device_type(user_agent_string):
     """
@@ -87,6 +92,10 @@ csrf.exempt('/api/generate-story')
 csrf.exempt('/api/answer-question')
 csrf.exempt('/api/parent-tip')
 csrf.exempt('/api/track-event')
+csrf.exempt('/api/reports/generate-daily')
+csrf.exempt('/api/reports/generate-weekly')
+csrf.exempt('/api/reports/data')
+csrf.exempt('/api/reports/emotional-feedback')
 
 # Configure database
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
@@ -1559,6 +1568,273 @@ def toggle_favorite():
         'success': True,
         'is_favorite': progress.is_favorite
     })
+
+
+# ----- Daily/Weekly Reports Routes -----
+
+@app.route('/parent/reports')
+@login_required
+def parent_reports_dashboard():
+    """Parent reports dashboard - shows all children's reports"""
+    if session.get('user_type') != 'parent':
+        flash('Access denied. This page is for parents only.', 'error')
+        return redirect(url_for('index'))
+    
+    # Get all children for this parent
+    children = Child.query.filter_by(parent_id=current_user.id).all()
+    
+    # Record dashboard access in session activity log
+    user_session = Session.query.filter_by(
+        user_type='parent',
+        user_id=current_user.id,
+        end_time=None
+    ).order_by(Session.start_time.desc()).first()
+    
+    if user_session:
+        user_session.record_activity('view_reports_dashboard')
+        db.session.commit()
+    
+    return render_template('parent_reports.html', children=children)
+
+
+@app.route('/parent/reports/<int:child_id>')
+@login_required
+def child_reports(child_id):
+    """Individual child's reports dashboard"""
+    if session.get('user_type') != 'parent':
+        flash('Access denied. This page is for parents only.', 'error')
+        return redirect(url_for('index'))
+    
+    # Verify the child belongs to this parent
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
+    if not child:
+        flash('Child not found or access denied.', 'error')
+        return redirect(url_for('parent_reports_dashboard'))
+    
+    # Get period parameters
+    period_type = request.args.get('period', 'week')
+    start_date = request.args.get('start')
+    end_date = request.args.get('end')
+    
+    if start_date:
+        try:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        except ValueError:
+            start_date = None
+    
+    if end_date:
+        try:
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError:
+            end_date = None
+    
+    # Get the report data
+    report_data = get_report_data_for_period(child_id, period_type, start_date, end_date)
+    chart_data = generate_chart_data(report_data)
+    
+    # Record access in session activity log
+    user_session = Session.query.filter_by(
+        user_type='parent',
+        user_id=current_user.id,
+        end_time=None
+    ).order_by(Session.start_time.desc()).first()
+    
+    if user_session:
+        user_session.record_activity('view_child_report', str(child_id), {'period': period_type})
+        db.session.commit()
+    
+    return render_template(
+        'child_reports.html', 
+        child=child, 
+        report_data=report_data, 
+        chart_data=chart_data,
+        period_type=period_type
+    )
+
+
+@app.route('/api/reports/generate-daily', methods=['POST'])
+@login_required
+@csrf.exempt
+def api_generate_daily_report():
+    """API endpoint to generate a daily report for a child"""
+    if session.get('user_type') != 'parent':
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+    
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'error': 'Invalid request'}), 400
+    
+    child_id = data.get('child_id')
+    report_date = data.get('date')
+    
+    # Verify the child belongs to this parent
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
+    if not child:
+        return jsonify({'success': False, 'error': 'Child not found or access denied'}), 404
+    
+    # Parse the date if provided
+    if report_date:
+        try:
+            report_date = datetime.strptime(report_date, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({'success': False, 'error': 'Invalid date format'}), 400
+    
+    # Generate the report
+    try:
+        report = generate_daily_report(child_id, report_date)
+        return jsonify({
+            'success': True, 
+            'report_id': report.id,
+            'date': report.report_date.strftime('%Y-%m-%d'),
+            'stories_read': report.stories_read,
+            'games_played': report.games_played,
+            'time_spent': report.time_spent
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/reports/generate-weekly', methods=['POST'])
+@login_required
+@csrf.exempt
+def api_generate_weekly_report():
+    """API endpoint to generate a weekly report for a child"""
+    if session.get('user_type') != 'parent':
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+    
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'error': 'Invalid request'}), 400
+    
+    child_id = data.get('child_id')
+    week_start = data.get('week_start')
+    
+    # Verify the child belongs to this parent
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
+    if not child:
+        return jsonify({'success': False, 'error': 'Child not found or access denied'}), 404
+    
+    # Parse the date if provided
+    if week_start:
+        try:
+            week_start = datetime.strptime(week_start, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({'success': False, 'error': 'Invalid date format'}), 400
+    
+    # Generate the report
+    try:
+        report = generate_weekly_report(child_id, week_start)
+        if not report:
+            return jsonify({'success': False, 'error': 'Could not generate report for this period'}), 400
+            
+        return jsonify({
+            'success': True, 
+            'report_id': report.id,
+            'week_start': report.week_start.strftime('%Y-%m-%d'),
+            'week_end': report.week_end.strftime('%Y-%m-%d'),
+            'stories_read': report.stories_read,
+            'games_played': report.games_played,
+            'time_spent': report.time_spent
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/reports/data/<int:child_id>')
+@login_required
+def api_get_report_data(child_id):
+    """API endpoint to get report data for a child"""
+    if session.get('user_type') != 'parent':
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+    
+    # Verify the child belongs to this parent
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
+    if not child:
+        return jsonify({'success': False, 'error': 'Child not found or access denied'}), 404
+    
+    # Get period parameters
+    period_type = request.args.get('period', 'week')
+    start_date = request.args.get('start')
+    end_date = request.args.get('end')
+    
+    # Parse dates if provided
+    if start_date:
+        try:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({'success': False, 'error': 'Invalid start date format'}), 400
+    
+    if end_date:
+        try:
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({'success': False, 'error': 'Invalid end date format'}), 400
+    
+    # Get the report data
+    try:
+        report_data = get_report_data_for_period(child_id, period_type, start_date, end_date)
+        chart_data = generate_chart_data(report_data)
+        
+        return jsonify({
+            'success': True,
+            'report_data': report_data,
+            'chart_data': chart_data
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/reports/emotional-feedback', methods=['POST'])
+@login_required
+@csrf.exempt
+def api_record_emotional_feedback():
+    """API endpoint to record emotional feedback for content"""
+    # Check authentication
+    if session.get('user_type') != 'child':
+        return jsonify({'success': False, 'error': 'Authentication required'}), 401
+    
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'error': 'Invalid request'}), 400
+    
+    content_type = data.get('content_type')
+    content_id = data.get('content_id')
+    emoji = data.get('emoji')
+    reaction = data.get('reaction')
+    
+    if not content_type or not content_id or not emoji:
+        return jsonify({'success': False, 'error': 'Missing required parameters'}), 400
+    
+    # Record emotional feedback as an event
+    event_data = {
+        'content_type': content_type,
+        'content_id': content_id,
+        'emoji': emoji,
+        'reaction': reaction
+    }
+    
+    # Find the current session
+    user_session = Session.query.filter_by(
+        user_type='child',
+        user_id=current_user.id,
+        end_time=None
+    ).order_by(Session.start_time.desc()).first()
+    
+    # Create the event
+    Event.track_event(
+        user_type='child',
+        user_id=current_user.id,
+        event_type='emotional_feedback',
+        event_name='emoji_reaction',
+        event_data=event_data,
+        session_id=user_session.id if user_session else None
+    )
+    
+    return jsonify({
+        'success': True,
+        'message': 'Emotional feedback recorded'
+    })
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)

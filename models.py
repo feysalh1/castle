@@ -58,6 +58,7 @@ class Child(UserMixin, db.Model):
     learning_goals = db.relationship('LearningGoal', backref='child', lazy=True, cascade="all, delete-orphan")
     story_queue = db.relationship('StoryQueue', backref='child', uselist=False, cascade="all, delete-orphan")
     skill_progress = db.relationship('SkillProgress', backref='child', lazy=True, cascade="all, delete-orphan")
+    daily_reports = db.relationship('DailyReport', backref='child', lazy=True, cascade="all, delete-orphan")
     weekly_reports = db.relationship('WeeklyReport', backref='child', lazy=True, cascade="all, delete-orphan")
     
     def set_pin(self, pin):
@@ -308,6 +309,37 @@ class SkillProgress(db.Model):
         return f'<SkillProgress {self.skill_name}={self.skill_level}% for child_id {self.child_id}>'
 
 
+class DailyReport(db.Model):
+    """Daily report model for children"""
+    __tablename__ = 'daily_reports'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    child_id = db.Column(db.Integer, db.ForeignKey('children.id'), nullable=False)
+    report_date = db.Column(db.Date, nullable=False)
+    stories_read = db.Column(db.Integer, default=0)
+    games_played = db.Column(db.Integer, default=0)
+    time_spent = db.Column(db.Integer, default=0)  # minutes
+    stars_earned = db.Column(db.Integer, default=0)
+    badges_earned = db.Column(db.Integer, default=0)
+    reading_time = db.Column(db.Integer, default=0)  # seconds spent reading
+    game_time = db.Column(db.Integer, default=0)  # seconds spent playing games
+    quiz_scores = db.Column(db.String(512), default='[]')  # JSON array of quiz scores
+    emotional_feedback = db.Column(db.String(1024), default='{}')  # JSON object of emoji reaction counts
+    content_interactions = db.Column(db.Integer, default=0)  # Number of interactive elements clicked
+    daily_streak = db.Column(db.Integer, default=0)  # Current streak as of this day
+    activity_breakdown = db.Column(db.Text, default='{}')  # Detailed JSON of daily activity breakdown
+    learning_tags = db.Column(db.String(512), default='[]')  # JSON array of learning tags engaged with
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    __table_args__ = (
+        db.UniqueConstraint('child_id', 'report_date', name='unique_child_day'),
+    )
+    
+    def __repr__(self):
+        return f'<DailyReport for child_id {self.child_id} on {self.report_date}>'
+
+
 class WeeklyReport(db.Model):
     """Weekly report model for children"""
     __tablename__ = 'weekly_reports'
@@ -325,7 +357,19 @@ class WeeklyReport(db.Model):
     skills_data = db.Column(db.String(1024), default='{}')  # JSON of skill progress
     top_stories = db.Column(db.String(512), default='[]')  # JSON array of top story IDs
     top_games = db.Column(db.String(512), default='[]')  # JSON array of top game IDs
+    reading_time = db.Column(db.Integer, default=0)  # seconds spent reading
+    game_time = db.Column(db.Integer, default=0)  # seconds spent playing games
+    quiz_scores = db.Column(db.String(512), default='[]')  # JSON array of quiz scores
+    emotional_feedback = db.Column(db.String(1024), default='{}')  # JSON object of emoji reaction counts
+    daily_breakdown = db.Column(db.Text, default='[]')  # JSON array of daily metrics
+    current_streak = db.Column(db.Integer, default=0)  # Current ongoing streak
+    longest_streak = db.Column(db.Integer, default=0)  # Longest streak during week
+    learning_progress = db.Column(db.String(1024), default='{}')  # Progress on learning categories
+    favorite_content = db.Column(db.String(512), default='[]')  # Most engaged content
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    email_sent = db.Column(db.Boolean, default=False)  # Whether report has been emailed
+    email_sent_date = db.Column(db.DateTime)  # When report was emailed
     
     __table_args__ = (
         db.UniqueConstraint('child_id', 'week_start', name='unique_child_week'),
