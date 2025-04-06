@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User - Admin Dashboard - Children's Castle</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .admin-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 15px;
+        }
+        
+        .admin-title {
+            color: #4a6da7;
+        }
+        
+        .admin-btn {
+            background-color: #4a6da7;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .admin-btn:hover {
+            background-color: #3c5a8a;
+        }
+        
+        .admin-btn.secondary {
+            background-color: #6c757d;
+        }
+        
+        .admin-btn.secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .form-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        
+        .flash {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        
+        .flash.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .flash.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <div>
+                <h1 class="admin-title">Children's Castle</h1>
+                <p>Edit User</p>
+            </div>
+            <div>
+                <a href="{{ url_for('admin_dashboard') }}" class="admin-btn secondary">Back to Admin</a>
+            </div>
+        </div>
+        
+        <!-- Flash Messages -->
+        <div class="flash-messages">
+            {% for message in get_flashed_messages(with_categories=true) %}
+            <div class="flash {{ message[0] }}">
+                {{ message[1] }}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="form-container">
+            <h2>Edit User: {{ parent.username }}</h2>
+            
+            <form action="{{ url_for('admin_edit_user', user_id=parent.id) }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" value="{{ parent.username }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" value="{{ parent.email }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="first_name">First Name:</label>
+                    <input type="text" id="first_name" name="first_name" value="{{ parent.first_name or '' }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="last_name">Last Name:</label>
+                    <input type="text" id="last_name" name="last_name" value="{{ parent.last_name or '' }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="new_password">New Password (leave blank to keep current):</label>
+                    <input type="password" id="new_password" name="new_password" placeholder="Minimum 8 characters">
+                </div>
+                
+                <div class="form-actions">
+                    <a href="{{ url_for('admin_dashboard') }}" class="admin-btn secondary">Cancel</a>
+                    <button type="submit" class="admin-btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

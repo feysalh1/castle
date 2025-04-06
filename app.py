@@ -2070,3 +2070,90 @@ def admin_export_emails():
         mimetype='text/csv'
     )
 
+@app.route('/admin/edit-user/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def admin_edit_user(user_id):
+    """Admin page to edit user details"""
+    # Verify admin access
+    if current_user.id != 1:
+        flash('Access denied. Admin privileges required.', 'error')
+        return redirect(url_for('index'))
+    
+    parent = Parent.query.get_or_404(user_id)
+    
+    if request.method == 'POST':
+        # Update user details
+        parent.username = request.form.get('username')
+        parent.email = request.form.get('email')
+        parent.first_name = request.form.get('first_name')
+        parent.last_name = request.form.get('last_name')
+        
+        # Only update password if provided
+        new_password = request.form.get('new_password')
+        if new_password and len(new_password) >= 8:
+            parent.set_password(new_password)
+        
+        try:
+            db.session.commit()
+            flash('User details updated successfully', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating user: {str(e)}', 'error')
+        
+        return redirect(url_for('admin_dashboard'))
+    
+    return render_template('admin_edit_user.html', parent=parent)
+
+@app.route('/admin/delete-user/<int:user_id>', methods=['POST'])
+@login_required
+def admin_delete_user(user_id):
+    """Delete a user account"""
+    # Verify admin access
+    if current_user.id != 1:
+        flash('Access denied. Admin privileges required.', 'error')
+        return redirect(url_for('index'))
+    
+    # Cannot delete admin account
+    if user_id == 1:
+        flash('Cannot delete the admin account', 'error')
+        return redirect(url_for('admin_dashboard'))
+    
+    parent = Parent.query.get_or_404(user_id)
+    
+    try:
+        db.session.delete(parent)
+        db.session.commit()
+        flash(f'User {parent.username} and all associated data deleted successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting user: {str(e)}', 'error')
+    
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/reset-password/<int:user_id>', methods=['POST'])
+@login_required
+def admin_reset_password(user_id):
+    """Reset a user's password and send email"""
+    # Verify admin access
+    if current_user.id != 1:
+        flash('Access denied. Admin privileges required.', 'error')
+        return redirect(url_for('index'))
+    
+    parent = Parent.query.get_or_404(user_id)
+    
+    # Generate a token
+    token = parent.get_reset_token()
+    db.session.commit()
+    
+    # Create reset URL
+    reset_url = url_for('reset_password', token=token, _external=True)
+    
+    # Send email
+    from email_service import send_password_reset_email
+    if send_password_reset_email(parent, token, reset_url):
+        flash(f'Password reset email sent to {parent.email}', 'success')
+    else:
+        flash('Error sending password reset email', 'error')
+    
+    return redirect(url_for('admin_dashboard'))
+
