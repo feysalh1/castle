@@ -1,7 +1,11 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
+import secrets
+import os
+from time import time
+import jwt
 
 db = SQLAlchemy()
 
@@ -16,6 +20,8 @@ class Parent(UserMixin, db.Model):
     first_name = db.Column(db.String(64))
     last_name = db.Column(db.String(64))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    reset_password_token = db.Column(db.String(256), nullable=True)
+    reset_token_expires = db.Column(db.DateTime, nullable=True)
     
     # Relationships
     children = db.relationship('Child', backref='parent', lazy=True, cascade="all, delete-orphan")
@@ -29,6 +35,33 @@ class Parent(UserMixin, db.Model):
     def check_password(self, password):
         """Check if password is correct"""
         return check_password_hash(self.password_hash, password)
+    
+    def get_reset_token(self, expires_in=3600):
+        """Generate a JWT token for password reset"""
+        now = datetime.utcnow()
+        self.reset_token_expires = now + timedelta(seconds=expires_in)
+        self.reset_password_token = jwt.encode(
+            {'reset_password': self.id, 'exp': (now + timedelta(seconds=expires_in)).timestamp()},
+            os.environ.get('SECRET_KEY', 'children-castle-app-secret'),
+            algorithm='HS256'
+        )
+        return self.reset_password_token
+    
+    @staticmethod
+    def verify_reset_token(token):
+        """Verify the reset token"""
+        try:
+            data = jwt.decode(
+                token,
+                os.environ.get('SECRET_KEY', 'children-castle-app-secret'),
+                algorithms=['HS256']
+            )
+            parent_id = data.get('reset_password')
+        except:
+            return None
+        
+        # Return parent or None if invalid
+        return Parent.query.get(parent_id)
     
     def get_id(self):
         """Return the id for Flask-Login"""

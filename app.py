@@ -10,6 +10,8 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_wtf.csrf import CSRFProtect
 from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, EmailField
+from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError
 from dotenv import load_dotenv
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -144,9 +146,33 @@ from story_enhancement_routes import story_enhancement
 app.register_blueprint(chatgpt_bp)
 app.register_blueprint(story_enhancement)
 
-# Create simple forms for CSRF protection
+# Create forms
 class EmptyForm(FlaskForm):
+    """Simple form for CSRF protection"""
     pass
+
+class RequestResetForm(FlaskForm):
+    """Form for requesting a password reset"""
+    email = EmailField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Request Password Reset')
+    
+    def validate_email(self, email):
+        """Check if email exists in database"""
+        parent = Parent.query.filter_by(email=email.data).first()
+        if not parent:
+            raise ValidationError('There is no account with that email address.')
+
+class ResetPasswordForm(FlaskForm):
+    """Form for resetting password"""
+    password = PasswordField('New Password', validators=[
+        DataRequired(),
+        Length(min=8, message='Password must be at least 8 characters long.')
+    ])
+    confirm_password = PasswordField('Confirm New Password', validators=[
+        DataRequired(),
+        EqualTo('password', message='Passwords must match.')
+    ])
+    submit = SubmitField('Reset Password')
 
 # Create database tables
 with app.app_context():
@@ -263,6 +289,93 @@ def parent_login():
         return redirect(url_for('parent_dashboard'))
     
     return render_template('parent_login.html', form=form)
+
+
+@app.route('/parent/reset-password', methods=['GET', 'POST'])
+def request_reset_password():
+    """Request a password reset"""
+    if current_user.is_authenticated:
+        return redirect(url_for('parent_dashboard'))
+    
+    form = RequestResetForm()
+    
+    if form.validate_on_submit():
+        # Find parent by email
+        parent = Parent.query.filter_by(email=form.email.data).first()
+        
+        # Generate reset token
+        token = parent.get_reset_token()
+        
+        # Create reset URL
+        reset_url = url_for('reset_password', token=token, _external=True)
+        
+        # Import email service
+        from email_service import send_password_reset_email
+        
+        # Try to send email
+        if send_password_reset_email(parent, token, reset_url):
+            flash('A password reset link has been sent to your email address.', 'success')
+            # Log reset request in session activity
+            new_session = Session(
+                user_type='parent', 
+                user_id=parent.id,
+                ip_address=request.remote_addr,
+                user_agent=request.user_agent.string,
+                device_type=detect_device_type(request.user_agent.string)
+            )
+            new_session.record_activity('password_reset_request')
+            db.session.add(new_session)
+            db.session.commit()
+        else:
+            flash('Failed to send reset email. Please try again later.', 'error')
+            
+        return redirect(url_for('parent_login'))
+    
+    return render_template('request_reset_password.html', form=form)
+
+
+@app.route('/parent/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    """Reset password with token"""
+    if current_user.is_authenticated:
+        return redirect(url_for('parent_dashboard'))
+    
+    # Verify token and get parent
+    parent = Parent.verify_reset_token(token)
+    
+    if not parent:
+        flash('Invalid or expired reset token. Please try again.', 'error')
+        return redirect(url_for('request_reset_password'))
+    
+    form = ResetPasswordForm()
+    
+    if form.validate_on_submit():
+        # Set new password
+        parent.set_password(form.password.data)
+        
+        # Clear reset token
+        parent.reset_password_token = None
+        parent.reset_token_expires = None
+        
+        # Save changes
+        db.session.commit()
+        
+        # Log password reset in session activity
+        new_session = Session(
+            user_type='parent', 
+            user_id=parent.id,
+            ip_address=request.remote_addr,
+            user_agent=request.user_agent.string,
+            device_type=detect_device_type(request.user_agent.string)
+        )
+        new_session.record_activity('password_reset_complete')
+        db.session.add(new_session)
+        db.session.commit()
+        
+        flash('Your password has been reset successfully! You can now log in with your new password.', 'success')
+        return redirect(url_for('parent_login'))
+    
+    return render_template('reset_password.html', form=form)
 
 
 @app.route('/child/login', methods=['GET', 'POST'])
