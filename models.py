@@ -511,3 +511,78 @@ class ErrorLog(db.Model):
     
     def __repr__(self):
         return f'<ErrorLog {self.error_type} for {self.user_type or "system"} {self.user_id or ""}>'
+
+
+class Conversation(db.Model):
+    """AI Assistant conversation history model"""
+    __tablename__ = 'conversations'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    child_id = db.Column(db.Integer, db.ForeignKey('children.id'), nullable=False)
+    assistant_character = db.Column(db.String(64), default='castle_buddy')
+    title = db.Column(db.String(128), default='Conversation')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship with child
+    child = db.relationship('Child', backref='conversations')
+    
+    # Relationship with messages
+    messages = db.relationship('ConversationMessage', backref='conversation', 
+                              cascade='all, delete-orphan', lazy='dynamic',
+                              order_by='ConversationMessage.timestamp')
+    
+    def __repr__(self):
+        return f'<Conversation {self.id} with {self.assistant_character} for child {self.child_id}>'
+
+
+class ConversationMessage(db.Model):
+    """Individual messages in an AI Assistant conversation"""
+    __tablename__ = 'conversation_messages'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    conversation_id = db.Column(db.Integer, db.ForeignKey('conversations.id'), nullable=False)
+    role = db.Column(db.String(32), nullable=False)  # 'user' or 'assistant'
+    content = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    audio_path = db.Column(db.String(256))  # Path to voice narration audio file
+    
+    def __repr__(self):
+        return f'<Message {self.id} ({self.role}) in conversation {self.conversation_id}>'
+
+
+class AssistantCharacter(db.Model):
+    """Themed AI Assistant characters"""
+    __tablename__ = 'assistant_characters'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), nullable=False, unique=True)
+    display_name = db.Column(db.String(128), nullable=False)
+    description = db.Column(db.Text)
+    character_type = db.Column(db.String(32))  # 'animal', 'robot', 'fantasy', etc.
+    voice_id = db.Column(db.String(64))  # ElevenLabs voice ID
+    image_path = db.Column(db.String(256))  # Path to character image
+    system_prompt = db.Column(db.Text)  # Custom system prompt for this character
+    
+    def __repr__(self):
+        return f'<AssistantCharacter {self.name}>'
+
+
+class EducationalGame(db.Model):
+    """Educational games suggested by AI Assistant"""
+    __tablename__ = 'educational_games'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(128), nullable=False)
+    description = db.Column(db.Text)
+    category = db.Column(db.String(64))  # math, language, science, etc.
+    min_age = db.Column(db.Integer, default=3)
+    max_age = db.Column(db.Integer, default=8)
+    difficulty = db.Column(db.String(32))  # easy, medium, hard
+    instructions = db.Column(db.Text)
+    url = db.Column(db.String(256))  # URL for external games
+    image_path = db.Column(db.String(256))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<EducationalGame {self.title}>'

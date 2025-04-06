@@ -3,10 +3,11 @@ ChatGPT integration routes for Children's Castle application.
 These routes handle API endpoints for the AI assistant features.
 """
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session, render_template, flash, redirect, url_for
 from flask_login import current_user, login_required
 import chatgpt_helper
-from app import csrf
+from app import csrf, db
+# Removed import, Session, Conversation, ConversationMessage
 
 # Create Blueprint for ChatGPT routes
 chatgpt_bp = Blueprint('chatgpt', __name__)
@@ -16,15 +17,11 @@ chatgpt_bp = Blueprint('chatgpt', __name__)
 def ai_assistant():
     """AI Assistant page for children"""
     # Check if user is a child
-    from app import session
     if session.get('user_type') != 'child':
-        from flask import flash, redirect, url_for
         flash('Access denied. This page is for children only.', 'error')
         return redirect(url_for('index'))
     
     # Record AI assistant access in session activity log
-    from app import db
-    from models import Session
     user_session = Session.query.filter_by(
         user_type='child',
         user_id=current_user.id,
@@ -35,7 +32,7 @@ def ai_assistant():
         user_session.record_activity('view_ai_assistant')
         db.session.commit()
     
-    from flask import render_template
+    # Removed import
     return render_template('ai_assistant.html')
 
 @chatgpt_bp.route('/api/ask-assistant', methods=['POST'])
@@ -44,7 +41,7 @@ def ai_assistant():
 def ask_assistant():
     """API endpoint to ask the AI assistant a question"""
     # Check if user is a child
-    from app import session
+    # Removed import
     if session.get('user_type') != 'child':
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
@@ -58,7 +55,7 @@ def ask_assistant():
         return jsonify({'success': False, 'message': 'No question provided'}), 400
     
     # Get child's age from database
-    from models import Child
+    # Removed import
     child = Child.query.get(current_user.id)
     child_age = child.age if hasattr(child, 'age') and child.age else 4
     
@@ -75,7 +72,7 @@ def ask_assistant():
         topic = 'weather'
     
     # Track this interaction
-    from models import db
+    # Removed import
     from app import tracking
     tracking.track_custom_event(
         event_type='ai_assistant',
@@ -98,7 +95,7 @@ def ask_assistant():
 def generate_story():
     """API endpoint to generate an interactive story"""
     # Check if user is a child
-    from app import session
+    # Removed import
     if session.get('user_type') != 'child':
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
@@ -111,7 +108,7 @@ def generate_story():
     include_questions = data.get('include_questions', True)
     
     # Get child's age from database
-    from models import Child
+    # Removed import
     child = Child.query.get(current_user.id)
     child_age = child.age if hasattr(child, 'age') and child.age else 4
     
@@ -145,7 +142,7 @@ def generate_story():
 def answer_question():
     """API endpoint to respond to a child's answer to a story question"""
     # Check if user is a child
-    from app import session
+    # Removed import
     if session.get('user_type') != 'child':
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
@@ -162,7 +159,7 @@ def answer_question():
         return jsonify({'success': False, 'message': 'Missing question or answer'}), 400
     
     # Get child's age from database
-    from models import Child
+    # Removed import
     child = Child.query.get(current_user.id)
     child_age = child.age if hasattr(child, 'age') and child.age else 4
     
@@ -195,7 +192,7 @@ def answer_question():
 def parent_tip():
     """API endpoint to get learning tips for parents"""
     # Check if user is a parent
-    from app import session
+    # Removed import
     if session.get('user_type') != 'parent':
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
@@ -210,7 +207,7 @@ def parent_tip():
     # If child_id is provided, get child's age
     child_age = 4
     if child_id:
-        from models import Child
+        # Removed import
         child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
         if child and hasattr(child, 'age') and child.age:
             child_age = child.age
