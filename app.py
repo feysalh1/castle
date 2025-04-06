@@ -29,8 +29,9 @@ db.init_app(app)
 # Initialize Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
+login_manager.login_view = 'index'
 login_manager.login_message = "Please log in to access this page."
+login_manager.login_message_category = "info"
 
 
 @login_manager.user_loader
@@ -55,7 +56,12 @@ with app.app_context():
 @app.route('/')
 def index():
     """Render the homepage of the Children's Castle app."""
-    return render_template('index.html')
+    if current_user.is_authenticated:
+        if session.get('user_type') == 'parent':
+            return redirect(url_for('parent_dashboard'))
+        elif session.get('user_type') == 'child':
+            return redirect(url_for('child_dashboard'))
+    return render_template('login_landing.html')
 
 
 @app.route('/parent/register', methods=['GET', 'POST'])

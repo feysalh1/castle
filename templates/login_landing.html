@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Children's Castle</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading-animations.css') }}">
+    <style>
+        /* Additional CSS for the login landing page */
+        .login-options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            margin: 40px 0;
+        }
+        
+        .login-card {
+            background-color: rgba(180, 220, 255, 0.8);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            width: 320px;
+            text-align: center;
+            border: 2px solid white;
+            transition: transform var(--transition-speed);
+        }
+        
+        .login-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .login-card h3 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        
+        .login-card p {
+            margin-bottom: 25px;
+            height: 60px;
+        }
+        
+        .login-card .btn {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .registration-link {
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .registration-link a {
+            color: var(--primary-dark);
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .login-card {
+                width: 100%;
+                max-width: 400px;
+            }
+            
+            .login-card p {
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>Children's Castle</h1>
+                <small>Developed for Menira</small>
+            </div>
+        </div>
+    </header>
+    
+    <main>
+        <div class="container">
+            <!-- Flash Messages -->
+            <div class="flash-messages">
+                {% for message in get_flashed_messages(with_categories=true) %}
+                    <div class="flash {{ message[0] }}">
+                        {{ message[1] }}
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="welcome">
+                <h2>Welcome to Children's Castle!</h2>
+                <p>An interactive learning and entertainment platform for children.</p>
+            </div>
+            
+            <div class="login-options">
+                <div class="login-card parent-login">
+                    <h3>Parents</h3>
+                    <p>Access your account to manage settings and monitor your child's progress.</p>
+                    <a href="{{ url_for('parent_login') }}" class="btn large-btn">Parent Login</a>
+                    <div class="registration-link">
+                        <p>New to Children's Castle? <a href="{{ url_for('parent_register') }}">Register here</a></p>
+                    </div>
+                </div>
+                
+                <div class="login-card child-login">
+                    <h3>Children</h3>
+                    <p>Enter your special code to explore stories and play educational games!</p>
+                    <a href="{{ url_for('child_login') }}" class="btn large-btn secondary-btn">Child Login</a>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Children's Castle. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script src="{{ url_for('static', filename='js/loading-animations.js') }}"></script>
+</body>
+</html>
