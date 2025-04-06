@@ -405,7 +405,13 @@ def child_login():
     
     form = EmptyForm()
     
-    if form.validate_on_submit():
+    if request.method == 'POST':
+        # Check for valid CSRF token
+        csrf_token = request.form.get('csrf_token')
+        if not csrf_token or not csrf.validate_csrf(csrf_token):
+            flash('Invalid form submission. Please try again.', 'error')
+            return redirect(url_for('child_login'))
+            
         username = request.form.get('username')
         pin = request.form.get('pin')
         
@@ -494,7 +500,13 @@ def add_child():
     
     form = EmptyForm()
     
-    if form.validate_on_submit():
+    if request.method == 'POST':
+        # Check for valid CSRF token
+        csrf_token = request.form.get('csrf_token')
+        if not csrf_token or not csrf.validate_csrf(csrf_token):
+            flash('Invalid form submission. Please try again.', 'error')
+            return redirect(url_for('add_child'))
+        
         username = request.form.get('username')
         display_name = request.form.get('display_name')
         age = request.form.get('age')
@@ -536,7 +548,13 @@ def reset_child_pin():
     
     form = EmptyForm()
     
-    if form.validate_on_submit():
+    if request.method == 'POST':
+        # Check for valid CSRF token
+        csrf_token = request.form.get('csrf_token')
+        if not csrf_token or not csrf.validate_csrf(csrf_token):
+            flash('Invalid form submission. Please try again.', 'error')
+            return redirect(url_for('parent_dashboard'))
+            
         child_id = request.form.get('child_id')
         new_pin = request.form.get('new_pin')
         
@@ -599,7 +617,13 @@ def parent_settings():
     form = EmptyForm()
     settings = ParentSettings.query.filter_by(parent_id=current_user.id).first()
     
-    if form.validate_on_submit():
+    if request.method == 'POST':
+        # Check for valid CSRF token
+        csrf_token = request.form.get('csrf_token')
+        if not csrf_token or not csrf.validate_csrf(csrf_token):
+            flash('Invalid form submission. Please try again.', 'error')
+            return redirect(url_for('parent_settings'))
+            
         # Basic Settings
         settings.allow_external_games = request.form.get('allow_external_games') == 'on'
         settings.max_daily_playtime = int(request.form.get('max_daily_playtime', 60))
@@ -2177,6 +2201,12 @@ def admin_edit_user(user_id):
     parent = Parent.query.get_or_404(user_id)
     
     if request.method == 'POST':
+        # Check for valid CSRF token
+        csrf_token = request.form.get('csrf_token')
+        if not csrf_token or not csrf.validate_csrf(csrf_token):
+            flash('Invalid form submission. Please try again.', 'error')
+            return redirect(url_for('admin_edit_user', user_id=user_id))
+            
         # Update user details
         parent.username = request.form.get('username')
         parent.email = request.form.get('email')
@@ -2208,6 +2238,12 @@ def admin_delete_user(user_id):
         flash('Access denied. Admin privileges required.', 'error')
         return redirect(url_for('index'))
     
+    # Check for valid CSRF token
+    csrf_token = request.form.get('csrf_token')
+    if not csrf_token or not csrf.validate_csrf(csrf_token):
+        flash('Invalid form submission. Please try again.', 'error')
+        return redirect(url_for('admin_dashboard'))
+    
     # Cannot delete admin account
     if user_id == 1:
         flash('Cannot delete the admin account', 'error')
@@ -2233,6 +2269,12 @@ def admin_reset_password(user_id):
     if current_user.id != 1:
         flash('Access denied. Admin privileges required.', 'error')
         return redirect(url_for('index'))
+    
+    # Check for valid CSRF token
+    csrf_token = request.form.get('csrf_token')
+    if not csrf_token or not csrf.validate_csrf(csrf_token):
+        flash('Invalid form submission. Please try again.', 'error')
+        return redirect(url_for('admin_dashboard'))
     
     parent = Parent.query.get_or_404(user_id)
     
