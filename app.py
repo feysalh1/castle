@@ -526,6 +526,42 @@ def add_child():
     return render_template('add_child.html', form=form)
 
 
+@app.route('/parent/reset-child-pin', methods=['POST'])
+@login_required
+def reset_child_pin():
+    """Reset a child's PIN"""
+    if session.get('user_type') != 'parent':
+        flash('Access denied. This page is for parents only.', 'error')
+        return redirect(url_for('index'))
+    
+    form = EmptyForm()
+    
+    if form.validate_on_submit():
+        child_id = request.form.get('child_id')
+        new_pin = request.form.get('new_pin')
+        
+        # Verify PIN format
+        if not new_pin or len(new_pin) != 4 or not new_pin.isdigit():
+            flash('PIN must be exactly 4 digits.', 'error')
+            return redirect(url_for('parent_dashboard'))
+        
+        # Get the child
+        child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
+        if not child:
+            flash('Child account not found.', 'error')
+            return redirect(url_for('parent_dashboard'))
+        
+        # Reset the PIN
+        child.set_pin(new_pin)
+        db.session.commit()
+        
+        flash(f'PIN for {child.display_name} has been reset successfully!', 'success')
+    else:
+        flash('Invalid form submission.', 'error')
+    
+    return redirect(url_for('parent_dashboard'))
+
+
 @app.route('/child/dashboard')
 @login_required
 def child_dashboard():

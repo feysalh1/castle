@@ -23,8 +23,13 @@
                 <a href="{{ url_for('parent_settings') }}">Settings</a>
                 <a href="{{ url_for('link_to_parent') }}">Link to Parent App</a>
                 <a href="#" id="report-card-link">Weekly Report</a>
+                {% if current_user.id == 1 %}
+                <a href="{{ url_for('admin_dashboard') }}" style="color: #ff7043;">Admin</a>
+                {% endif %}
                 <a href="{{ url_for('logout') }}">Sign Out</a>
             </nav>
+        </div>
+    </header>
         </div>
     </header>
     
@@ -61,6 +66,7 @@
                                         <button class="btn outline-btn view-activity-btn" data-child-id="{{ child.id }}">View Activity</button>
                                         <a href="{{ url_for('chatgpt.parent_chat_history', child_id=child.id) }}" class="btn outline-btn">Chat History</a>
                                         <button class="btn edit-profile-btn" data-child-id="{{ child.id }}">Edit Profile</button>
+                                        <button class="btn outline-btn reset-pin-btn" data-child-id="{{ child.id }}">Reset PIN</button>
                                     </div>
                                 </div>
                             {% endfor %}

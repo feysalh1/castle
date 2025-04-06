@@ -66,6 +66,8 @@
                                         <button class="btn outline-btn view-activity-btn" data-child-id="{{ child.id }}">View Activity</button>
                                         <a href="{{ url_for('chatgpt.parent_chat_history', child_id=child.id) }}" class="btn outline-btn">Chat History</a>
                                         <button class="btn edit-profile-btn" data-child-id="{{ child.id }}">Edit Profile</button>
+                                        <button class="btn outline-btn reset-pin-btn" data-child-id="{{ child.id }}">Reset PIN</button>
+                                        <button class="btn outline-btn reset-pin-btn" data-child-id="{{ child.id }}">Reset PIN</button>
                                     </div>
                                 </div>
                             {% endfor %}
@@ -758,3 +760,291 @@
     <script src="/static/js/parent_assistant.js"></script>
 </body>
 </html>
+
+<!-- Reset PIN Modal -->
+<div class="modal" id="reset-pin-modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h3>Reset Child's PIN</h3>
+        
+        <form id="reset-pin-form" method="POST" action="{{ url_for('reset_child_pin') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" id="reset-pin-child-id" name="child_id" value="">
+            
+            <p>Please enter a new 4-digit PIN for <span id="reset-pin-child-name">your child</span>:</p>
+            
+            <div class="pin-container">
+                <div class="pin-number-display" id="resetPinNumberDisplay"></div>
+                <div class="pin-display">
+                    <div class="pin-dot" id="resetDot1"></div>
+                    <div class="pin-dot" id="resetDot2"></div>
+                    <div class="pin-dot" id="resetDot3"></div>
+                    <div class="pin-dot" id="resetDot4"></div>
+                </div>
+                
+                <div class="pin-toggle">
+                    <label><input type="checkbox" id="resetShowPin" onchange="toggleResetPinVisibility()"> Show PIN</label>
+                </div>
+                
+                <div class="pin-pad">
+                    <button type="button" class="pin-button" onclick="addResetPin(1)">1</button>
+                    <button type="button" class="pin-button" onclick="addResetPin(2)">2</button>
+                    <button type="button" class="pin-button" onclick="addResetPin(3)">3</button>
+                    <button type="button" class="pin-button" onclick="addResetPin(4)">4</button>
+                    <button type="button" class="pin-button" onclick="addResetPin(5)">5</button>
+                    <button type="button" class="pin-button" onclick="addResetPin(6)">6</button>
+                    <button type="button" class="pin-button" onclick="addResetPin(7)">7</button>
+                    <button type="button" class="pin-button" onclick="addResetPin(8)">8</button>
+                    <button type="button" class="pin-button" onclick="addResetPin(9)">9</button>
+                    <button type="button" class="pin-button" style="visibility: hidden;"></button>
+                    <button type="button" class="pin-button" onclick="addResetPin(0)">0</button>
+                    <button type="button" class="pin-button" style="visibility: hidden;"></button>
+                </div>
+                
+                <div class="pin-actions">
+                    <span class="pin-clear" onclick="clearResetPin()">Clear PIN</span>
+                </div>
+                
+                <input type="hidden" id="reset-pin-value" name="new_pin" required>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn" onclick="validateResetPinForm(event)">Reset PIN</button>
+                <button type="button" class="btn outline-btn" onclick="closeModal('reset-pin-modal')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .modal-content {
+        background-color: #fff;
+        margin: 10% auto;
+        padding: 25px;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        position: relative;
+    }
+    
+    .close-modal {
+        position: absolute;
+        right: 15px;
+        top: 10px;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        color: #888;
+    }
+    
+    .close-modal:hover {
+        color: #000;
+    }
+    
+    /* PIN styles */
+    .pin-number-display {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 40px;
+        font-size: 24px;
+        font-weight: bold;
+        color: #4a6da7;
+        margin-bottom: 10px;
+        visibility: hidden;
+    }
+    
+    .pin-number-display.visible {
+        visibility: visible;
+    }
+    
+    .pin-container {
+        margin: 15px 0;
+    }
+    
+    .pin-display {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+    
+    .pin-dot {
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background-color: #ddd;
+        margin: 0 8px;
+        transition: background-color 0.3s;
+    }
+    
+    .pin-dot.filled {
+        background-color: #4a6da7;
+    }
+    
+    .pin-pad {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        max-width: 240px;
+        margin: 0 auto;
+    }
+    
+    .pin-button {
+        background-color: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .pin-button:hover {
+        background-color: #e0e0e0;
+    }
+    
+    .pin-button:active {
+        transform: scale(0.95);
+    }
+    
+    .pin-actions {
+        text-align: center;
+        margin-top: 10px;
+    }
+    
+    .pin-clear {
+        color: #4a6da7;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    .pin-clear:hover {
+        text-decoration: underline;
+    }
+    
+    .pin-toggle {
+        margin-top: 10px;
+        text-align: center;
+    }
+    
+    .pin-toggle label {
+        cursor: pointer;
+        color: #4a6da7;
+    }
+    
+    .pin-toggle label:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Reset PIN button click handlers
+    let resetPinButtons = document.querySelectorAll('.reset-pin-btn');
+    resetPinButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const childId = this.getAttribute('data-child-id');
+            const childCard = this.closest('.child-card');
+            const childName = childCard.querySelector('.child-info h3').textContent;
+            
+            document.getElementById('reset-pin-child-id').value = childId;
+            document.getElementById('reset-pin-child-name').textContent = childName;
+            
+            // Clear any previous PIN
+            currentResetPin = '';
+            updateResetPinDisplay();
+            
+            // Show the modal
+            document.getElementById('reset-pin-modal').style.display = 'block';
+        });
+    });
+    
+    // Close modal functionality
+    let closeButtons = document.querySelectorAll('.close-modal');
+    closeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const modalId = this.closest('.modal').id;
+            closeModal(modalId);
+        });
+    });
+    
+    // Close modal when clicking outside the content
+    window.addEventListener('click', function(event) {
+        if (event.target.classList.contains('modal')) {
+            closeModal(event.target.id);
+        }
+    });
+});
+
+// Close modal function
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+// PIN reset functionality
+let currentResetPin = '';
+let showingResetPin = false;
+
+function addResetPin(number) {
+    if (currentResetPin.length < 4) {
+        currentResetPin += number;
+        updateResetPinDisplay();
+        
+        if (currentResetPin.length === 4) {
+            // Auto submit is disabled for reset PIN to prevent accidental submission
+        }
+    }
+}
+
+function clearResetPin() {
+    currentResetPin = '';
+    updateResetPinDisplay();
+}
+
+function updateResetPinDisplay() {
+    // Update dots
+    for (let i = 1; i <= 4; i++) {
+        const dot = document.getElementById(`resetDot${i}`);
+        dot.classList.toggle('filled', i <= currentResetPin.length);
+    }
+    
+    // Update pin number display
+    document.getElementById('resetPinNumberDisplay').textContent = currentResetPin;
+    
+    // Update hidden input
+    document.getElementById('reset-pin-value').value = currentResetPin;
+}
+
+function toggleResetPinVisibility() {
+    showingResetPin = document.getElementById('resetShowPin').checked;
+    const pinDisplay = document.getElementById('resetPinNumberDisplay');
+    
+    if (showingResetPin) {
+        pinDisplay.classList.add('visible');
+    } else {
+        pinDisplay.classList.remove('visible');
+    }
+}
+
+function validateResetPinForm(event) {
+    if (currentResetPin.length !== 4) {
+        event.preventDefault();
+        alert('Please enter a 4-digit PIN.');
+        return false;
+    }
+    
+    return true;
+}
+</script>
