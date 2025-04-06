@@ -29,7 +29,7 @@ AUDIO_DIR = "static/audio"
 from models import (
     db, Parent, Child, ParentSettings, Progress, Reward, Session,
     LearningGoal, StoryQueue, SkillProgress, WeeklyReport, DevicePairing,
-    DailyReport, Milestone, Event, ErrorLog, AgeGroup, Book
+    DailyReport, Milestone, Event, ErrorLog, AgeGroup, Book, ApprovedBooks
 )
 from reports import generate_daily_report, generate_weekly_report, get_report_data_for_period, generate_chart_data
 
@@ -123,6 +123,9 @@ csrf.exempt('/api/reports/generate-daily')
 csrf.exempt('/api/reports/generate-weekly')
 csrf.exempt('/api/reports/data')
 csrf.exempt('/api/reports/emotional-feedback')
+csrf.exempt('/api/books/get-child-approved')
+csrf.exempt('/api/books/approve')
+csrf.exempt('/api/books/unapprove')
 
 # Configure database
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
@@ -476,6 +479,9 @@ def parent_dashboard():
     # Get all children for this parent
     children = Child.query.filter_by(parent_id=current_user.id).all()
     
+    # Get all age groups for book approval section
+    age_groups = AgeGroup.query.order_by(AgeGroup.min_age).all()
+    
     # Record dashboard access in session activity log
     user_session = Session.query.filter_by(
         user_type='parent',
@@ -487,7 +493,7 @@ def parent_dashboard():
         user_session.record_activity('view_dashboard')
         db.session.commit()
     
-    return render_template('parent_dashboard.html', children=children)
+    return render_template('parent_dashboard.html', children=children, age_groups=age_groups)
 
 
 @app.route('/parent/add-child', methods=['GET', 'POST'])
@@ -913,6 +919,156 @@ def delete_learning_goal(goal_id):
     return jsonify({'success': True})
 
 
+# API routes for approved books management
+@app.route('/api/books/get-child-approved', methods=['GET'])
+@login_required
+@csrf.exempt
+def get_child_approved_books():
+    """API endpoint to get approved books for a child"""
+    if session.get('user_type') != 'parent':
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    child_id = request.args.get('child_id')
+    if not child_id:
+        return jsonify({'success': False, 'message': 'Child ID is required'}), 400
+    
+    # Verify this child belongs to the current parent
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
+    if not child:
+        return jsonify({'success': False, 'message': 'Child not found'}), 404
+    
+    # Get approved books for this child
+    approved_books = ApprovedBooks.query.filter_by(child_id=child_id).all()
+    approved_book_ids = [ab.book_id for ab in approved_books]
+    
+    # Get all books with their details
+    books = Book.query.all()
+    
+    # Format the books data
+    books_data = []
+    for book in books:
+        age_group = AgeGroup.query.get(book.age_group_id)
+        books_data.append({
+            'id': book.id,
+            'title': book.title,
+            'description': book.description,
+            'age_group': {
+                'id': age_group.id,
+                'name': age_group.name,
+                'min_age': age_group.min_age,
+                'max_age': age_group.max_age
+            },
+            'difficulty_level': book.difficulty_level,
+            'reading_time_minutes': book.reading_time_minutes,
+            'is_interactive': book.is_interactive,
+            'has_audio': book.has_audio,
+            'is_approved': book.id in approved_book_ids
+        })
+    
+    return jsonify({
+        'success': True,
+        'child': {
+            'id': child.id,
+            'name': child.display_name,
+            'age': child.age
+        },
+        'books': books_data
+    })
+
+
+@app.route('/api/books/approve', methods=['POST'])
+@login_required
+@csrf.exempt
+def approve_books():
+    """API endpoint to approve books for a child"""
+    if session.get('user_type') != 'parent':
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    data = request.json
+    child_id = data.get('child_id')
+    book_ids = data.get('book_ids', [])
+    
+    if not child_id:
+        return jsonify({'success': False, 'message': 'Child ID is required'}), 400
+    
+    if not book_ids:
+        return jsonify({'success': False, 'message': 'At least one book ID is required'}), 400
+    
+    # Verify this child belongs to the current parent
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
+    if not child:
+        return jsonify({'success': False, 'message': 'Child not found'}), 404
+    
+    # Get existing approved books
+    existing_approved = ApprovedBooks.query.filter_by(child_id=child_id).with_entities(ApprovedBooks.book_id).all()
+    existing_approved_ids = [ab.book_id for ab in existing_approved]
+    
+    # Add new approvals
+    new_approvals = []
+    for book_id in book_ids:
+        if book_id not in existing_approved_ids:
+            # Verify the book exists
+            book = Book.query.get(book_id)
+            if book:
+                new_approval = ApprovedBooks(
+                    child_id=child_id,
+                    book_id=book_id,
+                    approved_by=current_user.id
+                )
+                db.session.add(new_approval)
+                new_approvals.append(book_id)
+    
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': f'{len(new_approvals)} books approved for {child.display_name}',
+        'approved_book_ids': new_approvals
+    })
+
+
+@app.route('/api/books/unapprove', methods=['POST'])
+@login_required
+@csrf.exempt
+def unapprove_books():
+    """API endpoint to remove book approvals for a child"""
+    if session.get('user_type') != 'parent':
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    data = request.json
+    child_id = data.get('child_id')
+    book_ids = data.get('book_ids', [])
+    
+    if not child_id:
+        return jsonify({'success': False, 'message': 'Child ID is required'}), 400
+    
+    if not book_ids:
+        return jsonify({'success': False, 'message': 'At least one book ID is required'}), 400
+    
+    # Verify this child belongs to the current parent
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
+    if not child:
+        return jsonify({'success': False, 'message': 'Child not found'}), 404
+    
+    # Delete approvals
+    for book_id in book_ids:
+        approval = ApprovedBooks.query.filter_by(
+            child_id=child_id,
+            book_id=book_id
+        ).first()
+        
+        if approval:
+            db.session.delete(approval)
+    
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': f'{len(book_ids)} book approvals removed for {child.display_name}',
+        'unapproved_book_ids': book_ids
+    })
+
+
 @app.route('/api/save-story-queue', methods=['POST'])
 @login_required
 @csrf.exempt
@@ -1142,11 +1298,10 @@ def story_mode():
         flash('Access denied. This page is for children only.', 'error')
         return redirect(url_for('index'))
     
-    # Get all age groups and books
+    # Get all age groups
     age_groups = AgeGroup.query.order_by(AgeGroup.min_age).all()
-    books = Book.query.all()
     
-    # Get child's age for age-appropriate filtering
+    # Get child's age and information
     child = Child.query.get(current_user.id)
     child_age = child.age if child else 4  # Default to 4 if not set
     
@@ -1162,11 +1317,29 @@ def story_mode():
     if parent_settings and parent_settings.content_age_filter:
         max_age_filter = parent_settings.content_age_filter
     
-    # Filter age groups and books if needed
+    # Filter age groups if needed
     if max_age_filter:
         age_groups = [group for group in age_groups if group.max_age <= max_age_filter]
-        filtered_book_ids = [book.id for book in books if book.age_group_id in [g.id for g in age_groups]]
-        books = [book for book in books if book.id in filtered_book_ids]
+    
+    # Get approved books for this child
+    approved_books_ids = []
+    if child:
+        approved_books = ApprovedBooks.query.filter_by(child_id=child.id).all()
+        approved_books_ids = [ab.book_id for ab in approved_books]
+    
+    # Get all books and filter by approved books
+    all_books = Book.query.all()
+    
+    # If we have approved books, only show those; otherwise show all books that match age filter
+    if approved_books_ids:
+        # Only show parent-approved books
+        books = [book for book in all_books if book.id in approved_books_ids]
+    else:
+        # No approved books yet, so just filter by age (fallback behavior)
+        books = all_books
+        if max_age_filter:
+            filtered_book_ids = [book.id for book in books if book.age_group_id in [g.id for g in age_groups]]
+            books = [book for book in books if book.id in filtered_book_ids]
     
     # Check for enhanced stories with diverse audio narration (legacy support)
     enhanced_stories = []
@@ -2220,6 +2393,204 @@ def api_record_emotional_feedback():
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
+
+
+# Book Approval API Routes
+
+@app.route('/api/books/get-child-approved', methods=['GET'])
+@login_required
+@csrf.exempt
+def api_get_child_approved_books():
+    """API endpoint to get books approved for a child"""
+    # Get child ID from query parameters
+    child_id = request.args.get('child_id')
+    
+    if not child_id:
+        return jsonify({'success': False, 'message': 'Child ID is required'}), 400
+    
+    # Parent can only view their own children's approved books
+    if session.get('user_type') == 'parent':
+        child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
+        if not child:
+            return jsonify({'success': False, 'message': 'Child not found or not authorized'}), 403
+    # Child can only view their own approved books
+    elif session.get('user_type') == 'child':
+        if str(current_user.id) != str(child_id):
+            return jsonify({'success': False, 'message': 'Not authorized'}), 403
+    else:
+        return jsonify({'success': False, 'message': 'Not authorized'}), 403
+    
+    # Get all books with approval status for this child
+    all_books = Book.query.all()
+    
+    # For each book, check if it's approved for this child
+    books_with_status = []
+    for book in all_books:
+        approval = ApprovedBooks.query.filter_by(
+            child_id=child_id,
+            book_id=book.id
+        ).first()
+        
+        # Get the age group for the book
+        age_group = AgeGroup.query.get(book.age_group_id)
+        
+        books_with_status.append({
+            'id': book.id,
+            'title': book.title,
+            'description': book.description,
+            'difficulty_level': book.difficulty_level,
+            'reading_time_minutes': book.reading_time_minutes,
+            'age_group': {
+                'id': age_group.id,
+                'name': age_group.name,
+                'min_age': age_group.min_age,
+                'max_age': age_group.max_age
+            },
+            'is_approved': approval is not None
+        })
+    
+    return jsonify({
+        'success': True,
+        'books': books_with_status
+    })
+
+
+@app.route('/api/books/approve', methods=['POST'])
+@login_required
+@csrf.exempt
+def api_approve_books():
+    """API endpoint to approve books for a child"""
+    # Ensure user is a parent
+    if session.get('user_type') != 'parent':
+        return jsonify({'success': False, 'message': 'Only parents can approve books'}), 403
+    
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'message': 'Invalid request data'}), 400
+    
+    child_id = data.get('child_id')
+    book_ids = data.get('book_ids', [])
+    
+    if not child_id or not book_ids:
+        return jsonify({'success': False, 'message': 'Child ID and book IDs are required'}), 400
+    
+    # Check if child belongs to this parent
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
+    if not child:
+        return jsonify({'success': False, 'message': 'Child not found or not authorized'}), 403
+    
+    # Approve each book
+    approved_count = 0
+    for book_id in book_ids:
+        # Check if book exists
+        book = Book.query.get(book_id)
+        if not book:
+            continue
+        
+        # Check if already approved
+        existing = ApprovedBooks.query.filter_by(
+            child_id=child_id,
+            book_id=book_id
+        ).first()
+        
+        if not existing:
+            # Create approval record
+            approval = ApprovedBooks(
+                child_id=child_id,
+                book_id=book_id,
+                approved_by=current_user.id
+            )
+            db.session.add(approval)
+            approved_count += 1
+    
+    if approved_count > 0:
+        # Log activity in parent session
+        user_session = Session.query.filter_by(
+            user_type='parent',
+            user_id=current_user.id,
+            end_time=None
+        ).order_by(Session.start_time.desc()).first()
+        
+        if user_session:
+            user_session.record_activity('approve_books', {
+                'child_id': child_id,
+                'book_count': approved_count
+            })
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'{approved_count} book(s) approved for {child.display_name}'
+        })
+    else:
+        return jsonify({
+            'success': True,
+            'message': 'No new books were approved'
+        })
+
+
+@app.route('/api/books/unapprove', methods=['POST'])
+@login_required
+@csrf.exempt
+def api_unapprove_books():
+    """API endpoint to remove book approvals for a child"""
+    # Ensure user is a parent
+    if session.get('user_type') != 'parent':
+        return jsonify({'success': False, 'message': 'Only parents can manage book approvals'}), 403
+    
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'message': 'Invalid request data'}), 400
+    
+    child_id = data.get('child_id')
+    book_ids = data.get('book_ids', [])
+    
+    if not child_id or not book_ids:
+        return jsonify({'success': False, 'message': 'Child ID and book IDs are required'}), 400
+    
+    # Check if child belongs to this parent
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
+    if not child:
+        return jsonify({'success': False, 'message': 'Child not found or not authorized'}), 403
+    
+    # Remove approvals
+    removed_count = 0
+    for book_id in book_ids:
+        # Delete the approval record
+        deleted = ApprovedBooks.query.filter_by(
+            child_id=child_id,
+            book_id=book_id
+        ).delete()
+        
+        if deleted:
+            removed_count += 1
+    
+    if removed_count > 0:
+        # Log activity in parent session
+        user_session = Session.query.filter_by(
+            user_type='parent',
+            user_id=current_user.id,
+            end_time=None
+        ).order_by(Session.start_time.desc()).first()
+        
+        if user_session:
+            user_session.record_activity('unapprove_books', {
+                'child_id': child_id,
+                'book_count': removed_count
+            })
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Approval removed for {removed_count} book(s)'
+        })
+    else:
+        return jsonify({
+            'success': True,
+            'message': 'No approvals were removed'
+        })
 
 # Admin routes
 @app.route('/admin/dashboard')

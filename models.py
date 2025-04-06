@@ -93,6 +93,7 @@ class Child(UserMixin, db.Model):
     skill_progress = db.relationship('SkillProgress', backref='child', lazy=True, cascade="all, delete-orphan")
     daily_reports = db.relationship('DailyReport', backref='child', lazy=True, cascade="all, delete-orphan")
     weekly_reports = db.relationship('WeeklyReport', backref='child', lazy=True, cascade="all, delete-orphan")
+    approved_books = db.relationship('ApprovedBooks', backref='child', lazy=True, cascade="all, delete-orphan")
     
     def set_pin(self, pin):
         """Set the PIN hash"""
@@ -348,6 +349,28 @@ class Book(db.Model):
     
     def __repr__(self):
         return f'<Book {self.title}>'
+
+
+class ApprovedBooks(db.Model):
+    """Parent-approved books for children"""
+    __tablename__ = 'approved_books'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    child_id = db.Column(db.Integer, db.ForeignKey('children.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
+    approved_at = db.Column(db.DateTime, default=datetime.utcnow)
+    approved_by = db.Column(db.Integer, db.ForeignKey('parents.id'), nullable=False)
+    
+    # Relationships
+    book = db.relationship('Book', backref='approved_for', lazy=True)
+    parent = db.relationship('Parent', backref='approved_books', lazy=True)
+    
+    __table_args__ = (
+        db.UniqueConstraint('child_id', 'book_id', name='unique_child_book'),
+    )
+    
+    def __repr__(self):
+        return f'<ApprovedBook book_id={self.book_id} for child_id={self.child_id}>'
 
 
 class StoryQueue(db.Model):

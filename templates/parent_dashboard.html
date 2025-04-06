@@ -30,8 +30,6 @@
             </nav>
         </div>
     </header>
-        </div>
-    </header>
     
     <main>
         <div class="container">
@@ -66,7 +64,6 @@
                                         <button class="btn outline-btn view-activity-btn" data-child-id="{{ child.id }}">View Activity</button>
                                         <a href="{{ url_for('chatgpt.parent_chat_history', child_id=child.id) }}" class="btn outline-btn">Chat History</a>
                                         <button class="btn edit-profile-btn" data-child-id="{{ child.id }}">Edit Profile</button>
-                                        <button class="btn outline-btn reset-pin-btn" data-child-id="{{ child.id }}">Reset PIN</button>
                                         <button class="btn outline-btn reset-pin-btn" data-child-id="{{ child.id }}">Reset PIN</button>
                                     </div>
                                 </div>
@@ -133,918 +130,131 @@
                                         <li class="empty-message">No stories read yet</li>
                                     </ul>
                                 </div>
-                                <div class="favorites-column">
-                                    <h5>Top Games</h5>
-                                    <ul class="favorites-list" id="favorite-games">
-                                        <li class="empty-message">No games played yet</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Progress Tracking -->
-                    <div class="dashboard-card">
-                        <h4>Progress Tracking</h4>
-                        <div class="progress-tracking">
-                            <div class="progress-charts">
-                                <div class="chart-container">
-                                    <h5>Weekly Activity</h5>
-                                    <canvas id="weekly-activity-chart"></canvas>
-                                </div>
-                                <div class="chart-container">
-                                    <h5>Skill Development</h5>
-                                    <canvas id="skills-radar-chart"></canvas>
-                                </div>
-                            </div>
-                            <div class="achievement-badges">
-                                <h5>Recent Achievements</h5>
-                                <div class="badges-container" id="recent-badges">
-                                    <div class="empty-message">No badges earned yet</div>
-                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Control Center Section -->
-                <div class="dashboard-section" id="control-center-section">
-                    <h3 class="section-title">🔒 Control Center</h3>
+                <!-- Approved Books Management Section -->
+                <div class="dashboard-card approved-books-section">
+                    <h3>Manage Approved Books</h3>
+                    <p class="section-description">Control which stories your child can access in Story Mode. Only approved books will be visible to your child.</p>
                     
-                    <div class="dashboard-grid">
-                        <!-- Time Limits -->
-                        <div class="dashboard-card">
-                            <h4>Time Limits</h4>
-                            <div class="time-limits-controls">
-                                <div class="time-limit-item">
-                                    <label for="daily-time-limit">Daily Usage Limit</label>
-                                    <div class="time-limit-slider-container">
-                                        <input type="range" id="daily-time-limit" min="15" max="180" step="15" value="60">
-                                        <span class="time-value" id="daily-time-value">60 mins</span>
-                                    </div>
-                                </div>
-                                <div class="time-limit-item">
-                                    <label for="weekly-time-limit">Weekly Usage Limit</label>
-                                    <div class="time-limit-slider-container">
-                                        <input type="range" id="weekly-time-limit" min="60" max="840" step="30" value="420">
-                                        <span class="time-value" id="weekly-time-value">7 hours</span>
-                                    </div>
-                                </div>
-                                <div class="time-limit-schedule">
-                                    <h5>Schedule Access Hours</h5>
-                                    <div class="schedule-inputs">
-                                        <div class="schedule-input">
-                                            <label for="access-start-time">Start Time</label>
-                                            <input type="time" id="access-start-time" value="08:00">
-                                        </div>
-                                        <div class="schedule-input">
-                                            <label for="access-end-time">End Time</label>
-                                            <input type="time" id="access-end-time" value="20:00">
-                                        </div>
-                                    </div>
-                                </div>
-                                <button class="btn save-time-limits-btn">Save Time Limits</button>
-                            </div>
-                        </div>
+                    <div class="approved-books-controls">
+                        <select id="approve-books-child-select" class="child-select">
+                            <option value="">Select a child</option>
+                            {% for child in children %}
+                                <option value="{{ child.id }}">{{ child.display_name }}</option>
+                            {% endfor %}
+                        </select>
                         
-                        <!-- Content Controls -->
-                        <div class="dashboard-card">
-                            <h4>Content Controls</h4>
-                            <div class="content-controls">
-                                <div class="toggle-controls">
-                                    <div class="toggle-item">
-                                        <label for="external-games-toggle">Allow External Games</label>
-                                        <label class="switch">
-                                            <input type="checkbox" id="external-games-toggle" checked>
-                                            <span class="slider round"></span>
-                                        </label>
-                                    </div>
-                                    <div class="toggle-item">
-                                        <label for="audio-narration-toggle">Enable Audio Narration</label>
-                                        <label class="switch">
-                                            <input type="checkbox" id="audio-narration-toggle" checked>
-                                            <span class="slider round"></span>
-                                        </label>
-                                    </div>
-                                    <div class="toggle-item">
-                                        <label for="background-music-toggle">Background Music</label>
-                                        <label class="switch">
-                                            <input type="checkbox" id="background-music-toggle" checked>
-                                            <span class="slider round"></span>
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <div class="age-filter-control">
-                                    <label for="content-age-filter">Content Age Filter</label>
-                                    <div class="age-filter-selector">
-                                        <select id="content-age-filter">
-                                            <option value="3">Age 3</option>
-                                            <option value="4" selected>Age 4</option>
-                                            <option value="5">Age 5</option>
-                                            <option value="6">Age 6+</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                
-                                <div class="story-theme-filters">
-                                    <h5>Story Theme Filters</h5>
-                                    <div class="theme-checkboxes">
-                                        <div class="theme-checkbox">
-                                            <input type="checkbox" id="theme-friendship" checked>
-                                            <label for="theme-friendship">Friendship</label>
-                                        </div>
-                                        <div class="theme-checkbox">
-                                            <input type="checkbox" id="theme-kindness" checked>
-                                            <label for="theme-kindness">Kindness</label>
-                                        </div>
-                                        <div class="theme-checkbox">
-                                            <input type="checkbox" id="theme-adventure" checked>
-                                            <label for="theme-adventure">Adventure</label>
-                                        </div>
-                                        <div class="theme-checkbox">
-                                            <input type="checkbox" id="theme-learning" checked>
-                                            <label for="theme-learning">Learning</label>
-                                        </div>
-                                        <div class="theme-checkbox">
-                                            <input type="checkbox" id="theme-problem-solving" checked>
-                                            <label for="theme-problem-solving">Problem Solving</label>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <button class="btn save-content-controls-btn">Save Content Controls</button>
-                            </div>
+                        <select id="book-age-filter" class="age-filter">
+                            <option value="all">All Age Groups</option>
+                            {% for age_group in age_groups %}
+                                <option value="{{ age_group.id }}">{{ age_group.name }} ({{ age_group.min_age }}-{{ age_group.max_age }} years)</option>
+                            {% endfor %}
+                        </select>
+                        
+                        <button id="approve-selected-books" class="approve">Approve Selected</button>
+                        <button id="unapprove-selected-books" class="unapprove">Remove Approval</button>
+                    </div>
+                    
+                    <div class="available-books-container" style="display: none;">
+                        <div class="books-grid">
+                            <!-- Books will be loaded here via JavaScript -->
                         </div>
                     </div>
-                </div>
-                
-                <!-- Customization Tools Section -->
-                <div class="dashboard-section" id="customization-section">
-                    <h3 class="section-title">🛠️ Customization Tools</h3>
                     
-                    <div class="dashboard-card">
-                        <h4>Story & Game Customization</h4>
-                        <div class="customization-tools">
-                            <!-- Story Queue Builder -->
-                            <div class="story-queue-builder">
-                                <h5>Custom Story Queue</h5>
-                                <p class="tool-description">Create a reading playlist for your child</p>
-                                
-                                <div class="story-queue-container">
-                                    <div class="available-stories">
-                                        <h6>Available Stories</h6>
-                                        <div class="story-list" id="available-stories-list">
-                                            <div class="story-item" draggable="true" data-story-id="little_fox">The Little Fox</div>
-                                            <div class="story-item" draggable="true" data-story-id="brown_bear">Brown Bear, Brown Bear</div>
-                                            <div class="story-item" draggable="true" data-story-id="hungry_caterpillar">The Hungry Caterpillar</div>
-                                            <div class="story-item" draggable="true" data-story-id="goldilocks">Goldilocks</div>
-                                            <div class="story-item" draggable="true" data-story-id="three_little_pigs">Three Little Pigs</div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="queue-stories">
-                                        <h6>Story Queue</h6>
-                                        <div class="story-queue" id="story-queue-list">
-                                            <div class="empty-queue-message">Drag stories here to add to queue</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <button class="btn save-story-queue-btn">Save Story Queue</button>
-                            </div>
-                            
-                            <!-- Voice & Sound Settings -->
-                            <div class="voice-settings">
-                                <h5>Voice & Sound Settings</h5>
-                                <div class="voice-settings-controls">
-                                    <div class="voice-setting-item">
-                                        <label for="narrator-voice-select">Narrator Voice</label>
-                                        <select id="narrator-voice-select">
-                                            <option value="friendly">Friendly Voice</option>
-                                            <option value="calming">Calming Voice</option>
-                                            <option value="excited">Excited Voice</option>
-                                            <option value="character">Character Voices</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="voice-setting-item">
-                                        <label for="reading-speed">Reading Speed</label>
-                                        <div class="slider-container">
-                                            <input type="range" id="reading-speed" min="0.5" max="1.5" step="0.1" value="1.0">
-                                            <span class="slider-value" id="reading-speed-value">Normal (1.0x)</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="voice-setting-item">
-                                        <label for="sound-effects-volume">Sound Effects Volume</label>
-                                        <div class="slider-container">
-                                            <input type="range" id="sound-effects-volume" min="0" max="100" step="10" value="80">
-                                            <span class="slider-value" id="sound-effects-volume-value">80%</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <button class="btn save-voice-settings-btn">Save Voice Settings</button>
-                            </div>
-                            
-                            <!-- Rewards Settings -->
-                            <div class="rewards-settings">
-                                <h5>Rewards Settings</h5>
-                                <div class="rewards-settings-controls">
-                                    <div class="rewards-setting-item">
-                                        <label for="stars-per-story">Stars Per Story</label>
-                                        <select id="stars-per-story">
-                                            <option value="1">1 Star</option>
-                                            <option value="2" selected>2 Stars</option>
-                                            <option value="3">3 Stars</option>
-                                            <option value="5">5 Stars</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="rewards-setting-item">
-                                        <label for="stars-per-game">Stars Per Game</label>
-                                        <select id="stars-per-game">
-                                            <option value="1">1 Star</option>
-                                            <option value="3" selected>3 Stars</option>
-                                            <option value="5">5 Stars</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="rewards-setting-item">
-                                        <label for="star-milestone">Star Milestone Rewards</label>
-                                        <div class="milestone-container">
-                                            <div class="milestone-item">
-                                                <span class="milestone-count">10 ⭐</span>
-                                                <input type="text" class="milestone-reward" value="Special badge" placeholder="Reward">
-                                            </div>
-                                            <div class="milestone-item">
-                                                <span class="milestone-count">25 ⭐</span>
-                                                <input type="text" class="milestone-reward" value="New avatar" placeholder="Reward">
-                                            </div>
-                                            <div class="milestone-item">
-                                                <span class="milestone-count">50 ⭐</span>
-                                                <input type="text" class="milestone-reward" value="Unlock special game" placeholder="Reward">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <button class="btn save-rewards-settings-btn">Save Rewards Settings</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Learning Goals Section -->
-                <div class="dashboard-section" id="learning-goals-section">
-                    <h3 class="section-title">🧠 Learning Goals</h3>
-                    
-                    <div class="dashboard-card">
-                        <h4>Weekly Learning Goals</h4>
-                        <div class="learning-goals">
-                            <div class="current-goals">
-                                <h5>Current Goals</h5>
-                                <div class="goals-list" id="current-goals-list">
-                                    <div class="goal-item">
-                                        <div class="goal-checkbox">
-                                            <input type="checkbox" id="goal-1" disabled>
-                                            <label for="goal-1"></label>
-                                        </div>
-                                        <div class="goal-content">
-                                            <span class="goal-text">Read 3 new stories</span>
-                                            <span class="goal-progress">0/3 completed</span>
-                                        </div>
-                                        <button class="remove-goal-btn">×</button>
-                                    </div>
-                                    <div class="goal-item">
-                                        <div class="goal-checkbox">
-                                            <input type="checkbox" id="goal-2" disabled>
-                                            <label for="goal-2"></label>
-                                        </div>
-                                        <div class="goal-content">
-                                            <span class="goal-text">Play 2 counting games</span>
-                                            <span class="goal-progress">0/2 completed</span>
-                                        </div>
-                                        <button class="remove-goal-btn">×</button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="add-goal">
-                                <h5>Add New Goal</h5>
-                                <div class="add-goal-form">
-                                    <div class="goal-type-selector">
-                                        <select id="goal-type">
-                                            <option value="story">Read Stories</option>
-                                            <option value="game">Play Games</option>
-                                            <option value="badge">Earn Badges</option>
-                                            <option value="custom">Custom Goal</option>
-                                        </select>
-                                    </div>
-                                    <div class="goal-quantity">
-                                        <input type="number" id="goal-quantity" min="1" max="10" value="3">
-                                    </div>
-                                    <div class="goal-descriptor">
-                                        <select id="goal-descriptor">
-                                            <option value="any">Any Stories</option>
-                                            <option value="new">New Stories</option>
-                                            <option value="friendship">Friendship Stories</option>
-                                            <option value="educational">Educational Stories</option>
-                                        </select>
-                                    </div>
-                                    <button class="btn add-goal-btn">Add Goal</button>
-                                </div>
-                                <div class="custom-goal-input" style="display: none;">
-                                    <input type="text" id="custom-goal-text" placeholder="Enter custom goal...">
-                                    <button class="btn add-custom-goal-btn">Add</button>
-                                </div>
-                            </div>
-                            
-                            <div class="goal-notifications">
-                                <h5>Notifications</h5>
-                                <div class="notification-settings">
-                                    <div class="notification-toggle">
-                                        <label for="goal-notifications-toggle">Email notifications when goals are met</label>
-                                        <label class="switch">
-                                            <input type="checkbox" id="goal-notifications-toggle" checked>
-                                            <span class="slider round"></span>
-                                        </label>
-                                    </div>
-                                    <div class="notification-frequency">
-                                        <label for="notification-frequency">Progress Updates</label>
-                                        <select id="notification-frequency">
-                                            <option value="immediate">Immediately when completed</option>
-                                            <option value="daily" selected>Daily summary</option>
-                                            <option value="weekly">Weekly summary only</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <button class="btn save-notifications-btn">Save Notification Settings</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Report Cards Section -->
-                <div class="dashboard-section" id="report-cards-section">
-                    <h3 class="section-title">🧾 Report Cards</h3>
-                    
-                    <div class="dashboard-card">
-                        <h4>Weekly Progress Report</h4>
-                        <div class="report-card-preview">
-                            <div class="report-header">
-                                <h5>Weekly Report for <span id="report-child-name">Child</span></h5>
-                                <div class="report-date">Week of <span id="report-week-date">April 1 - April 7, 2025</span></div>
-                            </div>
-                            
-                            <div class="report-stats">
-                                <div class="report-stat-item">
-                                    <div class="stat-icon">📚</div>
-                                    <div class="stat-value"><span id="report-stories-read">0</span> stories read</div>
-                                </div>
-                                <div class="report-stat-item">
-                                    <div class="stat-icon">⏱️</div>
-                                    <div class="stat-value"><span id="report-time-spent">0</span> minutes spent</div>
-                                </div>
-                                <div class="report-stat-item">
-                                    <div class="stat-icon">🎮</div>
-                                    <div class="stat-value"><span id="report-games-played">0</span> games played</div>
-                                </div>
-                                <div class="report-stat-item">
-                                    <div class="stat-icon">⭐</div>
-                                    <div class="stat-value"><span id="report-stars-earned">0</span> stars earned</div>
-                                </div>
-                            </div>
-                            
-                            <div class="report-achievements">
-                                <h6>Achievements Unlocked</h6>
-                                <div class="report-badges" id="report-badges">
-                                    <div class="empty-message">No badges earned this week</div>
-                                </div>
-                            </div>
-                            
-                            <div class="report-skills">
-                                <h6>Skills Developed</h6>
-                                <div class="skills-progress">
-                                    <div class="skill-progress-item">
-                                        <label>Reading Recognition</label>
-                                        <div class="progress-bar-container">
-                                            <div class="progress-bar" style="width: 65%;"></div>
-                                        </div>
-                                        <span class="progress-value">65%</span>
-                                    </div>
-                                    <div class="skill-progress-item">
-                                        <label>Counting & Numbers</label>
-                                        <div class="progress-bar-container">
-                                            <div class="progress-bar" style="width: 40%;"></div>
-                                        </div>
-                                        <span class="progress-value">40%</span>
-                                    </div>
-                                    <div class="skill-progress-item">
-                                        <label>Problem Solving</label>
-                                        <div class="progress-bar-container">
-                                            <div class="progress-bar" style="width: 75%;"></div>
-                                        </div>
-                                        <span class="progress-value">75%</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="report-delivery">
-                                <h6>Report Delivery Settings</h6>
-                                <div class="delivery-options">
-                                    <div class="delivery-toggle">
-                                        <label for="email-report-toggle">Email Weekly Reports</label>
-                                        <label class="switch">
-                                            <input type="checkbox" id="email-report-toggle" checked>
-                                            <span class="slider round"></span>
-                                        </label>
-                                    </div>
-                                    <div class="delivery-day">
-                                        <label for="report-day">Delivery Day</label>
-                                        <select id="report-day">
-                                            <option value="sunday">Sunday</option>
-                                            <option value="monday" selected>Monday</option>
-                                            <option value="friday">Friday</option>
-                                        </select>
-                                    </div>
-                                    <button class="btn download-report-btn">Download Current Report</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Security & Setup Section -->
-                <div class="dashboard-section" id="security-section">
-                    <h3 class="section-title">🔐 Security & Setup</h3>
-                    
-                    <div class="dashboard-grid">
-                        <div class="dashboard-card">
-                            <h4>Account Security</h4>
-                            <div class="security-settings">
-                                <div class="security-item">
-                                    <h5>Parent Account PIN</h5>
-                                    <p>Set up a quick access PIN for parent settings</p>
-                                    <div class="pin-setup">
-                                        <input type="password" id="parent-pin" maxlength="4" placeholder="Enter 4-digit PIN">
-                                        <button class="btn save-pin-btn">Save PIN</button>
-                                    </div>
-                                </div>
-                                
-                                <div class="security-item">
-                                    <h5>Child Account Settings</h5>
-                                    <div class="child-security-toggle">
-                                        <label for="require-parent-auth-toggle">Require parent authentication for settings changes</label>
-                                        <label class="switch">
-                                            <input type="checkbox" id="require-parent-auth-toggle" checked>
-                                            <span class="slider round"></span>
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <div class="security-item">
-                                    <h5>Session Management</h5>
-                                    <div class="session-timeout">
-                                        <label for="session-timeout">Auto-logout after inactivity</label>
-                                        <select id="session-timeout">
-                                            <option value="15">15 minutes</option>
-                                            <option value="30" selected>30 minutes</option>
-                                            <option value="60">1 hour</option>
-                                            <option value="120">2 hours</option>
-                                            <option value="0">Never</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <button class="btn save-security-settings-btn">Save Security Settings</button>
-                        </div>
-                        
-                        <div class="dashboard-card">
-                            <h4>Device Pairing</h4>
-                            <div class="device-pairing">
-                                <div class="qr-pairing">
-                                    <h5>QR Code Pairing</h5>
-                                    <p>Scan this code on your child's device to link accounts</p>
-                                    <div class="qr-code-container">
-                                        <div class="qr-placeholder">
-                                            <div class="qr-code-icon">QR</div>
-                                            <button class="btn generate-qr-btn">Generate QR Code</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="code-pairing">
-                                    <h5>Pairing Code</h5>
-                                    <p>Or enter this code on your child's device</p>
-                                    <div class="pairing-code">
-                                        <span class="code-display" id="pairing-code-display">ABCD-1234</span>
-                                        <button class="btn refresh-code-btn">↻</button>
-                                    </div>
-                                </div>
-                                
-                                <div class="sync-settings">
-                                    <h5>Sync Settings</h5>
-                                    <div class="sync-toggle">
-                                        <label for="cloud-sync-toggle">Enable cloud syncing</label>
-                                        <label class="switch">
-                                            <input type="checkbox" id="cloud-sync-toggle" checked>
-                                            <span class="slider round"></span>
-                                        </label>
-                                    </div>
-                                    <div class="sync-frequency">
-                                        <label for="sync-frequency">Sync Frequency</label>
-                                        <select id="sync-frequency">
-                                            <option value="realtime">Real-time</option>
-                                            <option value="hourly" selected>Hourly</option>
-                                            <option value="daily">Daily</option>
-                                            <option value="manual">Manual only</option>
-                                        </select>
-                                    </div>
-                                    <button class="btn sync-now-btn">Sync Now</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- AI Assistant Chat Section -->
-                <div class="dashboard-section" id="assistant-section">
-                    <h3 class="section-title">🤖 AI Assistant</h3>
-                    
-                    <div class="dashboard-card">
-                        <h4>Parent Assistant</h4>
-                        <p class="assistant-description">
-                            Get advice, answer questions, and manage your child's learning journey with our AI assistant. 
-                            Ask about screen time limits, content recommendations, or help understanding your child's progress.
-                        </p>
-                        
-                        <div class="chat-container">
-                            <div id="chat-box">
-                                <div class="chat-messages">
-                                    <div class="message system">
-                                        Hello! I'm your Children's Castle assistant. How can I help you with your child's learning journey today?
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="chat-input">
-                                <input type="text" id="parent-question" placeholder="Ask a question about your child's learning or the app...">
-                                <button id="send-question" class="btn">Send</button>
-                            </div>
-                        </div>
-                        
-                        <div class="example-questions">
-                            <h5>Example questions you can ask:</h5>
-                            <ul>
-                                <li><a href="#" class="example-question">How do I limit screen time?</a></li>
-                                <li><a href="#" class="example-question">Can I see what stories my child read today?</a></li>
-                                <li><a href="#" class="example-question">How do I enable bedtime mode?</a></li>
-                                <li><a href="#" class="example-question">What activities help with language development?</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- AI Assistant Chat Section -->
-                <div class="dashboard-section" id="assistant-section">
-                    <h3 class="section-title">🤖 AI Assistant</h3>
-                    
-                    <div class="dashboard-card">
-                        <h4>Parent Assistant</h4>
-                        <p class="assistant-description">
-                            Get advice, answer questions, and manage your child's learning journey with our AI assistant. 
-                            Ask about screen time limits, content recommendations, or help understanding your child's progress.
-                        </p>
-                        
-                        <div class="chat-container">
-                            <div id="chat-box">
-                                <div class="chat-messages">
-                                    <div class="message system">
-                                        Hello! I'm your Children's Castle assistant. How can I help you with your child's learning journey today?
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="chat-input">
-                                <input type="text" id="parent-question" placeholder="Ask a question about your child's learning or the app...">
-                                <button id="send-question" class="btn">Send</button>
-                            </div>
-                        </div>
-                        
-                        <div class="example-questions">
-                            <h5>Example questions you can ask:</h5>
-                            <ul>
-                                <li><a href="#" class="example-question">How do I limit screen time?</a></li>
-                                <li><a href="#" class="example-question">Can I see what stories my child read today?</a></li>
-                                <li><a href="#" class="example-question">How do I enable bedtime mode?</a></li>
-                                <li><a href="#" class="example-question">What activities help with language development?</a></li>
-                            </ul>
-                        </div>
+                    <div class="no-child-selected">
+                        <p>Please select a child to manage their approved books.</p>
                     </div>
                 </div>
             </div>
         </div>
     </main>
     
-    <footer class="dashboard-footer">
-        <div class="container">
-            <p>&copy; 2025 Children's Castle. All rights reserved.</p>
+    <!-- Child Activity Modal -->
+    <div id="activity-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Child Activity</h2>
+            <div id="activity-content">
+                <!-- Activity content will be loaded here -->
+            </div>
         </div>
-    </footer>
+    </div>
     
-    <!-- Scripts -->
-    <script src="{{ url_for('static', filename='js/loading-animations.js') }}"></script>
+    <!-- Reset PIN Modal -->
+    <div id="reset-pin-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Reset Child PIN</h2>
+            <form id="reset-pin-form" action="{{ url_for('reset_child_pin') }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="child_id" id="reset-pin-child-id">
+                
+                <div class="form-group">
+                    <label for="new-pin">New 4-Digit PIN</label>
+                    <div class="password-field">
+                        <input type="password" id="new-pin" name="new_pin" maxlength="4" pattern="[0-9]{4}" required>
+                        <button type="button" class="toggle-password" data-target="new-pin">
+                            <span class="show-icon">👁️</span>
+                        </button>
+                    </div>
+                    <small>PIN must be exactly 4 digits</small>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn">Reset PIN</button>
+                    <button type="button" class="btn cancel-btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Edit Child Profile</h2>
+            <form id="edit-profile-form" action="{{ url_for('parent_edit_child') }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="child_id" id="edit-profile-child-id">
+                
+                <div class="form-group">
+                    <label for="edit-display-name">Display Name</label>
+                    <input type="text" id="edit-display-name" name="display_name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-age">Age</label>
+                    <input type="number" id="edit-age" name="age" min="1" max="12" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-birthday">Birthday</label>
+                    <input type="date" id="edit-birthday" name="birthday">
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-avatar">Avatar</label>
+                    <div class="avatar-selection">
+                        <div class="avatar-options">
+                            <!-- Avatar options will be loaded here -->
+                        </div>
+                    </div>
+                    <input type="hidden" id="edit-avatar" name="avatar" required>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn">Save Changes</button>
+                    <button type="button" class="btn cancel-btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <script src="{{ url_for('static', filename='js/parent-dashboard.js') }}"></script>
-    <script src="/static/js/parent_assistant.js"></script>
+    <script src="{{ url_for('static', filename='js/approved-books.js') }}"></script>
 </body>
 </html>
-
-<!-- Reset PIN Modal -->
-<div class="modal" id="reset-pin-modal">
-    <div class="modal-content">
-        <span class="close-modal">&times;</span>
-        <h3>Reset Child's PIN</h3>
-        
-        <form id="reset-pin-form" method="POST" action="{{ url_for('reset_child_pin') }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" id="reset-pin-child-id" name="child_id" value="">
-            
-            <p>Please enter a new 4-digit PIN for <span id="reset-pin-child-name">your child</span>:</p>
-            
-            <div class="pin-container">
-                <div class="pin-number-display" id="resetPinNumberDisplay"></div>
-                <div class="pin-display">
-                    <div class="pin-dot" id="resetDot1"></div>
-                    <div class="pin-dot" id="resetDot2"></div>
-                    <div class="pin-dot" id="resetDot3"></div>
-                    <div class="pin-dot" id="resetDot4"></div>
-                </div>
-                
-                <div class="pin-toggle">
-                    <label><input type="checkbox" id="resetShowPin" onchange="toggleResetPinVisibility()"> Show PIN</label>
-                </div>
-                
-                <div class="pin-pad">
-                    <button type="button" class="pin-button" onclick="addResetPin(1)">1</button>
-                    <button type="button" class="pin-button" onclick="addResetPin(2)">2</button>
-                    <button type="button" class="pin-button" onclick="addResetPin(3)">3</button>
-                    <button type="button" class="pin-button" onclick="addResetPin(4)">4</button>
-                    <button type="button" class="pin-button" onclick="addResetPin(5)">5</button>
-                    <button type="button" class="pin-button" onclick="addResetPin(6)">6</button>
-                    <button type="button" class="pin-button" onclick="addResetPin(7)">7</button>
-                    <button type="button" class="pin-button" onclick="addResetPin(8)">8</button>
-                    <button type="button" class="pin-button" onclick="addResetPin(9)">9</button>
-                    <button type="button" class="pin-button" style="visibility: hidden;"></button>
-                    <button type="button" class="pin-button" onclick="addResetPin(0)">0</button>
-                    <button type="button" class="pin-button" style="visibility: hidden;"></button>
-                </div>
-                
-                <div class="pin-actions">
-                    <span class="pin-clear" onclick="clearResetPin()">Clear PIN</span>
-                </div>
-                
-                <input type="hidden" id="reset-pin-value" name="new_pin" required>
-            </div>
-            
-            <div class="form-actions">
-                <button type="submit" class="btn" onclick="validateResetPinForm(event)">Reset PIN</button>
-                <button type="button" class="btn outline-btn" onclick="closeModal('reset-pin-modal')">Cancel</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<style>
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-    }
-    
-    .modal-content {
-        background-color: #fff;
-        margin: 10% auto;
-        padding: 25px;
-        border-radius: 10px;
-        width: 90%;
-        max-width: 500px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        position: relative;
-    }
-    
-    .close-modal {
-        position: absolute;
-        right: 15px;
-        top: 10px;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-        color: #888;
-    }
-    
-    .close-modal:hover {
-        color: #000;
-    }
-    
-    /* PIN styles */
-    .pin-number-display {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 40px;
-        font-size: 24px;
-        font-weight: bold;
-        color: #4a6da7;
-        margin-bottom: 10px;
-        visibility: hidden;
-    }
-    
-    .pin-number-display.visible {
-        visibility: visible;
-    }
-    
-    .pin-container {
-        margin: 15px 0;
-    }
-    
-    .pin-display {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 15px;
-    }
-    
-    .pin-dot {
-        width: 15px;
-        height: 15px;
-        border-radius: 50%;
-        background-color: #ddd;
-        margin: 0 8px;
-        transition: background-color 0.3s;
-    }
-    
-    .pin-dot.filled {
-        background-color: #4a6da7;
-    }
-    
-    .pin-pad {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        max-width: 240px;
-        margin: 0 auto;
-    }
-    
-    .pin-button {
-        background-color: #f0f0f0;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 12px;
-        font-size: 18px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    
-    .pin-button:hover {
-        background-color: #e0e0e0;
-    }
-    
-    .pin-button:active {
-        transform: scale(0.95);
-    }
-    
-    .pin-actions {
-        text-align: center;
-        margin-top: 10px;
-    }
-    
-    .pin-clear {
-        color: #4a6da7;
-        cursor: pointer;
-        font-size: 14px;
-    }
-    
-    .pin-clear:hover {
-        text-decoration: underline;
-    }
-    
-    .pin-toggle {
-        margin-top: 10px;
-        text-align: center;
-    }
-    
-    .pin-toggle label {
-        cursor: pointer;
-        color: #4a6da7;
-    }
-    
-    .pin-toggle label:hover {
-        text-decoration: underline;
-    }
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Reset PIN button click handlers
-    let resetPinButtons = document.querySelectorAll('.reset-pin-btn');
-    resetPinButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const childId = this.getAttribute('data-child-id');
-            const childCard = this.closest('.child-card');
-            const childName = childCard.querySelector('.child-info h3').textContent;
-            
-            document.getElementById('reset-pin-child-id').value = childId;
-            document.getElementById('reset-pin-child-name').textContent = childName;
-            
-            // Clear any previous PIN
-            currentResetPin = '';
-            updateResetPinDisplay();
-            
-            // Show the modal
-            document.getElementById('reset-pin-modal').style.display = 'block';
-        });
-    });
-    
-    // Close modal functionality
-    let closeButtons = document.querySelectorAll('.close-modal');
-    closeButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const modalId = this.closest('.modal').id;
-            closeModal(modalId);
-        });
-    });
-    
-    // Close modal when clicking outside the content
-    window.addEventListener('click', function(event) {
-        if (event.target.classList.contains('modal')) {
-            closeModal(event.target.id);
-        }
-    });
-});
-
-// Close modal function
-function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
-}
-
-// PIN reset functionality
-let currentResetPin = '';
-let showingResetPin = false;
-
-function addResetPin(number) {
-    if (currentResetPin.length < 4) {
-        currentResetPin += number;
-        updateResetPinDisplay();
-        
-        if (currentResetPin.length === 4) {
-            // Auto submit is disabled for reset PIN to prevent accidental submission
-        }
-    }
-}
-
-function clearResetPin() {
-    currentResetPin = '';
-    updateResetPinDisplay();
-}
-
-function updateResetPinDisplay() {
-    // Update dots
-    for (let i = 1; i <= 4; i++) {
-        const dot = document.getElementById(`resetDot${i}`);
-        dot.classList.toggle('filled', i <= currentResetPin.length);
-    }
-    
-    // Update pin number display
-    document.getElementById('resetPinNumberDisplay').textContent = currentResetPin;
-    
-    // Update hidden input
-    document.getElementById('reset-pin-value').value = currentResetPin;
-}
-
-function toggleResetPinVisibility() {
-    showingResetPin = document.getElementById('resetShowPin').checked;
-    const pinDisplay = document.getElementById('resetPinNumberDisplay');
-    
-    if (showingResetPin) {
-        pinDisplay.classList.add('visible');
-    } else {
-        pinDisplay.classList.remove('visible');
-    }
-}
-
-function validateResetPinForm(event) {
-    if (currentResetPin.length !== 4) {
-        event.preventDefault();
-        alert('Please enter a 4-digit PIN.');
-        return false;
-    }
-    
-    return true;
-}
-</script>

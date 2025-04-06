@@ -807,3 +807,178 @@ footer {
 #pin {
     display: none;
 }
+
+/* Approved Books Section Styles */
+.approved-books-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.approved-books-section h3 {
+  margin-bottom: 1rem;
+  color: #4A6FA5;
+}
+
+.approved-books-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.approved-books-controls select,
+.approved-books-controls button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+}
+
+.approved-books-controls select {
+  flex-grow: 1;
+  max-width: 300px;
+  border: 1px solid #ccc;
+}
+
+.approved-books-controls button {
+  background-color: #4A6FA5;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.approved-books-controls button:hover {
+  background-color: #3A5A8C;
+}
+
+.approved-books-controls button.unapprove {
+  background-color: #e74c3c;
+}
+
+.approved-books-controls button.unapprove:hover {
+  background-color: #c0392b;
+}
+
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.book-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background-color: #f9f9f9;
+  position: relative;
+}
+
+.book-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.book-card.approved {
+  border-color: #4CAF50;
+  background-color: #F1F8E9;
+}
+
+.book-selection {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+}
+
+.book-info {
+  padding: 1rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.book-info h4 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.book-description {
+  margin: 0 0 1rem 0;
+  color: #666;
+  flex-grow: 1;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.book-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.book-meta span {
+  background-color: #eee;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  color: #555;
+}
+
+.book-status {
+  margin-top: 0.5rem;
+}
+
+.approved-badge {
+  background-color: #4CAF50;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.not-approved-badge {
+  background-color: #F44336;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.loading-books,
+.empty-message,
+.error-message,
+.no-child-selected {
+  padding: 2rem;
+  text-align: center;
+  background-color: #f9f9f9;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+.loading-books {
+  color: #4A6FA5;
+}
+
+.error-message {
+  color: #F44336;
+}
+
+.empty-message {
+  color: #9E9E9E;
+}
+
+.book-select-checkbox {
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: pointer;
+}
