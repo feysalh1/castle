@@ -2056,7 +2056,7 @@ def admin_dashboard():
         'database_size': get_database_size(),
         'error_count_24h': Event.query.filter(
             Event.event_name == 'error',
-            Event.occurred_at >= datetime.now() - timedelta(hours=24)
+            Event.timestamp >= datetime.now() - timedelta(hours=24)
         ).count()
     }
     
@@ -2067,7 +2067,7 @@ def admin_dashboard():
     all_parents = Parent.query.order_by(Parent.email).all()
     
     # Get recent error events
-    recent_errors = Event.query.filter_by(event_name='error').order_by(Event.occurred_at.desc()).limit(10).all()
+    recent_errors = Event.query.filter_by(event_name='error').order_by(Event.timestamp.desc()).limit(10).all()
     
     return render_template(
         'admin_dashboard.html', 
