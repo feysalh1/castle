@@ -23,8 +23,13 @@
                 <a href="{{ url_for('parent_settings') }}">Settings</a>
                 <a href="{{ url_for('link_to_parent') }}">Link to Parent App</a>
                 <a href="#" id="report-card-link">Weekly Report</a>
+                {% if current_user.id == 1 %}
+                <a href="{{ url_for('admin_dashboard') }}" style="color: #ff7043;">Admin</a>
+                {% endif %}
                 <a href="{{ url_for('logout') }}">Sign Out</a>
             </nav>
+        </div>
+    </header>
         </div>
     </header>
     

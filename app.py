@@ -1975,3 +1975,90 @@ def api_record_emotional_feedback():
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
+
+# Admin routes
+@app.route('/admin/dashboard')
+@login_required
+def admin_dashboard():
+    """Admin dashboard to view app statistics and parent emails"""
+    if session.get('user_type') != 'parent' or current_user.id != 1:  # Assuming admin is the first parent account
+        flash('Access denied. Admin privileges required.', 'error')
+        return redirect(url_for('index'))
+    
+    # Get statistics
+    stats = {
+        'parent_count': Parent.query.count(),
+        'child_count': Child.query.count(),
+        'active_sessions_today': Session.query.filter(
+            Session.start_time >= datetime.combine(date.today(), datetime.min.time()),
+            Session.end_time.is_(None)
+        ).count(),
+        'total_stories_read': Progress.query.filter_by(content_type='story', completed=True).count(),
+        'new_parents_last_month': Parent.query.filter(
+            Parent.created_at >= datetime.now() - timedelta(days=30)
+        ).count(),
+        'new_children_last_month': Child.query.filter(
+            Child.created_at >= datetime.now() - timedelta(days=30)
+        ).count(),
+    }
+    
+    # Get recent parent registrations
+    recent_parents = Parent.query.order_by(Parent.created_at.desc()).limit(10).all()
+    
+    # Get all parents for email list
+    all_parents = Parent.query.order_by(Parent.email).all()
+    
+    return render_template(
+        'admin_dashboard.html', 
+        stats=stats,
+        recent_parents=recent_parents,
+        all_parents=all_parents
+    )
+
+@app.route('/admin/export-emails')
+@login_required
+def admin_export_emails():
+    """Export all parent emails as CSV"""
+    if session.get('user_type') != 'parent' or current_user.id != 1:  # Assuming admin is the first parent account
+        flash('Access denied. Admin privileges required.', 'error')
+        return redirect(url_for('index'))
+    
+    # Create CSV in memory
+    import csv
+    from io import StringIO
+    
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # Write header
+    writer.writerow(['Email', 'Username', 'First Name', 'Last Name', 'Registration Date'])
+    
+    # Write data
+    for parent in Parent.query.all():
+        writer.writerow([
+            parent.email,
+            parent.username,
+            parent.first_name or '',
+            parent.last_name or '',
+            parent.created_at.strftime('%Y-%m-%d')
+        ])
+    
+    # Prepare response
+    response_data = output.getvalue().encode('utf-8')
+    output.close()
+    
+    # Create in-memory file for download
+    mem_file = io.BytesIO()
+    mem_file.write(response_data)
+    mem_file.seek(0)
+    
+    # Get current date for filename
+    today = date.today().strftime('%Y-%m-%d')
+    
+    return send_file(
+        mem_file,
+        as_attachment=True,
+        download_name=f'childrens_castle_parent_emails_{today}.csv',
+        mimetype='text/csv'
+    )
+
