@@ -1,7 +1,8 @@
 import os
 import logging
 import json
-from datetime import datetime
+import re
+from datetime import datetime, timedelta
 from flask import Flask, render_template, redirect, url_for, flash, request, session, jsonify, send_file
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -15,6 +16,40 @@ from models import (
     db, Parent, Child, ParentSettings, Progress, Reward, Session,
     LearningGoal, StoryQueue, SkillProgress, WeeklyReport, DevicePairing
 )
+
+def detect_device_type(user_agent_string):
+    """
+    Detect device type based on User-Agent string
+    Returns 'mobile', 'tablet', or 'desktop'
+    """
+    if not user_agent_string:
+        return 'unknown'
+        
+    # Check for mobile
+    mobile_patterns = [
+        r'Android.*Mobile', 
+        r'iPhone', 
+        r'iPod', 
+        r'BlackBerry', 
+        r'Opera Mini', 
+        r'IEMobile'
+    ]
+    for pattern in mobile_patterns:
+        if re.search(pattern, user_agent_string, re.IGNORECASE):
+            return 'mobile'
+    
+    # Check for tablets
+    tablet_patterns = [
+        r'iPad', 
+        r'Android(?!.*Mobile)', 
+        r'Tablet'
+    ]
+    for pattern in tablet_patterns:
+        if re.search(pattern, user_agent_string, re.IGNORECASE):
+            return 'tablet'
+    
+    # Default to desktop
+    return 'desktop'
 
 # Import custom ElevenLabs voice generation module
 import generate_elevenlabs_audio
@@ -41,6 +76,7 @@ csrf.exempt('/api/save-story-queue')
 csrf.exempt('/api/generate-pairing-code')
 csrf.exempt('/api/generate-voice')
 csrf.exempt('/api/voices')
+csrf.exempt('/api/session-stats')
 
 # Configure database
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
@@ -162,8 +198,15 @@ def parent_login():
         login_user(parent, remember=remember)
         session['user_type'] = 'parent'
         
-        # Record login session
-        new_session = Session(user_type='parent', user_id=parent.id)
+        # Record login session with additional metadata
+        new_session = Session(
+            user_type='parent', 
+            user_id=parent.id,
+            ip_address=request.remote_addr,
+            user_agent=request.user_agent.string,
+            device_type=detect_device_type(request.user_agent.string)
+        )
+        new_session.record_activity('login')
         db.session.add(new_session)
         db.session.commit()
         
@@ -196,8 +239,15 @@ def child_login():
         login_user(child)
         session['user_type'] = 'child'
         
-        # Record login session
-        new_session = Session(user_type='child', user_id=child.id)
+        # Record login session with additional metadata
+        new_session = Session(
+            user_type='child', 
+            user_id=child.id,
+            ip_address=request.remote_addr,
+            user_agent=request.user_agent.string,
+            device_type=detect_device_type(request.user_agent.string)
+        )
+        new_session.record_activity('login')
         db.session.add(new_session)
         db.session.commit()
         
@@ -219,8 +269,8 @@ def logout():
         ).order_by(Session.start_time.desc()).first()
         
         if user_session:
-            user_session.end_time = datetime.utcnow()
-            user_session.duration = (user_session.end_time - user_session.start_time).total_seconds()
+            user_session.record_activity('logout')
+            user_session.close()  # This sets end_time and calculates duration
             db.session.commit()
     
     logout_user()
@@ -239,6 +289,17 @@ def parent_dashboard():
     
     # Get all children for this parent
     children = Child.query.filter_by(parent_id=current_user.id).all()
+    
+    # Record dashboard access in session activity log
+    user_session = Session.query.filter_by(
+        user_type='parent',
+        user_id=current_user.id,
+        end_time=None
+    ).order_by(Session.start_time.desc()).first()
+    
+    if user_session:
+        user_session.record_activity('view_dashboard')
+        db.session.commit()
     
     return render_template('parent_dashboard.html', children=children)
 
@@ -294,6 +355,17 @@ def child_dashboard():
     # Get child's progress and rewards
     progress = Progress.query.filter_by(child_id=current_user.id).all()
     rewards = Reward.query.filter_by(child_id=current_user.id).all()
+    
+    # Record dashboard access in session activity log
+    user_session = Session.query.filter_by(
+        user_type='child',
+        user_id=current_user.id,
+        end_time=None
+    ).order_by(Session.start_time.desc()).first()
+    
+    if user_session:
+        user_session.record_activity('view_dashboard')
+        db.session.commit()
     
     return render_template('child_dashboard.html', progress=progress, rewards=rewards)
 
@@ -383,6 +455,26 @@ def parent_settings():
         
         if request.form.get('sync_frequency'):
             settings.sync_frequency = request.form.get('sync_frequency')
+        
+        # Record settings update in session activity log
+        user_session = Session.query.filter_by(
+            user_type='parent',
+            user_id=current_user.id,
+            end_time=None
+        ).order_by(Session.start_time.desc()).first()
+        
+        if user_session:
+            settings_changed = []
+            if request.form.get('allow_external_games') == 'on' != settings.allow_external_games:
+                settings_changed.append('allow_external_games')
+            if int(request.form.get('max_daily_playtime', 60)) != settings.max_daily_playtime:
+                settings_changed.append('max_daily_playtime')
+            if int(request.form.get('content_age_filter', 4)) != settings.content_age_filter:
+                settings_changed.append('content_age_filter')
+            
+            user_session.record_activity('update_settings', None, {
+                'settings_changed': settings_changed
+            })
         
         db.session.commit()
         flash('Settings updated successfully', 'success')
@@ -647,6 +739,82 @@ def generate_pairing_code():
         'expires_at': expires_at.isoformat()
     })
 
+@app.route('/link-to-parent', methods=['GET'])
+@login_required
+def link_to_parent():
+    """Display the link to parent page with QR code"""
+    import qrcode
+    import io
+    import base64
+    from datetime import timedelta
+    
+    # Check if there's an existing active pairing code for the user
+    if session.get('user_type') == 'parent':
+        pairing = DevicePairing.query.filter_by(
+            parent_id=current_user.id,
+            is_active=True
+        ).order_by(DevicePairing.created_at.desc()).first()
+    else:
+        # For child users, find their parent's pairing code
+        child = Child.query.get(current_user.id)
+        pairing = DevicePairing.query.filter_by(
+            parent_id=child.parent_id,
+            is_active=True
+        ).order_by(DevicePairing.created_at.desc()).first()
+    
+    # Generate a new code if none exists or if it's expired
+    if not pairing or (pairing.expires_at and pairing.expires_at < datetime.utcnow()):
+        # Generate random code
+        import random
+        import string
+        letters = ''.join(random.choices(string.ascii_uppercase.replace('O', '').replace('I', ''), k=4))
+        numbers = ''.join(random.choices(string.digits.replace('0', '').replace('1', ''), k=4))
+        pairing_code = f"{letters}-{numbers}"
+        
+        # Set expiration to 24 hours from now
+        expires_at = datetime.utcnow() + timedelta(hours=24)
+        
+        # Get parent ID
+        if session.get('user_type') == 'parent':
+            parent_id = current_user.id
+        else:
+            child = Child.query.get(current_user.id)
+            parent_id = child.parent_id
+        
+        # Create pairing record
+        pairing = DevicePairing(
+            parent_id=parent_id,
+            pairing_code=pairing_code,
+            device_type='companion-app',
+            device_name='Companion App',
+            expires_at=expires_at
+        )
+        
+        db.session.add(pairing)
+        db.session.commit()
+    
+    # Generate QR code containing the pairing code
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(pairing.pairing_code)
+    qr.make(fit=True)
+    
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    # Convert PIL image to base64
+    buffered = io.BytesIO()
+    img.save(buffered)
+    img_str = base64.b64encode(buffered.getvalue()).decode()
+    
+    return render_template('link_to_parent.html', 
+                          pairing_code=pairing.pairing_code, 
+                          qr_code=img_str, 
+                          expires_at=pairing.expires_at)
+
 
 @app.route('/api/generate-voice', methods=['POST'])
 @login_required
@@ -728,6 +896,17 @@ def story_mode():
     # Fetch stories that are appropriate for this child's age
     # In a full implementation, this would filter stories by age appropriateness
     
+    # Record story mode access in session activity log
+    user_session = Session.query.filter_by(
+        user_type='child',
+        user_id=current_user.id,
+        end_time=None
+    ).order_by(Session.start_time.desc()).first()
+    
+    if user_session:
+        user_session.record_activity('view_story_mode')
+        db.session.commit()
+    
     return render_template('story_mode.html')
 
 
@@ -743,6 +922,17 @@ def game_mode():
     parent = Parent.query.get(current_user.parent_id)
     settings = ParentSettings.query.filter_by(parent_id=parent.id).first()
     
+    # Record game mode access in session activity log
+    user_session = Session.query.filter_by(
+        user_type='child',
+        user_id=current_user.id,
+        end_time=None
+    ).order_by(Session.start_time.desc()).first()
+    
+    if user_session:
+        user_session.record_activity('view_game_mode')
+        db.session.commit()
+    
     return render_template('game_mode.html', settings=settings)
 
 
@@ -757,6 +947,17 @@ def rewards():
     # Get child's rewards from database
     child_rewards = Reward.query.filter_by(child_id=current_user.id).all()
     
+    # Record rewards page access in session activity log
+    user_session = Session.query.filter_by(
+        user_type='child',
+        user_id=current_user.id,
+        end_time=None
+    ).order_by(Session.start_time.desc()).first()
+    
+    if user_session:
+        user_session.record_activity('view_rewards')
+        db.session.commit()
+    
     return render_template('rewards.html', rewards=child_rewards)
 
 
@@ -770,8 +971,12 @@ def track_progress():
     data = request.json
     content_type = data.get('content_type')  # 'story' or 'game'
     content_id = data.get('content_id')
+    content_title = data.get('content_title', '')
     completed = data.get('completed', False)
     time_spent = data.get('time_spent', 0)  # in seconds
+    pages_read = data.get('pages_read', 0)  # for stories
+    score = data.get('score')  # for games
+    difficulty_level = data.get('difficulty_level')  # 'easy', 'medium', 'hard'
     
     # Find existing progress or create new
     progress = Progress.query.filter_by(
@@ -784,40 +989,101 @@ def track_progress():
         progress.last_accessed = datetime.utcnow()
         progress.time_spent += time_spent
         
+        if pages_read > progress.pages_read:
+            progress.pages_read = pages_read
+            
+        if score is not None and (progress.score is None or score > progress.score):
+            progress.score = score
+            
+        if difficulty_level and not progress.difficulty_level:
+            progress.difficulty_level = difficulty_level
+            
+        if content_title and not progress.content_title:
+            progress.content_title = content_title
+        
         if completed and not progress.completed:
             progress.completed = True
             progress.completion_count += 1
+            progress.add_completion_timestamp()
             
             # Add a reward if this is the first completion
             if progress.completion_count == 1:
+                achievement_level = 'bronze'  # Default level
+                
+                # Determine level based on completion speed, score, etc.
+                if content_type == 'game' and score is not None:
+                    if score > 90:
+                        achievement_level = 'gold'
+                    elif score > 70:
+                        achievement_level = 'silver'
+                
                 if content_type == 'story':
                     reward = Reward(
                         child_id=current_user.id,
                         badge_id=f"story_{content_id}",
-                        badge_name=f"Story Master: {content_id.title()}",
-                        badge_description=f"Completed the {content_id.title()} story",
-                        badge_image=f"badges/story_{content_id}.png"
+                        badge_name=f"Story Master: {content_title or content_id.title()}",
+                        badge_description=f"Completed the {content_title or content_id.title()} story",
+                        badge_image=f"badges/story_{content_id}.png",
+                        source_type='story',
+                        source_id=content_id,
+                        achievement_level=achievement_level,
+                        points_value=2  # Default points for story completion
                     )
                 else:  # game
                     reward = Reward(
                         child_id=current_user.id,
                         badge_id=f"game_{content_id}",
-                        badge_name=f"Game Master: {content_id.title()}",
-                        badge_description=f"Completed the {content_id.title()} game",
-                        badge_image=f"badges/game_{content_id}.png"
+                        badge_name=f"Game Master: {content_title or content_id.title()}",
+                        badge_description=f"Completed the {content_title or content_id.title()} game",
+                        badge_image=f"badges/game_{content_id}.png",
+                        source_type='game',
+                        source_id=content_id,
+                        achievement_level=achievement_level,
+                        points_value=3  # Default points for game completion
                     )
                 
                 db.session.add(reward)
+        elif completed:
+            progress.completion_count += 1
+            progress.add_completion_timestamp()
     else:
         progress = Progress(
             child_id=current_user.id,
             content_type=content_type,
             content_id=content_id,
+            content_title=content_title,
             completed=completed,
             completion_count=1 if completed else 0,
-            time_spent=time_spent
+            time_spent=time_spent,
+            pages_read=pages_read,
+            score=score,
+            difficulty_level=difficulty_level
         )
+        
+        if completed:
+            progress.add_completion_timestamp()
+            
         db.session.add(progress)
+    
+    # Record this activity in the current session
+    user_session = Session.query.filter_by(
+        user_type='child',
+        user_id=current_user.id,
+        end_time=None
+    ).order_by(Session.start_time.desc()).first()
+    
+    if user_session:
+        activity_type = f"{content_type}_{'completion' if completed else 'progress'}"
+        details = {
+            'content_title': content_title or content_id,
+            'time_spent': time_spent
+        }
+        if content_type == 'game' and score is not None:
+            details['score'] = score
+        elif content_type == 'story' and pages_read > 0:
+            details['pages_read'] = pages_read
+            
+        user_session.record_activity(activity_type, content_id, details)
     
     db.session.commit()
     
@@ -825,9 +1091,13 @@ def track_progress():
         'success': True, 
         'progress': {
             'content_id': progress.content_id,
+            'content_title': progress.content_title,
             'completed': progress.completed,
             'completion_count': progress.completion_count,
-            'time_spent': progress.time_spent
+            'time_spent': progress.time_spent,
+            'pages_read': progress.pages_read,
+            'score': progress.score,
+            'difficulty_level': progress.difficulty_level
         }
     })
 
@@ -840,29 +1110,51 @@ def get_progress():
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     content_type = request.args.get('content_type')
+    content_id = request.args.get('content_id')  # Optional filter for specific content
+    
+    query = Progress.query.filter_by(child_id=current_user.id)
     
     if content_type:
-        progress_items = Progress.query.filter_by(
-            child_id=current_user.id,
-            content_type=content_type
-        ).all()
-    else:
-        progress_items = Progress.query.filter_by(
-            child_id=current_user.id
-        ).all()
+        query = query.filter_by(content_type=content_type)
+        
+    if content_id:
+        query = query.filter_by(content_id=content_id)
+        
+    progress_items = query.all()
     
     progress_data = [{
         'content_type': item.content_type,
         'content_id': item.content_id,
+        'content_title': item.content_title,
         'completed': item.completed,
         'completion_count': item.completion_count,
         'last_accessed': item.last_accessed.isoformat(),
-        'time_spent': item.time_spent
+        'first_accessed': item.first_accessed.isoformat() if item.first_accessed else None,
+        'time_spent': item.time_spent,
+        'pages_read': item.pages_read,
+        'score': item.score,
+        'difficulty_level': item.difficulty_level
     } for item in progress_items]
+    
+    # Calculate statistics
+    total_time = sum(item.time_spent for item in progress_items)
+    completed_count = sum(1 for item in progress_items if item.completed)
+    
+    stories_read = sum(1 for item in progress_items 
+                       if item.content_type == 'story' and item.completed)
+    games_played = sum(1 for item in progress_items 
+                       if item.content_type == 'game' and item.completed)
     
     return jsonify({
         'success': True,
-        'progress': progress_data
+        'progress': progress_data,
+        'stats': {
+            'total_items': len(progress_items),
+            'completed_items': completed_count,
+            'total_time_spent': total_time,
+            'stories_read': stories_read,
+            'games_played': games_played
+        }
     })
 
 
@@ -873,20 +1165,152 @@ def get_rewards():
     if session.get('user_type') != 'child':
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
-    rewards = Reward.query.filter_by(child_id=current_user.id).all()
+    # Optional filters
+    source_type = request.args.get('source_type')  # 'story', 'game', 'achievement', etc.
+    achievement_level = request.args.get('achievement_level')  # 'bronze', 'silver', 'gold', etc.
+    
+    query = Reward.query.filter_by(child_id=current_user.id)
+    
+    if source_type:
+        query = query.filter_by(source_type=source_type)
+        
+    if achievement_level:
+        query = query.filter_by(achievement_level=achievement_level)
+    
+    # If showcase is specified, prioritize showcase rewards
+    if request.args.get('showcase') == 'true':
+        rewards = query.order_by(Reward.showcase_priority.desc(), Reward.earned_at.desc()).all()
+    else:
+        rewards = query.order_by(Reward.earned_at.desc()).all()
     
     rewards_data = [{
         'badge_id': reward.badge_id,
         'badge_name': reward.badge_name,
         'badge_description': reward.badge_description,
         'badge_image': reward.badge_image,
-        'earned_at': reward.earned_at.isoformat()
+        'earned_at': reward.earned_at.isoformat(),
+        'source_type': reward.source_type,
+        'source_id': reward.source_id,
+        'achievement_level': reward.achievement_level,
+        'points_value': reward.points_value,
+        'showcase_priority': reward.showcase_priority
     } for reward in rewards]
+    
+    # Calculate statistics by achievement level
+    achievement_stats = {}
+    for level in ['bronze', 'silver', 'gold', 'platinum', 'diamond']:
+        level_count = sum(1 for r in rewards if r.achievement_level == level)
+        if level_count > 0:
+            achievement_stats[level] = level_count
+    
+    # Calculate total points/stars earned
+    total_points = sum(r.points_value for r in rewards if r.points_value)
     
     return jsonify({
         'success': True,
         'rewards': rewards_data,
-        'total_rewards': len(rewards_data)
+        'total_rewards': len(rewards_data),
+        'achievement_stats': achievement_stats,
+        'total_points': total_points
+    })
+
+
+@app.route('/api/session-stats', methods=['GET'])
+@login_required
+def session_stats():
+    """API endpoint to get session statistics"""
+    if session.get('user_type') != 'parent':
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+        
+    # For parent, get their own sessions and their children's sessions
+    parent_sessions = Session.query.filter_by(
+        user_type='parent',
+        user_id=current_user.id
+    ).all()
+    
+    children = Child.query.filter_by(parent_id=current_user.id).all()
+    child_ids = [child.id for child in children]
+    
+    child_sessions = Session.query.filter(
+        Session.user_type == 'child',
+        Session.user_id.in_(child_ids)
+    ).all()
+    
+    # Calculate statistics
+    today = datetime.now().date()
+    this_week_start = today - timedelta(days=today.weekday())
+    this_month_start = datetime(today.year, today.month, 1).date()
+    
+    # Parent stats
+    parent_stats = {
+        'total_sessions': len(parent_sessions),
+        'total_time': sum(s.duration or 0 for s in parent_sessions) / 3600,  # hours
+        'sessions_today': sum(1 for s in parent_sessions if s.start_time.date() == today),
+        'sessions_this_week': sum(1 for s in parent_sessions if s.start_time.date() >= this_week_start),
+        'sessions_this_month': sum(1 for s in parent_sessions if s.start_time.date() >= this_month_start),
+        'device_breakdown': {}
+    }
+    
+    # Count sessions by device type
+    for s in parent_sessions:
+        device = s.device_type or 'unknown'
+        parent_stats['device_breakdown'][device] = parent_stats['device_breakdown'].get(device, 0) + 1
+    
+    # Child stats (combined and individual)
+    child_stats = {
+        'total': {
+            'total_sessions': len(child_sessions),
+            'total_time': sum(s.duration or 0 for s in child_sessions) / 3600,  # hours
+            'sessions_today': sum(1 for s in child_sessions if s.start_time.date() == today),
+            'sessions_this_week': sum(1 for s in child_sessions if s.start_time.date() >= this_week_start),
+            'sessions_this_month': sum(1 for s in child_sessions if s.start_time.date() >= this_month_start),
+        },
+        'by_child': {}
+    }
+    
+    # Calculate per-child stats
+    for child in children:
+        child_data = {
+            'id': child.id,
+            'name': child.display_name,
+            'sessions': []
+        }
+        
+        child_session_list = [s for s in child_sessions if s.user_id == child.id]
+        
+        # Include recent sessions
+        for s in sorted(child_session_list, key=lambda x: x.start_time, reverse=True)[:10]:
+            session_data = {
+                'start_time': s.start_time.isoformat(),
+                'end_time': s.end_time.isoformat() if s.end_time else None,
+                'duration': s.duration / 60 if s.duration else None,  # minutes
+                'device_type': s.device_type
+            }
+            
+            # Parse activities
+            if s.activities:
+                import json
+                try:
+                    activities = json.loads(s.activities)
+                    session_data['activities'] = activities
+                except:
+                    session_data['activities'] = []
+            else:
+                session_data['activities'] = []
+                
+            child_data['sessions'].append(session_data)
+            
+        # Calculate totals
+        child_data['total_sessions'] = len(child_session_list)
+        child_data['total_time'] = sum(s.duration or 0 for s in child_session_list) / 3600  # hours
+        child_data['sessions_today'] = sum(1 for s in child_session_list if s.start_time.date() == today)
+        
+        child_stats['by_child'][child.id] = child_data
+    
+    return jsonify({
+        'success': True,
+        'parent_stats': parent_stats,
+        'child_stats': child_stats
     })
 
 

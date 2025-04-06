@@ -150,14 +150,27 @@ class Progress(db.Model):
     child_id = db.Column(db.Integer, db.ForeignKey('children.id'), nullable=False)
     content_type = db.Column(db.String(64), nullable=False)  # 'story' or 'game'
     content_id = db.Column(db.String(64), nullable=False)
+    content_title = db.Column(db.String(128))  # Actual title of story or game
     completed = db.Column(db.Boolean, default=False)
     completion_count = db.Column(db.Integer, default=0)
     last_accessed = db.Column(db.DateTime, default=datetime.utcnow)
     time_spent = db.Column(db.Integer, default=0)  # seconds
+    first_accessed = db.Column(db.DateTime, default=datetime.utcnow)  # When first read/played
+    completion_history = db.Column(db.String(1024), default='[]')  # JSON array of completion timestamps
+    pages_read = db.Column(db.Integer, default=0)  # For stories: number of pages read
+    score = db.Column(db.Integer)  # For games: highest score achieved
+    difficulty_level = db.Column(db.String(32))  # 'easy', 'medium', 'hard'
     
     __table_args__ = (
         db.UniqueConstraint('child_id', 'content_type', 'content_id', name='unique_child_content'),
     )
+    
+    def add_completion_timestamp(self):
+        """Add current timestamp to completion history"""
+        import json
+        history = json.loads(self.completion_history)
+        history.append(datetime.utcnow().isoformat())
+        self.completion_history = json.dumps(history)
     
     def __repr__(self):
         return f'<Progress {self.content_type}:{self.content_id} for child_id {self.child_id}>'
@@ -174,6 +187,11 @@ class Reward(db.Model):
     badge_description = db.Column(db.String(256))
     badge_image = db.Column(db.String(256))
     earned_at = db.Column(db.DateTime, default=datetime.utcnow)
+    source_type = db.Column(db.String(32))  # 'story', 'game', 'achievement', 'milestone'
+    source_id = db.Column(db.String(64))  # ID of the source (story_id, game_id, etc.)
+    achievement_level = db.Column(db.String(32))  # 'bronze', 'silver', 'gold', 'platinum', 'diamond'
+    points_value = db.Column(db.Integer, default=1)  # Points/stars value of this reward
+    showcase_priority = db.Column(db.Integer, default=0)  # Higher values show up first in showcase
     
     __table_args__ = (
         db.UniqueConstraint('child_id', 'badge_id', name='unique_child_badge'),
@@ -290,6 +308,33 @@ class Session(db.Model):
     start_time = db.Column(db.DateTime, default=datetime.utcnow)
     end_time = db.Column(db.DateTime)
     duration = db.Column(db.Integer)  # seconds
+    ip_address = db.Column(db.String(45))  # Store IP address (IPv4 or IPv6)
+    user_agent = db.Column(db.String(255))  # Store browser/device info
+    device_type = db.Column(db.String(32))  # 'desktop', 'tablet', 'mobile'
+    activities = db.Column(db.String(1024), default='[]')  # JSON array of activity logs
+    
+    def record_activity(self, activity_type, content_id=None, details=None):
+        """Add activity to the session log"""
+        import json
+        activities = json.loads(self.activities)
+        
+        activity = {
+            'timestamp': datetime.utcnow().isoformat(),
+            'type': activity_type,  # 'login', 'story_view', 'game_play', 'reward_earned', etc.
+            'content_id': content_id,
+            'details': details or {}
+        }
+        
+        activities.append(activity)
+        self.activities = json.dumps(activities)
+    
+    def close(self):
+        """Close the session and calculate duration"""
+        if not self.end_time:
+            self.end_time = datetime.utcnow()
+            if self.start_time:
+                delta = self.end_time - self.start_time
+                self.duration = int(delta.total_seconds())
     
     def __repr__(self):
         return f'<Session {self.id} for {self.user_type} {self.user_id}>'
