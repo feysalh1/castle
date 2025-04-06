@@ -8,14 +8,14 @@
     --secondary-color: #f8c630;
     --secondary-light: #ffde76;
     --secondary-dark: #d6a100;
-    --background-color: #f9f7ff;
-    --text-color: #333333;
+    --background-color: #3a2a4a;
+    --text-color: #ffffff;
     --light-text: #ffffff;
     --success-color: #4CAF50;
     --warning-color: #FF9800;
     --error-color: #F44336;
     --border-radius: 10px;
-    --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     --transition-speed: 0.3s;
 }
 
@@ -107,7 +107,7 @@ main {
 
 .welcome h2 {
     font-size: 2.5rem;
-    color: var(--primary-color);
+    color: var(--secondary-color);
     margin-bottom: 15px;
 }
 
@@ -127,7 +127,7 @@ main {
 }
 
 .mode-card {
-    background-color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.9);
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
     padding: 20px;
@@ -148,13 +148,13 @@ main {
 }
 
 .mode-card h3 {
-    color: var(--primary-color);
+    color: var(--primary-dark);
     font-size: 1.8rem;
     margin-bottom: 10px;
 }
 
 .mode-card p {
-    color: var(--text-color);
+    color: #333333;
     margin-bottom: 20px;
 }
 
