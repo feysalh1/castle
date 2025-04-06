@@ -1,0 +1,641 @@
+{% extends "base.html" %}
+
+{% block title %}AI Assistant - Children's Castle{% endblock %}
+
+{% block styles %}
+<style>
+    .assistant-container {
+        width: 100%;
+        max-width: 800px;
+        margin: 20px auto;
+        border-radius: 16px;
+        overflow: hidden;
+        background: #f8f4ff;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .assistant-header {
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        color: white;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    .assistant-header img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin-right: 15px;
+        background: white;
+        padding: 5px;
+    }
+
+    .assistant-header h2 {
+        margin: 0;
+        font-size: 1.6rem;
+    }
+
+    .conversation-container {
+        height: 350px;
+        overflow-y: auto;
+        padding: 20px;
+        background: #f8f4ff url('/static/images/castle-bg-light.svg') no-repeat bottom right;
+        background-size: 200px;
+        background-opacity: 0.2;
+    }
+
+    .message {
+        margin-bottom: 16px;
+        max-width: 80%;
+        padding: 10px 16px;
+        border-radius: 18px;
+        position: relative;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .user-message {
+        background: #e1f5fe;
+        margin-left: auto;
+        border-bottom-right-radius: 4px;
+    }
+
+    .assistant-message {
+        background: #ffffff;
+        margin-right: auto;
+        border-bottom-left-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .message-form {
+        padding: 15px;
+        background: #fff;
+        border-top: 1px solid #eee;
+        display: flex;
+    }
+
+    .message-input {
+        flex: 1;
+        border: 2px solid #ddd;
+        border-radius: 24px;
+        padding: 10px 15px;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.3s;
+    }
+
+    .message-input:focus {
+        border-color: #6a11cb;
+    }
+
+    .send-button {
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        color: white;
+        border: none;
+        border-radius: 24px;
+        padding: 10px 20px;
+        margin-left: 10px;
+        cursor: pointer;
+        transition: transform 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .send-button:hover {
+        transform: scale(1.05);
+    }
+
+    .send-button svg {
+        width: 20px;
+        height: 20px;
+        margin-left: 5px;
+    }
+
+    .suggestions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+        padding: 0 15px 15px 15px;
+        background: #fff;
+    }
+
+    .suggestion-chip {
+        background: #f0e6ff;
+        border: none;
+        border-radius: 18px;
+        padding: 8px 15px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .suggestion-chip:hover {
+        background: #e1d4ff;
+    }
+
+    .thinking {
+        display: flex;
+        padding: 10px 16px;
+        margin-bottom: 16px;
+        background: #f1f1f1;
+        border-radius: 18px;
+        width: fit-content;
+        align-items: center;
+    }
+
+    .dot {
+        width: 8px;
+        height: 8px;
+        background: #888;
+        border-radius: 50%;
+        margin: 0 2px;
+        animation: bounce 1.5s infinite ease-in-out;
+    }
+
+    .dot:nth-child(1) { animation-delay: 0s; }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+
+    .story-container {
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        margin-top: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        display: none;
+    }
+
+    .story-title {
+        font-size: 1.8rem;
+        text-align: center;
+        margin-bottom: 15px;
+        color: #6a11cb;
+    }
+
+    .story-navigation {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+
+    .nav-button {
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 8px 16px;
+        cursor: pointer;
+        opacity: 0.9;
+        transition: opacity 0.2s;
+    }
+
+    .nav-button:hover {
+        opacity: 1;
+    }
+
+    .nav-button:disabled {
+        background: #cccccc;
+        cursor: not-allowed;
+    }
+
+    .story-question {
+        font-style: italic;
+        margin-top: 15px;
+        padding: 10px;
+        background: #f8f4ff;
+        border-left: 3px solid #6a11cb;
+    }
+
+    .page-indicator {
+        text-align: center;
+        margin: 15px 0 5px;
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .answer-area {
+        margin-top: 15px;
+    }
+
+    .restart-button {
+        display: block;
+        margin: 20px auto 0;
+        background: #ff7043;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 10px 20px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .restart-button:hover {
+        background: #f4511e;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .assistant-container {
+            margin: 10px;
+            width: calc(100% - 20px);
+        }
+
+        .conversation-container {
+            height: 300px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <div class="header-with-button">
+        <h1>AI Assistant</h1>
+        <a href="{{ url_for('child_dashboard') }}" class="back-button">Back to Dashboard</a>
+    </div>
+
+    <div class="assistant-container">
+        <div class="assistant-header">
+            <img src="/static/images/assistant-icon.svg" alt="AI Assistant">
+            <h2>Castle Buddy</h2>
+        </div>
+
+        <div class="conversation-container" id="conversation">
+            <div class="message assistant-message">
+                Hi {{ current_user.username }}! I'm Castle Buddy. What would you like to do today?
+            </div>
+        </div>
+
+        <form class="message-form" id="messageForm">
+            <input type="text" class="message-input" id="messageInput" placeholder="Type your message..." autocomplete="off">
+            <button type="submit" class="send-button">
+                Send
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+            </button>
+        </form>
+
+        <div class="suggestions">
+            <button class="suggestion-chip" data-text="Tell me a story about a dragon">Tell me a story</button>
+            <button class="suggestion-chip" data-text="What happens when it rains?">How does rain work?</button>
+            <button class="suggestion-chip" data-text="What do dinosaurs eat?">Dinosaur facts</button>
+            <button class="suggestion-chip" data-text="How many planets are there?">Space question</button>
+        </div>
+    </div>
+
+    <div class="story-container" id="storyContainer">
+        <h2 class="story-title" id="storyTitle">Our Adventure Story</h2>
+        <div id="storyContent"></div>
+        <div class="page-indicator" id="pageIndicator">Page 1 of 3</div>
+        <div class="story-navigation">
+            <button class="nav-button" id="prevPage" disabled>Previous</button>
+            <button class="nav-button" id="nextPage">Next</button>
+        </div>
+        <div class="answer-area" id="answerArea" style="display: none;">
+            <form id="questionForm">
+                <input type="text" class="message-input" id="questionInput" placeholder="Type your answer...">
+                <button type="submit" class="send-button" style="margin-top: 10px;">
+                    Answer
+                </button>
+            </form>
+        </div>
+        <button class="restart-button" id="restartButton" style="display: none;">Back to Assistant</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const conversation = document.getElementById('conversation');
+        const messageForm = document.getElementById('messageForm');
+        const messageInput = document.getElementById('messageInput');
+        const suggestionChips = document.querySelectorAll('.suggestion-chip');
+        const storyContainer = document.getElementById('storyContainer');
+        const storyTitle = document.getElementById('storyTitle');
+        const storyContent = document.getElementById('storyContent');
+        const prevPageBtn = document.getElementById('prevPage');
+        const nextPageBtn = document.getElementById('nextPage');
+        const pageIndicator = document.getElementById('pageIndicator');
+        const answerArea = document.getElementById('answerArea');
+        const questionForm = document.getElementById('questionForm');
+        const questionInput = document.getElementById('questionInput');
+        const restartButton = document.getElementById('restartButton');
+        
+        let currentStory = null;
+        let currentPage = 0;
+        
+        // Track interactions for analytics
+        function trackEvent(eventType, details = {}) {
+            fetch('/api/track-event', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    event_type: 'ai_assistant',
+                    event_name: eventType,
+                    event_data: details
+                })
+            }).catch(error => console.error('Error tracking event:', error));
+        }
+        
+        // Show thinking animation
+        function showThinking() {
+            const thinkingDiv = document.createElement('div');
+            thinkingDiv.className = 'thinking';
+            thinkingDiv.id = 'thinking';
+            
+            const dot1 = document.createElement('div');
+            const dot2 = document.createElement('div');
+            const dot3 = document.createElement('div');
+            dot1.className = dot2.className = dot3.className = 'dot';
+            
+            thinkingDiv.appendChild(dot1);
+            thinkingDiv.appendChild(dot2);
+            thinkingDiv.appendChild(dot3);
+            
+            conversation.appendChild(thinkingDiv);
+            conversation.scrollTop = conversation.scrollHeight;
+        }
+        
+        // Hide thinking animation
+        function hideThinking() {
+            const thinkingDiv = document.getElementById('thinking');
+            if (thinkingDiv) {
+                thinkingDiv.remove();
+            }
+        }
+        
+        // Add a message to the conversation
+        function addMessage(text, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'assistant-message'}`;
+            messageDiv.textContent = text;
+            
+            conversation.appendChild(messageDiv);
+            conversation.scrollTop = conversation.scrollHeight;
+        }
+        
+        // Handle form submission
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            // Add user message to conversation
+            addMessage(message, true);
+            messageInput.value = '';
+            
+            // Check if it's a story request
+            if (message.toLowerCase().includes('tell me a story') || 
+                message.toLowerCase().includes('story about')) {
+                handleStoryRequest(message);
+            } else {
+                // Regular conversation
+                handleRegularQuestion(message);
+            }
+            
+            // Track the interaction
+            trackEvent('user_message', { message: message });
+        });
+        
+        // Handle suggestion chip clicks
+        suggestionChips.forEach(chip => {
+            chip.addEventListener('click', function() {
+                const text = this.getAttribute('data-text');
+                messageInput.value = text;
+                messageForm.dispatchEvent(new Event('submit'));
+            });
+        });
+        
+        // Handle regular questions
+        function handleRegularQuestion(question) {
+            showThinking();
+            
+            // Request response from the server
+            fetch('/api/ask-assistant', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    question: question
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideThinking();
+                if (data.success) {
+                    addMessage(data.response);
+                    trackEvent('assistant_response', { 
+                        question: question,
+                        topic_detected: data.topic || 'general'
+                    });
+                } else {
+                    addMessage("I'm having trouble thinking right now. Can we try something else?");
+                    console.error('Error:', data.message);
+                }
+            })
+            .catch(error => {
+                hideThinking();
+                addMessage("I'm having trouble thinking right now. Can we try something else?");
+                console.error('Error:', error);
+            });
+        }
+        
+        // Handle story requests
+        function handleStoryRequest(prompt) {
+            showThinking();
+            
+            // Get a story topic from the prompt
+            let storyTopic = prompt.replace(/tell me a story/i, '').replace(/story about/i, '').trim();
+            if (!storyTopic) {
+                storyTopic = 'a magical adventure';
+            }
+            
+            // Request a story from the server
+            fetch('/api/generate-story', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    prompt: storyTopic,
+                    include_questions: true
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideThinking();
+                if (data.success) {
+                    currentStory = data.story;
+                    addMessage("I've created a story for you! Click 'Next' to start reading.", false);
+                    
+                    // Show story container
+                    conversation.parentElement.style.display = 'none';
+                    messageForm.parentElement.style.display = 'none';
+                    storyContainer.style.display = 'block';
+                    
+                    // Set story title
+                    storyTitle.textContent = currentStory.title;
+                    
+                    // Show first page
+                    showStoryPage(0);
+                    
+                    // Track story generation
+                    trackEvent('story_generated', { 
+                        prompt: storyTopic,
+                        title: currentStory.title,
+                        pages: currentStory.pages.length
+                    });
+                } else {
+                    addMessage("I'm having trouble creating a story right now. Can we try something else?");
+                    console.error('Error:', data.message);
+                }
+            })
+            .catch(error => {
+                hideThinking();
+                addMessage("I'm having trouble creating a story right now. Can we try something else?");
+                console.error('Error:', error);
+            });
+        }
+        
+        // Show a page of the current story
+        function showStoryPage(pageIndex) {
+            if (!currentStory || !currentStory.pages || pageIndex < 0 || pageIndex >= currentStory.pages.length) {
+                return;
+            }
+            
+            currentPage = pageIndex;
+            const page = currentStory.pages[pageIndex];
+            
+            // Update content
+            storyContent.innerHTML = `<p>${page.content}</p>`;
+            
+            // Update question if exists
+            if (page.question) {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'story-question';
+                questionDiv.textContent = page.question;
+                storyContent.appendChild(questionDiv);
+                answerArea.style.display = 'block';
+            } else {
+                answerArea.style.display = 'none';
+            }
+            
+            // Update navigation
+            prevPageBtn.disabled = pageIndex === 0;
+            nextPageBtn.disabled = pageIndex === currentStory.pages.length - 1;
+            pageIndicator.textContent = `Page ${pageIndex + 1} of ${currentStory.pages.length}`;
+            
+            // Show restart button on last page
+            restartButton.style.display = pageIndex === currentStory.pages.length - 1 ? 'block' : 'none';
+            
+            // Track page view
+            trackEvent('story_page_viewed', {
+                title: currentStory.title,
+                page: pageIndex + 1
+            });
+        }
+        
+        // Navigation button listeners
+        prevPageBtn.addEventListener('click', function() {
+            showStoryPage(currentPage - 1);
+        });
+        
+        nextPageBtn.addEventListener('click', function() {
+            showStoryPage(currentPage + 1);
+        });
+        
+        // Question form submission
+        questionForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const answer = questionInput.value.trim();
+            if (!answer) return;
+            
+            const currentQuestion = currentStory.pages[currentPage].question;
+            const currentContent = currentStory.pages[currentPage].content;
+            
+            // Submit the answer
+            fetch('/api/answer-question', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    story_context: currentContent,
+                    question: currentQuestion,
+                    answer: answer
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show the response
+                    const responseDiv = document.createElement('div');
+                    responseDiv.className = 'assistant-message';
+                    responseDiv.style.marginTop = '15px';
+                    responseDiv.textContent = data.response;
+                    answerArea.after(responseDiv);
+                    
+                    // Clear input and hide answer area
+                    questionInput.value = '';
+                    answerArea.style.display = 'none';
+                    
+                    // Track question answer
+                    trackEvent('story_question_answered', {
+                        title: currentStory.title,
+                        page: currentPage + 1,
+                        question: currentQuestion
+                    });
+                } else {
+                    console.error('Error:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+        
+        // Restart button
+        restartButton.addEventListener('click', function() {
+            // Hide story container, show conversation
+            storyContainer.style.display = 'none';
+            conversation.parentElement.style.display = 'block';
+            messageForm.parentElement.style.display = 'flex';
+            document.querySelector('.suggestions').style.display = 'flex';
+            
+            // Add a message to continue conversation
+            addMessage("That was a fun story! What would you like to do next?");
+            
+            // Track restart
+            trackEvent('story_completed', {
+                title: currentStory.title
+            });
+            
+            // Reset story state
+            currentStory = null;
+            currentPage = 0;
+        });
+        
+        // Initial tracking
+        trackEvent('assistant_opened');
+    });
+</script>
+{% endblock %}

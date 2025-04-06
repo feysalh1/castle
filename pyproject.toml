@@ -22,4 +22,5 @@ dependencies = [
     "pillow>=11.1.0",
     "click>=8.1.8",
     "sqlalchemy>=2.0.40",
+    "openai>=1.70.0",
 ]
