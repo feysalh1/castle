@@ -6,7 +6,10 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_wtf.csrf import CSRFProtect
 
-from models import db, Parent, Child, ParentSettings, Progress, Reward, Session
+from models import (
+    db, Parent, Child, ParentSettings, Progress, Reward, Session,
+    LearningGoal, StoryQueue, SkillProgress, WeeklyReport, DevicePairing
+)
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -23,6 +26,11 @@ csrf = CSRFProtect(app)
 csrf.exempt('/api/track-progress')
 csrf.exempt('/api/get-progress')
 csrf.exempt('/api/get-rewards')
+csrf.exempt('/api/child-activity')
+csrf.exempt('/api/save-learning-goal')
+csrf.exempt('/api/delete-learning-goal')
+csrf.exempt('/api/save-story-queue')
+csrf.exempt('/api/generate-pairing-code')
 
 # Configure database
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
@@ -291,16 +299,343 @@ def parent_settings():
     settings = ParentSettings.query.filter_by(parent_id=current_user.id).first()
     
     if request.method == 'POST':
+        # Basic Settings
         settings.allow_external_games = request.form.get('allow_external_games') == 'on'
-        settings.max_daily_playtime = int(request.form.get('max_daily_playtime'))
-        settings.content_age_filter = int(request.form.get('content_age_filter'))
+        settings.max_daily_playtime = int(request.form.get('max_daily_playtime', 60))
+        settings.content_age_filter = int(request.form.get('content_age_filter', 4))
         settings.notifications_enabled = request.form.get('notifications_enabled') == 'on'
+        
+        # Additional Settings if provided
+        if request.form.get('max_weekly_playtime'):
+            settings.max_weekly_playtime = int(request.form.get('max_weekly_playtime'))
+        
+        # Access Schedule
+        if request.form.get('access_start_time'):
+            settings.access_start_time = datetime.strptime(request.form.get('access_start_time'), '%H:%M').time()
+        
+        if request.form.get('access_end_time'):
+            settings.access_end_time = datetime.strptime(request.form.get('access_end_time'), '%H:%M').time()
+        
+        # Audio & Visual Settings
+        settings.enable_audio_narration = request.form.get('enable_audio_narration') == 'on'
+        settings.enable_background_music = request.form.get('enable_background_music') == 'on'
+        
+        if request.form.get('narrator_voice_type'):
+            settings.narrator_voice_type = request.form.get('narrator_voice_type')
+        
+        if request.form.get('reading_speed'):
+            settings.reading_speed = float(request.form.get('reading_speed'))
+        
+        if request.form.get('sound_effects_volume'):
+            settings.sound_effects_volume = int(request.form.get('sound_effects_volume'))
+        
+        # Theme Filters
+        theme_filters = []
+        if request.form.get('theme_friendship') == 'on':
+            theme_filters.append('friendship')
+        if request.form.get('theme_kindness') == 'on':
+            theme_filters.append('kindness')
+        if request.form.get('theme_adventure') == 'on':
+            theme_filters.append('adventure')
+        if request.form.get('theme_learning') == 'on':
+            theme_filters.append('learning')
+        if request.form.get('theme_problem_solving') == 'on':
+            theme_filters.append('problem-solving')
+        
+        import json
+        settings.story_theme_filters = json.dumps(theme_filters)
+        
+        # Rewards Settings
+        if request.form.get('stars_per_story'):
+            settings.stars_per_story = int(request.form.get('stars_per_story'))
+        
+        if request.form.get('stars_per_game'):
+            settings.stars_per_game = int(request.form.get('stars_per_game'))
+        
+        # Email Reports
+        settings.email_reports_enabled = request.form.get('email_reports_enabled') == 'on'
+        
+        if request.form.get('report_delivery_day'):
+            settings.report_delivery_day = request.form.get('report_delivery_day')
+        
+        # Security Settings
+        parent_pin = request.form.get('parent_pin')
+        if parent_pin and len(parent_pin) == 4 and parent_pin.isdigit():
+            settings.set_parent_pin(parent_pin)
+        
+        settings.require_parent_auth = request.form.get('require_parent_auth') == 'on'
+        
+        if request.form.get('session_timeout'):
+            settings.session_timeout = int(request.form.get('session_timeout'))
+        
+        # Sync Settings
+        settings.cloud_sync_enabled = request.form.get('cloud_sync_enabled') == 'on'
+        
+        if request.form.get('sync_frequency'):
+            settings.sync_frequency = request.form.get('sync_frequency')
         
         db.session.commit()
         flash('Settings updated successfully', 'success')
         return redirect(url_for('parent_settings'))
     
     return render_template('parent_settings.html', settings=settings)
+
+
+@app.route('/api/child-activity/<int:child_id>')
+@login_required
+def child_activity(child_id):
+    """API endpoint to get child's activity data for the dashboard"""
+    if session.get('user_type') != 'parent':
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    # Verify this child belongs to the current parent
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
+    if not child:
+        return jsonify({'success': False, 'message': 'Child not found'}), 404
+    
+    # Get child's progress data
+    story_progress = Progress.query.filter_by(
+        child_id=child_id, 
+        content_type='story'
+    ).all()
+    
+    game_progress = Progress.query.filter_by(
+        child_id=child_id, 
+        content_type='game'
+    ).all()
+    
+    # Get rewards
+    rewards = Reward.query.filter_by(child_id=child_id).all()
+    
+    # Calculate statistics
+    stories_read = sum(1 for p in story_progress if p.completed)
+    games_played = sum(1 for p in game_progress if p.completed)
+    total_time_spent = sum(p.time_spent for p in story_progress + game_progress) / 60  # Convert to minutes
+    
+    # Get the top stories and games
+    top_stories = sorted(
+        [p for p in story_progress if p.completed],
+        key=lambda x: (x.completion_count, x.time_spent),
+        reverse=True
+    )[:5]
+    
+    top_games = sorted(
+        [p for p in game_progress if p.completed],
+        key=lambda x: (x.completion_count, x.time_spent),
+        reverse=True
+    )[:5]
+    
+    # Get skill progress if any
+    skills = SkillProgress.query.filter_by(child_id=child_id).all()
+    skill_data = {
+        skill.skill_name: skill.skill_level
+        for skill in skills
+    }
+    
+    # Default skill levels if none exist
+    default_skills = {
+        'Reading': 30,
+        'Counting': 25,
+        'Problem Solving': 40,
+        'Memory': 35,
+        'Creativity': 50
+    }
+    
+    # Merge with defaults
+    for skill, level in default_skills.items():
+        if skill not in skill_data:
+            skill_data[skill] = level
+    
+    # Get learning goals
+    goals = LearningGoal.query.filter_by(child_id=child_id).all()
+    
+    # Format the response data
+    response_data = {
+        'success': True,
+        'child': {
+            'id': child.id,
+            'name': child.display_name,
+            'age': child.age
+        },
+        'activity': {
+            'stories_read': stories_read,
+            'games_played': games_played,
+            'total_time_spent': int(total_time_spent),
+            'badges_earned': len(rewards)
+        },
+        'top_content': {
+            'stories': [{
+                'id': p.content_id,
+                'title': p.content_id.replace('_', ' ').title(),
+                'completion_count': p.completion_count,
+                'last_accessed': p.last_accessed.isoformat()
+            } for p in top_stories],
+            'games': [{
+                'id': p.content_id,
+                'title': p.content_id.replace('_', ' ').title(),
+                'completion_count': p.completion_count,
+                'last_accessed': p.last_accessed.isoformat()
+            } for p in top_games]
+        },
+        'rewards': [{
+            'badge_id': r.badge_id,
+            'badge_name': r.badge_name,
+            'badge_description': r.badge_description,
+            'badge_image': r.badge_image,
+            'earned_at': r.earned_at.isoformat()
+        } for r in rewards],
+        'skills': skill_data,
+        'goals': [{
+            'id': g.id,
+            'text': g.goal_text,
+            'type': g.goal_type,
+            'quantity': g.goal_quantity,
+            'completed_quantity': g.completed_quantity,
+            'completed': g.completed
+        } for g in goals]
+    }
+    
+    return jsonify(response_data)
+
+
+@app.route('/api/save-learning-goal', methods=['POST'])
+@login_required
+def save_learning_goal():
+    """API endpoint to save a new learning goal for a child"""
+    if session.get('user_type') != 'parent':
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    data = request.json
+    child_id = data.get('child_id')
+    
+    # Verify this child belongs to the current parent
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
+    if not child:
+        return jsonify({'success': False, 'message': 'Child not found'}), 404
+    
+    goal_type = data.get('goal_type')
+    goal_descriptor = data.get('goal_descriptor')
+    goal_text = data.get('goal_text')
+    goal_quantity = data.get('goal_quantity', 1)
+    
+    # Create new goal
+    goal = LearningGoal(
+        child_id=child_id,
+        goal_type=goal_type,
+        goal_descriptor=goal_descriptor,
+        goal_text=goal_text,
+        goal_quantity=goal_quantity
+    )
+    
+    db.session.add(goal)
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'goal': {
+            'id': goal.id,
+            'text': goal.goal_text,
+            'type': goal.goal_type,
+            'quantity': goal.goal_quantity,
+            'completed_quantity': goal.completed_quantity,
+            'completed': goal.completed
+        }
+    })
+
+
+@app.route('/api/delete-learning-goal/<int:goal_id>', methods=['DELETE'])
+@login_required
+def delete_learning_goal(goal_id):
+    """API endpoint to delete a learning goal"""
+    if session.get('user_type') != 'parent':
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    # Get the goal and verify it belongs to a child of the current parent
+    goal = LearningGoal.query.get(goal_id)
+    
+    if not goal:
+        return jsonify({'success': False, 'message': 'Goal not found'}), 404
+    
+    child = Child.query.filter_by(id=goal.child_id, parent_id=current_user.id).first()
+    if not child:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    db.session.delete(goal)
+    db.session.commit()
+    
+    return jsonify({'success': True})
+
+
+@app.route('/api/save-story-queue', methods=['POST'])
+@login_required
+def save_story_queue():
+    """API endpoint to save a custom story queue for a child"""
+    if session.get('user_type') != 'parent':
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    data = request.json
+    child_id = data.get('child_id')
+    story_ids = data.get('story_ids', [])
+    
+    # Verify this child belongs to the current parent
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
+    if not child:
+        return jsonify({'success': False, 'message': 'Child not found'}), 404
+    
+    # Find existing queue or create new one
+    queue = StoryQueue.query.filter_by(child_id=child_id).first()
+    
+    import json
+    if queue:
+        queue.story_ids = json.dumps(story_ids)
+    else:
+        queue = StoryQueue(
+            child_id=child_id,
+            story_ids=json.dumps(story_ids)
+        )
+        db.session.add(queue)
+    
+    db.session.commit()
+    
+    return jsonify({'success': True})
+
+
+@app.route('/api/generate-pairing-code', methods=['POST'])
+@login_required
+def generate_pairing_code():
+    """API endpoint to generate a device pairing code"""
+    if session.get('user_type') != 'parent':
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    import random
+    import string
+    from datetime import timedelta
+    
+    # Generate random code
+    letters = ''.join(random.choices(string.ascii_uppercase.replace('O', '').replace('I', ''), k=4))
+    numbers = ''.join(random.choices(string.digits.replace('0', '').replace('1', ''), k=4))
+    pairing_code = f"{letters}-{numbers}"
+    
+    # Set expiration to 24 hours from now
+    expires_at = datetime.utcnow() + timedelta(hours=24)
+    
+    # Create pairing record
+    pairing = DevicePairing(
+        parent_id=current_user.id,
+        pairing_code=pairing_code,
+        device_type=request.json.get('device_type', 'unknown'),
+        device_name=request.json.get('device_name', 'New Device'),
+        expires_at=expires_at
+    )
+    
+    db.session.add(pairing)
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'pairing_code': pairing_code,
+        'expires_at': expires_at.isoformat()
+    })
 
 
 @app.route('/story-mode')

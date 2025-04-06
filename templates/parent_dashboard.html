@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/loading-animations.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/parent-dashboard.css') }}">
+    <!-- Chart.js for activity graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header class="dashboard-header">
@@ -18,6 +21,7 @@
             <nav>
                 <a href="{{ url_for('parent_dashboard') }}" class="active">Dashboard</a>
                 <a href="{{ url_for('parent_settings') }}">Settings</a>
+                <a href="#" id="report-card-link">Weekly Report</a>
                 <a href="{{ url_for('logout') }}">Sign Out</a>
             </nav>
         </div>
@@ -37,13 +41,14 @@
             <div class="dashboard-content">
                 <h2 class="welcome-back">Welcome back, {{ current_user.first_name }}!</h2>
                 
-                <div class="dashboard-card">
+                <!-- Child Account Selection -->
+                <div class="dashboard-card child-accounts-card">
                     <h3>Your Child Accounts</h3>
                     
                     {% if children %}
                         <div class="children-list">
                             {% for child in children %}
-                                <div class="child-card">
+                                <div class="child-card" data-child-id="{{ child.id }}">
                                     <div class="child-avatar">
                                         <img src="{{ url_for('static', filename='images/avatars/' + child.avatar) }}" alt="{{ child.display_name }}'s Avatar">
                                     </div>
@@ -52,8 +57,8 @@
                                         <p>Age: {{ child.age }}</p>
                                     </div>
                                     <div class="child-actions">
-                                        <a href="#" class="btn outline-btn">View Activity</a>
-                                        <a href="#" class="btn">Edit Profile</a>
+                                        <button class="btn outline-btn view-activity-btn" data-child-id="{{ child.id }}">View Activity</button>
+                                        <button class="btn edit-profile-btn" data-child-id="{{ child.id }}">Edit Profile</button>
                                     </div>
                                 </div>
                             {% endfor %}
@@ -69,37 +74,588 @@
                     </a>
                 </div>
                 
-                <div class="dashboard-grid">
-                    <div class="dashboard-card">
-                        <h3>Recent Activity</h3>
-                        {% if children %}
-                            <div class="activity-list">
-                                <div class="activity-item">
-                                    <p>No recent activity to display.</p>
+                <!-- Dashboard Overview Section -->
+                <div class="dashboard-section" id="overview-section">
+                    <h3 class="section-title">✅ Dashboard Overview</h3>
+                    
+                    <div class="dashboard-grid">
+                        <!-- Activity Summary -->
+                        <div class="dashboard-card">
+                            <h4>Activity Summary</h4>
+                            <div class="activity-summary">
+                                <div class="summary-item">
+                                    <div class="summary-icon">📚</div>
+                                    <div class="summary-data">
+                                        <span class="summary-value" id="stories-read">0</span>
+                                        <span class="summary-label">Stories Read</span>
+                                    </div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="summary-icon">🎮</div>
+                                    <div class="summary-data">
+                                        <span class="summary-value" id="games-played">0</span>
+                                        <span class="summary-label">Games Played</span>
+                                    </div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="summary-icon">⭐</div>
+                                    <div class="summary-data">
+                                        <span class="summary-value" id="stars-earned">0</span>
+                                        <span class="summary-label">Stars Earned</span>
+                                    </div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="summary-icon">🏆</div>
+                                    <div class="summary-data">
+                                        <span class="summary-value" id="badges-earned">0</span>
+                                        <span class="summary-label">Badges Earned</span>
+                                    </div>
                                 </div>
                             </div>
-                        {% else %}
-                            <div class="empty-state">
-                                <p>Add a child account to track activity.</p>
+                        </div>
+                        
+                        <!-- Favorite Activities -->
+                        <div class="dashboard-card">
+                            <h4>Favorite Activities</h4>
+                            <div class="favorites-container">
+                                <div class="favorites-column">
+                                    <h5>Top Stories</h5>
+                                    <ul class="favorites-list" id="favorite-stories">
+                                        <li class="empty-message">No stories read yet</li>
+                                    </ul>
+                                </div>
+                                <div class="favorites-column">
+                                    <h5>Top Games</h5>
+                                    <ul class="favorites-list" id="favorite-games">
+                                        <li class="empty-message">No games played yet</li>
+                                    </ul>
+                                </div>
                             </div>
-                        {% endif %}
+                        </div>
                     </div>
                     
+                    <!-- Progress Tracking -->
                     <div class="dashboard-card">
-                        <h3>Quick Settings</h3>
-                        <div class="settings-shortcuts">
-                            <a href="{{ url_for('parent_settings') }}" class="settings-shortcut">
-                                <i class="settings-icon">⚙️</i>
-                                <span>Content Filters</span>
-                            </a>
-                            <a href="{{ url_for('parent_settings') }}" class="settings-shortcut">
-                                <i class="settings-icon">⏱️</i>
-                                <span>Time Limits</span>
-                            </a>
-                            <a href="{{ url_for('parent_settings') }}" class="settings-shortcut">
-                                <i class="settings-icon">🔒</i>
-                                <span>Access Controls</span>
-                            </a>
+                        <h4>Progress Tracking</h4>
+                        <div class="progress-tracking">
+                            <div class="progress-charts">
+                                <div class="chart-container">
+                                    <h5>Weekly Activity</h5>
+                                    <canvas id="weekly-activity-chart"></canvas>
+                                </div>
+                                <div class="chart-container">
+                                    <h5>Skill Development</h5>
+                                    <canvas id="skills-radar-chart"></canvas>
+                                </div>
+                            </div>
+                            <div class="achievement-badges">
+                                <h5>Recent Achievements</h5>
+                                <div class="badges-container" id="recent-badges">
+                                    <div class="empty-message">No badges earned yet</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Control Center Section -->
+                <div class="dashboard-section" id="control-center-section">
+                    <h3 class="section-title">🔒 Control Center</h3>
+                    
+                    <div class="dashboard-grid">
+                        <!-- Time Limits -->
+                        <div class="dashboard-card">
+                            <h4>Time Limits</h4>
+                            <div class="time-limits-controls">
+                                <div class="time-limit-item">
+                                    <label for="daily-time-limit">Daily Usage Limit</label>
+                                    <div class="time-limit-slider-container">
+                                        <input type="range" id="daily-time-limit" min="15" max="180" step="15" value="60">
+                                        <span class="time-value" id="daily-time-value">60 mins</span>
+                                    </div>
+                                </div>
+                                <div class="time-limit-item">
+                                    <label for="weekly-time-limit">Weekly Usage Limit</label>
+                                    <div class="time-limit-slider-container">
+                                        <input type="range" id="weekly-time-limit" min="60" max="840" step="30" value="420">
+                                        <span class="time-value" id="weekly-time-value">7 hours</span>
+                                    </div>
+                                </div>
+                                <div class="time-limit-schedule">
+                                    <h5>Schedule Access Hours</h5>
+                                    <div class="schedule-inputs">
+                                        <div class="schedule-input">
+                                            <label for="access-start-time">Start Time</label>
+                                            <input type="time" id="access-start-time" value="08:00">
+                                        </div>
+                                        <div class="schedule-input">
+                                            <label for="access-end-time">End Time</label>
+                                            <input type="time" id="access-end-time" value="20:00">
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn save-time-limits-btn">Save Time Limits</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Content Controls -->
+                        <div class="dashboard-card">
+                            <h4>Content Controls</h4>
+                            <div class="content-controls">
+                                <div class="toggle-controls">
+                                    <div class="toggle-item">
+                                        <label for="external-games-toggle">Allow External Games</label>
+                                        <label class="switch">
+                                            <input type="checkbox" id="external-games-toggle" checked>
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="toggle-item">
+                                        <label for="audio-narration-toggle">Enable Audio Narration</label>
+                                        <label class="switch">
+                                            <input type="checkbox" id="audio-narration-toggle" checked>
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="toggle-item">
+                                        <label for="background-music-toggle">Background Music</label>
+                                        <label class="switch">
+                                            <input type="checkbox" id="background-music-toggle" checked>
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="age-filter-control">
+                                    <label for="content-age-filter">Content Age Filter</label>
+                                    <div class="age-filter-selector">
+                                        <select id="content-age-filter">
+                                            <option value="3">Age 3</option>
+                                            <option value="4" selected>Age 4</option>
+                                            <option value="5">Age 5</option>
+                                            <option value="6">Age 6+</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="story-theme-filters">
+                                    <h5>Story Theme Filters</h5>
+                                    <div class="theme-checkboxes">
+                                        <div class="theme-checkbox">
+                                            <input type="checkbox" id="theme-friendship" checked>
+                                            <label for="theme-friendship">Friendship</label>
+                                        </div>
+                                        <div class="theme-checkbox">
+                                            <input type="checkbox" id="theme-kindness" checked>
+                                            <label for="theme-kindness">Kindness</label>
+                                        </div>
+                                        <div class="theme-checkbox">
+                                            <input type="checkbox" id="theme-adventure" checked>
+                                            <label for="theme-adventure">Adventure</label>
+                                        </div>
+                                        <div class="theme-checkbox">
+                                            <input type="checkbox" id="theme-learning" checked>
+                                            <label for="theme-learning">Learning</label>
+                                        </div>
+                                        <div class="theme-checkbox">
+                                            <input type="checkbox" id="theme-problem-solving" checked>
+                                            <label for="theme-problem-solving">Problem Solving</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button class="btn save-content-controls-btn">Save Content Controls</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Customization Tools Section -->
+                <div class="dashboard-section" id="customization-section">
+                    <h3 class="section-title">🛠️ Customization Tools</h3>
+                    
+                    <div class="dashboard-card">
+                        <h4>Story & Game Customization</h4>
+                        <div class="customization-tools">
+                            <!-- Story Queue Builder -->
+                            <div class="story-queue-builder">
+                                <h5>Custom Story Queue</h5>
+                                <p class="tool-description">Create a reading playlist for your child</p>
+                                
+                                <div class="story-queue-container">
+                                    <div class="available-stories">
+                                        <h6>Available Stories</h6>
+                                        <div class="story-list" id="available-stories-list">
+                                            <div class="story-item" draggable="true" data-story-id="little_fox">The Little Fox</div>
+                                            <div class="story-item" draggable="true" data-story-id="brown_bear">Brown Bear, Brown Bear</div>
+                                            <div class="story-item" draggable="true" data-story-id="hungry_caterpillar">The Hungry Caterpillar</div>
+                                            <div class="story-item" draggable="true" data-story-id="goldilocks">Goldilocks</div>
+                                            <div class="story-item" draggable="true" data-story-id="three_little_pigs">Three Little Pigs</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="queue-stories">
+                                        <h6>Story Queue</h6>
+                                        <div class="story-queue" id="story-queue-list">
+                                            <div class="empty-queue-message">Drag stories here to add to queue</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button class="btn save-story-queue-btn">Save Story Queue</button>
+                            </div>
+                            
+                            <!-- Voice & Sound Settings -->
+                            <div class="voice-settings">
+                                <h5>Voice & Sound Settings</h5>
+                                <div class="voice-settings-controls">
+                                    <div class="voice-setting-item">
+                                        <label for="narrator-voice-select">Narrator Voice</label>
+                                        <select id="narrator-voice-select">
+                                            <option value="friendly">Friendly Voice</option>
+                                            <option value="calming">Calming Voice</option>
+                                            <option value="excited">Excited Voice</option>
+                                            <option value="character">Character Voices</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="voice-setting-item">
+                                        <label for="reading-speed">Reading Speed</label>
+                                        <div class="slider-container">
+                                            <input type="range" id="reading-speed" min="0.5" max="1.5" step="0.1" value="1.0">
+                                            <span class="slider-value" id="reading-speed-value">Normal (1.0x)</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="voice-setting-item">
+                                        <label for="sound-effects-volume">Sound Effects Volume</label>
+                                        <div class="slider-container">
+                                            <input type="range" id="sound-effects-volume" min="0" max="100" step="10" value="80">
+                                            <span class="slider-value" id="sound-effects-volume-value">80%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button class="btn save-voice-settings-btn">Save Voice Settings</button>
+                            </div>
+                            
+                            <!-- Rewards Settings -->
+                            <div class="rewards-settings">
+                                <h5>Rewards Settings</h5>
+                                <div class="rewards-settings-controls">
+                                    <div class="rewards-setting-item">
+                                        <label for="stars-per-story">Stars Per Story</label>
+                                        <select id="stars-per-story">
+                                            <option value="1">1 Star</option>
+                                            <option value="2" selected>2 Stars</option>
+                                            <option value="3">3 Stars</option>
+                                            <option value="5">5 Stars</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="rewards-setting-item">
+                                        <label for="stars-per-game">Stars Per Game</label>
+                                        <select id="stars-per-game">
+                                            <option value="1">1 Star</option>
+                                            <option value="3" selected>3 Stars</option>
+                                            <option value="5">5 Stars</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="rewards-setting-item">
+                                        <label for="star-milestone">Star Milestone Rewards</label>
+                                        <div class="milestone-container">
+                                            <div class="milestone-item">
+                                                <span class="milestone-count">10 ⭐</span>
+                                                <input type="text" class="milestone-reward" value="Special badge" placeholder="Reward">
+                                            </div>
+                                            <div class="milestone-item">
+                                                <span class="milestone-count">25 ⭐</span>
+                                                <input type="text" class="milestone-reward" value="New avatar" placeholder="Reward">
+                                            </div>
+                                            <div class="milestone-item">
+                                                <span class="milestone-count">50 ⭐</span>
+                                                <input type="text" class="milestone-reward" value="Unlock special game" placeholder="Reward">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button class="btn save-rewards-settings-btn">Save Rewards Settings</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Learning Goals Section -->
+                <div class="dashboard-section" id="learning-goals-section">
+                    <h3 class="section-title">🧠 Learning Goals</h3>
+                    
+                    <div class="dashboard-card">
+                        <h4>Weekly Learning Goals</h4>
+                        <div class="learning-goals">
+                            <div class="current-goals">
+                                <h5>Current Goals</h5>
+                                <div class="goals-list" id="current-goals-list">
+                                    <div class="goal-item">
+                                        <div class="goal-checkbox">
+                                            <input type="checkbox" id="goal-1" disabled>
+                                            <label for="goal-1"></label>
+                                        </div>
+                                        <div class="goal-content">
+                                            <span class="goal-text">Read 3 new stories</span>
+                                            <span class="goal-progress">0/3 completed</span>
+                                        </div>
+                                        <button class="remove-goal-btn">×</button>
+                                    </div>
+                                    <div class="goal-item">
+                                        <div class="goal-checkbox">
+                                            <input type="checkbox" id="goal-2" disabled>
+                                            <label for="goal-2"></label>
+                                        </div>
+                                        <div class="goal-content">
+                                            <span class="goal-text">Play 2 counting games</span>
+                                            <span class="goal-progress">0/2 completed</span>
+                                        </div>
+                                        <button class="remove-goal-btn">×</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="add-goal">
+                                <h5>Add New Goal</h5>
+                                <div class="add-goal-form">
+                                    <div class="goal-type-selector">
+                                        <select id="goal-type">
+                                            <option value="story">Read Stories</option>
+                                            <option value="game">Play Games</option>
+                                            <option value="badge">Earn Badges</option>
+                                            <option value="custom">Custom Goal</option>
+                                        </select>
+                                    </div>
+                                    <div class="goal-quantity">
+                                        <input type="number" id="goal-quantity" min="1" max="10" value="3">
+                                    </div>
+                                    <div class="goal-descriptor">
+                                        <select id="goal-descriptor">
+                                            <option value="any">Any Stories</option>
+                                            <option value="new">New Stories</option>
+                                            <option value="friendship">Friendship Stories</option>
+                                            <option value="educational">Educational Stories</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn add-goal-btn">Add Goal</button>
+                                </div>
+                                <div class="custom-goal-input" style="display: none;">
+                                    <input type="text" id="custom-goal-text" placeholder="Enter custom goal...">
+                                    <button class="btn add-custom-goal-btn">Add</button>
+                                </div>
+                            </div>
+                            
+                            <div class="goal-notifications">
+                                <h5>Notifications</h5>
+                                <div class="notification-settings">
+                                    <div class="notification-toggle">
+                                        <label for="goal-notifications-toggle">Email notifications when goals are met</label>
+                                        <label class="switch">
+                                            <input type="checkbox" id="goal-notifications-toggle" checked>
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="notification-frequency">
+                                        <label for="notification-frequency">Progress Updates</label>
+                                        <select id="notification-frequency">
+                                            <option value="immediate">Immediately when completed</option>
+                                            <option value="daily" selected>Daily summary</option>
+                                            <option value="weekly">Weekly summary only</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button class="btn save-notifications-btn">Save Notification Settings</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Report Cards Section -->
+                <div class="dashboard-section" id="report-cards-section">
+                    <h3 class="section-title">🧾 Report Cards</h3>
+                    
+                    <div class="dashboard-card">
+                        <h4>Weekly Progress Report</h4>
+                        <div class="report-card-preview">
+                            <div class="report-header">
+                                <h5>Weekly Report for <span id="report-child-name">Child</span></h5>
+                                <div class="report-date">Week of <span id="report-week-date">April 1 - April 7, 2025</span></div>
+                            </div>
+                            
+                            <div class="report-stats">
+                                <div class="report-stat-item">
+                                    <div class="stat-icon">📚</div>
+                                    <div class="stat-value"><span id="report-stories-read">0</span> stories read</div>
+                                </div>
+                                <div class="report-stat-item">
+                                    <div class="stat-icon">⏱️</div>
+                                    <div class="stat-value"><span id="report-time-spent">0</span> minutes spent</div>
+                                </div>
+                                <div class="report-stat-item">
+                                    <div class="stat-icon">🎮</div>
+                                    <div class="stat-value"><span id="report-games-played">0</span> games played</div>
+                                </div>
+                                <div class="report-stat-item">
+                                    <div class="stat-icon">⭐</div>
+                                    <div class="stat-value"><span id="report-stars-earned">0</span> stars earned</div>
+                                </div>
+                            </div>
+                            
+                            <div class="report-achievements">
+                                <h6>Achievements Unlocked</h6>
+                                <div class="report-badges" id="report-badges">
+                                    <div class="empty-message">No badges earned this week</div>
+                                </div>
+                            </div>
+                            
+                            <div class="report-skills">
+                                <h6>Skills Developed</h6>
+                                <div class="skills-progress">
+                                    <div class="skill-progress-item">
+                                        <label>Reading Recognition</label>
+                                        <div class="progress-bar-container">
+                                            <div class="progress-bar" style="width: 65%;"></div>
+                                        </div>
+                                        <span class="progress-value">65%</span>
+                                    </div>
+                                    <div class="skill-progress-item">
+                                        <label>Counting & Numbers</label>
+                                        <div class="progress-bar-container">
+                                            <div class="progress-bar" style="width: 40%;"></div>
+                                        </div>
+                                        <span class="progress-value">40%</span>
+                                    </div>
+                                    <div class="skill-progress-item">
+                                        <label>Problem Solving</label>
+                                        <div class="progress-bar-container">
+                                            <div class="progress-bar" style="width: 75%;"></div>
+                                        </div>
+                                        <span class="progress-value">75%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="report-delivery">
+                                <h6>Report Delivery Settings</h6>
+                                <div class="delivery-options">
+                                    <div class="delivery-toggle">
+                                        <label for="email-report-toggle">Email Weekly Reports</label>
+                                        <label class="switch">
+                                            <input type="checkbox" id="email-report-toggle" checked>
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="delivery-day">
+                                        <label for="report-day">Delivery Day</label>
+                                        <select id="report-day">
+                                            <option value="sunday">Sunday</option>
+                                            <option value="monday" selected>Monday</option>
+                                            <option value="friday">Friday</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn download-report-btn">Download Current Report</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Security & Setup Section -->
+                <div class="dashboard-section" id="security-section">
+                    <h3 class="section-title">🔐 Security & Setup</h3>
+                    
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card">
+                            <h4>Account Security</h4>
+                            <div class="security-settings">
+                                <div class="security-item">
+                                    <h5>Parent Account PIN</h5>
+                                    <p>Set up a quick access PIN for parent settings</p>
+                                    <div class="pin-setup">
+                                        <input type="password" id="parent-pin" maxlength="4" placeholder="Enter 4-digit PIN">
+                                        <button class="btn save-pin-btn">Save PIN</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="security-item">
+                                    <h5>Child Account Settings</h5>
+                                    <div class="child-security-toggle">
+                                        <label for="require-parent-auth-toggle">Require parent authentication for settings changes</label>
+                                        <label class="switch">
+                                            <input type="checkbox" id="require-parent-auth-toggle" checked>
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="security-item">
+                                    <h5>Session Management</h5>
+                                    <div class="session-timeout">
+                                        <label for="session-timeout">Auto-logout after inactivity</label>
+                                        <select id="session-timeout">
+                                            <option value="15">15 minutes</option>
+                                            <option value="30" selected>30 minutes</option>
+                                            <option value="60">1 hour</option>
+                                            <option value="120">2 hours</option>
+                                            <option value="0">Never</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn save-security-settings-btn">Save Security Settings</button>
+                        </div>
+                        
+                        <div class="dashboard-card">
+                            <h4>Device Pairing</h4>
+                            <div class="device-pairing">
+                                <div class="qr-pairing">
+                                    <h5>QR Code Pairing</h5>
+                                    <p>Scan this code on your child's device to link accounts</p>
+                                    <div class="qr-code-container">
+                                        <div class="qr-placeholder">
+                                            <div class="qr-code-icon">QR</div>
+                                            <button class="btn generate-qr-btn">Generate QR Code</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="code-pairing">
+                                    <h5>Pairing Code</h5>
+                                    <p>Or enter this code on your child's device</p>
+                                    <div class="pairing-code">
+                                        <span class="code-display" id="pairing-code-display">ABCD-1234</span>
+                                        <button class="btn refresh-code-btn">↻</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="sync-settings">
+                                    <h5>Sync Settings</h5>
+                                    <div class="sync-toggle">
+                                        <label for="cloud-sync-toggle">Enable cloud syncing</label>
+                                        <label class="switch">
+                                            <input type="checkbox" id="cloud-sync-toggle" checked>
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="sync-frequency">
+                                        <label for="sync-frequency">Sync Frequency</label>
+                                        <select id="sync-frequency">
+                                            <option value="realtime">Real-time</option>
+                                            <option value="hourly" selected>Hourly</option>
+                                            <option value="daily">Daily</option>
+                                            <option value="manual">Manual only</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn sync-now-btn">Sync Now</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -113,6 +669,8 @@
         </div>
     </footer>
     
+    <!-- Scripts -->
     <script src="{{ url_for('static', filename='js/loading-animations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/parent-dashboard.js') }}"></script>
 </body>
 </html>
