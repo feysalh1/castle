@@ -54,7 +54,7 @@ def ask_assistant():
         return jsonify({'success': False, 'message': 'No question provided'}), 400
     
     # Get child's age from database
-    from models import Child
+    from models import Child, ChatHistory
     child = Child.query.get(current_user.id)
     child_age = child.age if hasattr(child, 'age') and child.age else 4
     
@@ -69,6 +69,25 @@ def ask_assistant():
         topic = 'space'
     elif any(word in question.lower() for word in ['rain', 'weather', 'cloud', 'snow']):
         topic = 'weather'
+    elif any(word in question.lower() for word in ['animal', 'animals', 'dog', 'cat', 'lion']):
+        topic = 'animals'
+    elif any(word in question.lower() for word in ['math', 'number', 'count', 'add', 'subtract']):
+        topic = 'math'
+    
+    # Save the chat history for parent review
+    chat_entry = ChatHistory(
+        child_id=current_user.id,
+        question=question,
+        response=response,
+        topic=topic,
+        # Flag sensitive topics for parent review
+        flagged_for_review=any(word in question.lower() for word in [
+            'hurt', 'scared', 'afraid', 'bad', 'sad', 'angry', 'mad',
+            'hate', 'die', 'kill', 'death', 'adult', 'alone'
+        ])
+    )
+    db.session.add(chat_entry)
+    db.session.commit()
     
     # Track this interaction
     from app import tracking
@@ -77,7 +96,8 @@ def ask_assistant():
         event_name='question_asked',
         event_data={
             'question': question,
-            'topic': topic
+            'topic': topic,
+            'chat_history_id': chat_entry.id
         }
     )
     
@@ -182,6 +202,100 @@ def answer_question():
         'response': response
     })
 
+@chatgpt_bp.route('/parent/chat-history/<int:child_id>')
+@login_required
+def parent_chat_history(child_id):
+    """Parent view of child's chat history with AI assistant"""
+    # Check if user is a parent
+    if session.get('user_type') != 'parent':
+        flash('Access denied. This page is for parents only.', 'error')
+        return redirect(url_for('index'))
+    
+    # Verify this child belongs to the current parent
+    from models import Child, ChatHistory
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
+    if not child:
+        flash('Child not found', 'error')
+        return redirect(url_for('parent_dashboard'))
+    
+    # Get the chat history
+    chat_history = ChatHistory.query.filter_by(child_id=child_id).order_by(ChatHistory.created_at.desc()).all()
+    
+    # Mark all entries as reviewed by parent
+    for entry in chat_history:
+        if not entry.parent_reviewed:
+            entry.parent_reviewed = True
+    db.session.commit()
+    
+    # Get flagged entries
+    flagged_entries = [entry for entry in chat_history if entry.flagged_for_review]
+    
+    # Get topic stats
+    from collections import Counter
+    topics = [entry.topic for entry in chat_history]
+    topic_counts = Counter(topics)
+    sorted_topics = sorted(topic_counts.items(), key=lambda x: x[1], reverse=True)
+    
+    # Track this page view
+    from app import tracking
+    tracking.track_custom_event(
+        event_type='parent_dashboard',
+        event_name='view_chat_history',
+        event_data={
+            'child_id': child_id,
+            'entries_count': len(chat_history)
+        }
+    )
+    
+    # Render the template
+    return render_template(
+        'parent_chat_history.html', 
+        child=child, 
+        chat_history=chat_history,
+        flagged_entries=flagged_entries,
+        sorted_topics=sorted_topics
+    )
+
+
+@chatgpt_bp.route('/api/parent/chat-history/<int:chat_id>/add-note', methods=['POST'])
+@login_required
+def add_chat_note(chat_id):
+    """API endpoint for parents to add notes to chat entries"""
+    # Check if user is a parent
+    if session.get('user_type') != 'parent':
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    # Get request data
+    data = request.json
+    if not data:
+        return jsonify({'success': False, 'message': 'No data provided'}), 400
+    
+    note = data.get('note')
+    if not note:
+        return jsonify({'success': False, 'message': 'No note provided'}), 400
+    
+    # Get the chat entry
+    from models import ChatHistory
+    chat_entry = ChatHistory.query.get(chat_id)
+    if not chat_entry:
+        return jsonify({'success': False, 'message': 'Chat entry not found'}), 404
+    
+    # Verify this child belongs to the current parent
+    from models import Child
+    child = Child.query.filter_by(id=chat_entry.child_id, parent_id=current_user.id).first()
+    if not child:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    # Add the note
+    chat_entry.parent_note = note
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': 'Note added successfully'
+    })
+
+
 @chatgpt_bp.route('/api/parent-tip', methods=['POST'])
 @login_required
 @csrf.exempt
@@ -243,6 +357,10 @@ def parent_tip():
             response = "To enable bedtime mode, go to the Control Center section of this dashboard. " + \
                        "In the 'Access Controls' card, you can set specific bedtime hours when the app will " + \
                        "automatically show calming content and gradually reduce stimulation."
+        elif any(keyword in question.lower() for keyword in ['asked', 'questions', 'chat history']):
+            response = "You can view your child's chat history with the AI assistant by clicking on 'Chat History' " + \
+                       "in the child's section of the dashboard. This shows all questions your child has asked, " + \
+                       "the responses they received, and any content that might need your attention."
         else:
             # Generate a response for any other question
             # It's a general question, so just generate advice

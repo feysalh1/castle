@@ -340,6 +340,28 @@ class DailyReport(db.Model):
         return f'<DailyReport for child_id {self.child_id} on {self.report_date}>'
 
 
+class ChatHistory(db.Model):
+    """Model to store chat history between children and AI assistant"""
+    __tablename__ = 'chat_history'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    child_id = db.Column(db.Integer, db.ForeignKey('children.id'), nullable=False)
+    question = db.Column(db.Text, nullable=False)
+    response = db.Column(db.Text, nullable=False)
+    topic = db.Column(db.String(64), default='general')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    parent_reviewed = db.Column(db.Boolean, default=False)
+    flagged_for_review = db.Column(db.Boolean, default=False)
+    parent_note = db.Column(db.Text)
+    
+    # Add relationship to Child model
+    child = db.relationship('Child', backref=db.backref('chat_history', lazy=True, cascade="all, delete-orphan"))
+    
+    def __repr__(self):
+        preview = self.question[:30] + '...' if len(self.question) > 30 else self.question
+        return f'<ChatHistory "{preview}" for child_id {self.child_id}>'
+
+
 class WeeklyReport(db.Model):
     """Weekly report model for children"""
     __tablename__ = 'weekly_reports'

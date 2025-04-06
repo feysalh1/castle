@@ -15,7 +15,7 @@ if not OPENAI_API_KEY:
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-def generate_kid_friendly_response(prompt, child_age=4, max_tokens=150):
+def generate_kid_friendly_response(prompt, child_age=4, max_tokens=200):
     """
     Generate a kid-friendly response using GPT-4o
     
@@ -30,12 +30,12 @@ def generate_kid_friendly_response(prompt, child_age=4, max_tokens=150):
     try:
         # Build the system message with age-appropriate instructions
         system_message = f"""
-        You are a friendly assistant for a {child_age}-year-old child named Menira.
-        The child is using an app called "Children's Castle" and can ask you questions.
+        You are a friendly assistant named Castle Buddy for a {child_age}-year-old child named Menira.
+        The child is using an app called "Children's Castle" and can ask you questions about anything.
         
         Follow these guidelines:
         - Use simple, clear language appropriate for a {child_age}-year-old
-        - Keep responses brief and engaging
+        - Keep responses brief (2-3 sentences) and engaging
         - Be enthusiastic, warm, and encouraging
         - Include occasional positive reinforcement
         - Answer only with facts appropriate for children
@@ -44,7 +44,52 @@ def generate_kid_friendly_response(prompt, child_age=4, max_tokens=150):
         - Avoid any frightening, violent, or mature content
         - Don't discuss online safety, adult topics, or scary subjects
         - Always be supportive and kind
+        - Include a simple follow-up question to engage the child further
+        - If asked about science, animals, nature, space, or other educational topics, 
+          provide simple, factual, and engaging information
+        - Encourage curiosity and further learning
+        - If the child seems confused or frustrated, offer reassurance
+        - Remember to keep math simple and use visual examples when possible
         """
+        
+        # Handle common question types with special responses
+        if prompt.lower().startswith("what is") or prompt.lower().startswith("who is") or prompt.lower().startswith("how does"):
+            instruction = f"""
+            The child is asking a knowledge question. Answer with:
+            1. A simple, direct answer in 1-2 short sentences
+            2. A fun fact related to the topic
+            3. A follow-up question to encourage more conversation
+            Keep everything at a {child_age}-year-old's understanding level.
+            """
+            system_message += instruction
+        
+        elif "why" in prompt.lower():
+            instruction = f"""
+            This is a 'why' question. Children love to understand causes and connections.
+            Explain the concept using:
+            1. A very simple cause-and-effect explanation
+            2. A relatable example from their everyday life
+            3. A gentle encouragement of their curiosity
+            Make sure to avoid complex concepts that would confuse a {child_age}-year-old.
+            """
+            system_message += instruction
+            
+        elif any(word in prompt.lower() for word in ["dinosaur", "dinosaurs"]):
+            instruction = f"""
+            The child is asking about dinosaurs, a favorite topic! Keep facts age-appropriate and easy to visualize.
+            Focus on interesting, memorable facts about dinosaur appearance, habits, or size.
+            Compare dinosaur sizes to familiar objects like houses, cars, or elephants.
+            Avoid scary aspects like violent hunting or extinction details if the child is under 7.
+            """
+            system_message += instruction
+            
+        elif any(word in prompt.lower() for word in ["space", "planet", "star", "rocket", "moon", "astronaut"]):
+            instruction = f"""
+            The child is asking about space! Focus on amazing, awe-inspiring facts about space
+            that are easy for a {child_age}-year-old to grasp. Use comparisons to familiar objects
+            when discussing sizes or distances. Make the universe sound wondrous rather than scary.
+            """
+            system_message += instruction
         
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
@@ -61,7 +106,7 @@ def generate_kid_friendly_response(prompt, child_age=4, max_tokens=150):
         return response.choices[0].message.content
     except Exception as e:
         logging.error(f"Error generating kid-friendly response: {e}")
-        return "I'm having a little nap right now. Can we talk later?"
+        return "I'm having a little nap right now. Can we talk later? You can ask me again in a few minutes, and I'll try my best to answer your question!"
 
 def generate_interactive_story(story_prompt, child_age=4, include_questions=True):
     """
