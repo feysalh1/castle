@@ -7,33 +7,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/loading-animations.css') }}">
-    <style>
-        .pin-toggle {
-            margin-top: 10px;
-            text-align: center;
-        }
-        .pin-toggle label {
-            cursor: pointer;
-            color: #4a6da7;
-        }
-        .pin-toggle label:hover {
-            text-decoration: underline;
-        }
-        .pin-number-display {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 40px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #4a6da7;
-            margin-bottom: 10px;
-            visibility: hidden;
-        }
-        .pin-number-display.visible {
-            visibility: visible;
-        }
-    </style>
 </head>
 <body>
     <header>
@@ -81,16 +54,11 @@
                     </div>
                     
                     <div class="pin-container">
-                        <div class="pin-number-display" id="pinNumberDisplay"></div>
                         <div class="pin-display">
                             <div class="pin-dot" id="dot1"></div>
                             <div class="pin-dot" id="dot2"></div>
                             <div class="pin-dot" id="dot3"></div>
                             <div class="pin-dot" id="dot4"></div>
-                        </div>
-                        
-                        <div class="pin-toggle">
-                            <label><input type="checkbox" id="showPin" onchange="togglePinVisibility()"> Show PIN</label>
                         </div>
                         
                         <div class="pin-pad">
@@ -129,7 +97,6 @@
     
     <script>
         let currentPin = '';
-        let showingPin = false;
         
         function addPin(number) {
             if (currentPin.length < 4) {
@@ -149,28 +116,13 @@
         }
         
         function updatePinDisplay() {
-            // Update dots
             for (let i = 1; i <= 4; i++) {
                 const dot = document.getElementById(`dot${i}`);
                 dot.classList.toggle('filled', i <= currentPin.length);
             }
             
-            // Update pin number display
-            document.getElementById('pinNumberDisplay').textContent = currentPin;
-            
             // Update hidden input
             document.getElementById('pin').value = currentPin;
-        }
-        
-        function togglePinVisibility() {
-            showingPin = document.getElementById('showPin').checked;
-            const pinDisplay = document.getElementById('pinNumberDisplay');
-            
-            if (showingPin) {
-                pinDisplay.classList.add('visible');
-            } else {
-                pinDisplay.classList.remove('visible');
-            }
         }
         
         function submitPin() {

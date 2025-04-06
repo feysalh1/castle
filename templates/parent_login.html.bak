@@ -5,26 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parent Login - Children's Castle</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        .password-input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-        
-        .show-password-toggle {
-            position: absolute;
-            right: 10px;
-            cursor: pointer;
-            color: #4a6da7;
-            font-size: 14px;
-            user-select: none;
-        }
-        
-        .show-password-toggle:hover {
-            text-decoration: underline;
-        }
-    </style>
 </head>
 <body class="auth-body">
     <div class="login-container">
@@ -76,20 +56,5 @@
             </div>
         </div>
     </div>
-    
-    <script>
-        function togglePasswordVisibility() {
-            const passwordInput = document.getElementById('password');
-            const toggleButton = document.querySelector('.show-password-toggle');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleButton.textContent = 'Hide';
-            } else {
-                passwordInput.type = 'password';
-                toggleButton.textContent = 'Show';
-            }
-        }
-    </script>
 </body>
 </html>
