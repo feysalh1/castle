@@ -9,6 +9,7 @@ from flask import Flask, render_template, redirect, url_for, flash, request, ses
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_wtf.csrf import CSRFProtect
+from flask_wtf import FlaskForm
 from dotenv import load_dotenv
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -71,6 +72,11 @@ logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "childrens_castle_app_secret")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # needed for url_for to generate with https
+
+# Configure WTF-CSRF
+app.config['WTF_CSRF_ENABLED'] = True
+app.config['WTF_CSRF_SECRET_KEY'] = app.secret_key
+app.config['WTF_CSRF_TIME_LIMIT'] = 3600  # 1 hour
 
 # Initialize CSRF protection
 csrf = CSRFProtect(app)
@@ -138,6 +144,10 @@ from story_enhancement_routes import story_enhancement
 app.register_blueprint(chatgpt_bp)
 app.register_blueprint(story_enhancement)
 
+# Create simple forms for CSRF protection
+class EmptyForm(FlaskForm):
+    pass
+
 # Create database tables
 with app.app_context():
     db.create_all()
@@ -160,7 +170,9 @@ def parent_register():
     if current_user.is_authenticated:
         return redirect(url_for('parent_dashboard'))
     
-    if request.method == 'POST':
+    form = EmptyForm()
+    
+    if form.validate_on_submit():
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
@@ -201,7 +213,7 @@ def parent_register():
         flash('Registration successful! Please log in.', 'success')
         return redirect(url_for('parent_login'))
     
-    return render_template('parent_register.html')
+    return render_template('parent_register.html', form=form)
 
 
 @app.route('/parent/login', methods=['GET', 'POST'])
@@ -210,7 +222,9 @@ def parent_login():
     if current_user.is_authenticated:
         return redirect(url_for('parent_dashboard'))
     
-    if request.method == 'POST':
+    form = EmptyForm()
+    
+    if form.validate_on_submit():
         username = request.form.get('username')
         password = request.form.get('password')
         remember = request.form.get('remember') == 'on'
@@ -243,7 +257,7 @@ def parent_login():
             return redirect(next_page)
         return redirect(url_for('parent_dashboard'))
     
-    return render_template('parent_login.html')
+    return render_template('parent_login.html', form=form)
 
 
 @app.route('/child/login', methods=['GET', 'POST'])
@@ -252,7 +266,9 @@ def child_login():
     if current_user.is_authenticated:
         return redirect(url_for('child_dashboard'))
     
-    if request.method == 'POST':
+    form = EmptyForm()
+    
+    if form.validate_on_submit():
         username = request.form.get('username')
         pin = request.form.get('pin')
         
@@ -280,7 +296,7 @@ def child_login():
         
         return redirect(url_for('child_dashboard'))
     
-    return render_template('child_login.html')
+    return render_template('child_login.html', form=form)
 
 
 @app.route('/logout')
@@ -339,7 +355,9 @@ def add_child():
         flash('Access denied. This page is for parents only.', 'error')
         return redirect(url_for('index'))
     
-    if request.method == 'POST':
+    form = EmptyForm()
+    
+    if form.validate_on_submit():
         username = request.form.get('username')
         display_name = request.form.get('display_name')
         age = request.form.get('age')
@@ -368,7 +386,7 @@ def add_child():
         flash(f'Child account for {display_name} created successfully!', 'success')
         return redirect(url_for('parent_dashboard'))
     
-    return render_template('add_child.html')
+    return render_template('add_child.html', form=form)
 
 
 @app.route('/child/dashboard')
@@ -405,9 +423,10 @@ def parent_settings():
         flash('Access denied. This page is for parents only.', 'error')
         return redirect(url_for('index'))
     
+    form = EmptyForm()
     settings = ParentSettings.query.filter_by(parent_id=current_user.id).first()
     
-    if request.method == 'POST':
+    if form.validate_on_submit():
         # Basic Settings
         settings.allow_external_games = request.form.get('allow_external_games') == 'on'
         settings.max_daily_playtime = int(request.form.get('max_daily_playtime', 60))
@@ -507,7 +526,7 @@ def parent_settings():
         flash('Settings updated successfully', 'success')
         return redirect(url_for('parent_settings'))
     
-    return render_template('parent_settings.html', settings=settings)
+    return render_template('parent_settings.html', form=form, settings=settings)
 
 
 @app.route('/api/child-activity/<int:child_id>')
