@@ -78,28 +78,18 @@ def parent_register():
         first_name = request.form.get('first_name')
         last_name = request.form.get('last_name')
         
-        # Validation checks
-        error = False
-        
-        if not username or not email or not password or not confirm_password:
-            flash('All fields are required', 'error')
-            error = True
-        
         if password != confirm_password:
             flash('Passwords do not match', 'error')
-            error = True
+            return redirect(url_for('parent_register'))
         
         # Check if username or email already exists
         if Parent.query.filter_by(username=username).first():
             flash('Username already exists', 'error')
-            error = True
+            return redirect(url_for('parent_register'))
         
         if Parent.query.filter_by(email=email).first():
             flash('Email already exists', 'error')
-            error = True
-        
-        if error:
-            return render_template('parent_register.html')
+            return redirect(url_for('parent_register'))
         
         # Create new parent
         parent = Parent(
@@ -114,19 +104,12 @@ def parent_register():
         settings = ParentSettings(parent=parent)
         
         # Save to database
-        try:
-            db.session.add(parent)
-            db.session.add(settings)
-            db.session.commit()
-            
-            # Success! Redirect to login
-            flash('Registration successful! Please log in.', 'success')
-            return redirect(url_for('parent_login'))
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Database error during registration: {str(e)}")
-            flash('An error occurred during registration. Please try again.', 'error')
-            return render_template('parent_register.html')
+        db.session.add(parent)
+        db.session.add(settings)
+        db.session.commit()
+        
+        flash('Registration successful! Please log in.', 'success')
+        return redirect(url_for('parent_login'))
     
     return render_template('parent_register.html')
 
