@@ -322,6 +322,130 @@ footer {
     color: white;
 }
 
+/* Authentication Pages Styles */
+.login-container {
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 100%;
+    max-width: 450px;
+    margin: 20px auto;
+}
+
+.login-header {
+    background: linear-gradient(135deg, #4a6da7 0%, #6c8ac2 100%);
+    color: white;
+    padding: 25px 20px;
+    text-align: center;
+}
+
+.login-header h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.login-body {
+    padding: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d3e0f3;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border 0.3s ease;
+}
+
+.form-group input:focus {
+    border-color: #4a6da7;
+    outline: none;
+}
+
+.form-actions {
+    margin-top: 30px;
+}
+
+.login-btn {
+    background-color: #4a6da7;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s ease;
+}
+
+.login-btn:hover {
+    background-color: #3c5a8a;
+}
+
+.alt-actions {
+    margin-top: 20px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+}
+
+.alt-actions a {
+    color: #4a6da7;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.alt-actions a:hover {
+    text-decoration: underline;
+}
+
+.info-text {
+    text-align: center;
+    color: #666;
+    margin-bottom: 25px;
+    font-size: 15px;
+}
+
+.password-rules {
+    background-color: #f8f9fa;
+    border-left: 4px solid #4a6da7;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #555;
+}
+
+.password-rules ul {
+    margin-bottom: 0;
+    padding-left: 20px;
+}
+
+/* Body style for auth pages */
+.auth-body {
+    font-family: 'Nunito', sans-serif;
+    background-color: #f5f7fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+}
+
 /* AI Assistant Chat Styles */
 #assistant-section .dashboard-card {
     max-width: 800px;
@@ -464,4 +588,222 @@ footer {
         margin-right: 0;
         margin-bottom: 10px;
     }
+}
+
+/* Authentication Pages Styles */
+.login-container {
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 100%;
+    max-width: 450px;
+    margin: 20px auto;
+}
+
+.login-header {
+    background: linear-gradient(135deg, #4a6da7 0%, #6c8ac2 100%);
+    color: white;
+    padding: 25px 20px;
+    text-align: center;
+}
+
+.login-header h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.login-body {
+    padding: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d3e0f3;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border 0.3s ease;
+}
+
+.form-group input:focus {
+    border-color: #4a6da7;
+    outline: none;
+}
+
+.form-actions {
+    margin-top: 30px;
+}
+
+.login-btn {
+    background-color: #4a6da7;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s ease;
+}
+
+.login-btn:hover {
+    background-color: #3c5a8a;
+}
+
+.alt-actions {
+    margin-top: 20px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+}
+
+.alt-actions a {
+    color: #4a6da7;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.alt-actions a:hover {
+    text-decoration: underline;
+}
+
+.info-text {
+    text-align: center;
+    color: #666;
+    margin-bottom: 25px;
+    font-size: 15px;
+}
+
+.password-rules {
+    background-color: #f8f9fa;
+    border-left: 4px solid #4a6da7;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #555;
+}
+
+.password-rules ul {
+    margin-bottom: 0;
+    padding-left: 20px;
+}
+
+/* Body style for auth pages */
+.auth-body {
+    font-family: 'Nunito', sans-serif;
+    background-color: #f5f7fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+}
+
+/* Additional Authentication Styles */
+.checkbox {
+    display: flex;
+    align-items: center;
+}
+
+.checkbox input {
+    width: auto;
+    margin-right: 10px;
+}
+
+.forgot-password {
+    display: block;
+    text-align: right;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #4a6da7;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+/* Child Login PIN Pad Styles */
+.pin-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.pin-pad {
+    display: grid;
+    grid-template-columns: repeat(3, 70px);
+    grid-gap: 15px;
+    margin-top: 20px;
+}
+
+.pin-button {
+    width: 70px;
+    height: 70px;
+    font-size: 1.5rem;
+    background-color: var(--primary-light);
+    border: 2px solid var(--primary-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.pin-button:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.pin-button:active {
+    transform: scale(0.95);
+}
+
+.pin-display {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.pin-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #ddd;
+    border: 1px solid #aaa;
+}
+
+.pin-dot.filled {
+    background-color: var(--primary-color);
+    border-color: var(--primary-dark);
+}
+
+.pin-actions {
+    display: flex;
+    justify-content: space-between;
+    width: 240px;
+    margin-top: 15px;
+}
+
+.pin-clear {
+    color: var(--warning-color);
+    cursor: pointer;
+}
+
+#pin {
+    display: none;
 }
