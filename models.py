@@ -375,7 +375,7 @@ class Session(db.Model):
     def record_activity(self, activity_type, content_id=None, details=None):
         """Add activity to the session log"""
         import json
-        activities = json.loads(self.activities)
+        activities = json.loads(self.activities if self.activities else '[]')
         
         activity = {
             'timestamp': datetime.utcnow().isoformat(),
