@@ -58,54 +58,97 @@ def ask_assistant():
     child = Child.query.get(current_user.id)
     child_age = child.age if hasattr(child, 'age') and child.age else 4
     
-    # Generate response using ChatGPT
-    response = chatgpt_helper.generate_kid_friendly_response(question, child_age)
-    
-    # Determine the topic for analytics
-    topic = 'general'
-    if 'dinosaur' in question.lower():
-        topic = 'dinosaurs'
-    elif any(word in question.lower() for word in ['space', 'planet', 'star', 'moon']):
-        topic = 'space'
-    elif any(word in question.lower() for word in ['rain', 'weather', 'cloud', 'snow']):
-        topic = 'weather'
-    elif any(word in question.lower() for word in ['animal', 'animals', 'dog', 'cat', 'lion']):
-        topic = 'animals'
-    elif any(word in question.lower() for word in ['math', 'number', 'count', 'add', 'subtract']):
-        topic = 'math'
-    
-    # Save the chat history for parent review
-    chat_entry = ChatHistory(
-        child_id=current_user.id,
-        question=question,
-        response=response,
-        topic=topic,
-        # Flag sensitive topics for parent review
-        flagged_for_review=any(word in question.lower() for word in [
-            'hurt', 'scared', 'afraid', 'bad', 'sad', 'angry', 'mad',
-            'hate', 'die', 'kill', 'death', 'adult', 'alone'
-        ])
-    )
-    db.session.add(chat_entry)
-    db.session.commit()
-    
-    # Track this interaction
-    from app import tracking
-    tracking.track_custom_event(
-        event_type='ai_assistant',
-        event_name='question_asked',
-        event_data={
-            'question': question,
-            'topic': topic,
-            'chat_history_id': chat_entry.id
-        }
-    )
-    
-    return jsonify({
-        'success': True,
-        'response': response,
-        'topic': topic
-    })
+    try:
+        # Generate response using ChatGPT
+        response = chatgpt_helper.generate_kid_friendly_response(question, child_age)
+        
+        # Check if we received the default error response
+        if "I'm having a little nap" in response:
+            logging.warning("AI assistant failed to generate a response. OpenAI API may be unavailable.")
+            # Add an error message to the database to track API issues
+            chat_entry = ChatHistory(
+                child_id=current_user.id,
+                question=question,
+                response="ERROR: AI assistant unavailable",
+                topic="error",
+                flagged_for_review=True
+            )
+            db.session.add(chat_entry)
+            db.session.commit()
+            
+            return jsonify({
+                'success': False, 
+                'message': 'The AI assistant is unavailable right now. Please try again later.',
+                'response': "I'm taking a nap right now. Please ask me again in a little while when I'm awake!"
+            })
+        
+        # Determine the topic for analytics
+        topic = 'general'
+        if 'dinosaur' in question.lower():
+            topic = 'dinosaurs'
+        elif any(word in question.lower() for word in ['space', 'planet', 'star', 'moon']):
+            topic = 'space'
+        elif any(word in question.lower() for word in ['rain', 'weather', 'cloud', 'snow']):
+            topic = 'weather'
+        elif any(word in question.lower() for word in ['animal', 'animals', 'dog', 'cat', 'lion']):
+            topic = 'animals'
+        elif any(word in question.lower() for word in ['math', 'number', 'count', 'add', 'subtract']):
+            topic = 'math'
+        
+        # Save the chat history for parent review
+        chat_entry = ChatHistory(
+            child_id=current_user.id,
+            question=question,
+            response=response,
+            topic=topic,
+            # Flag sensitive topics for parent review
+            flagged_for_review=any(word in question.lower() for word in [
+                'hurt', 'scared', 'afraid', 'bad', 'sad', 'angry', 'mad',
+                'hate', 'die', 'kill', 'death', 'adult', 'alone'
+            ])
+        )
+        db.session.add(chat_entry)
+        db.session.commit()
+        
+        # Track this interaction
+        from app import tracking
+        tracking.track_custom_event(
+            event_type='ai_assistant',
+            event_name='question_asked',
+            event_data={
+                'question': question,
+                'topic': topic,
+                'chat_history_id': chat_entry.id
+            }
+        )
+        
+        return jsonify({
+            'success': True,
+            'response': response,
+            'topic': topic
+        })
+        
+    except Exception as e:
+        logging.error(f"Error in ask_assistant endpoint: {e}")
+        # Record the error in chat history for monitoring
+        try:
+            error_entry = ChatHistory(
+                child_id=current_user.id,
+                question=question,
+                response=f"ERROR: {str(e)}",
+                topic="error",
+                flagged_for_review=True
+            )
+            db.session.add(error_entry)
+            db.session.commit()
+        except Exception as db_error:
+            logging.error(f"Failed to save error to chat history: {db_error}")
+        
+        return jsonify({
+            'success': False,
+            'message': 'An error occurred processing your request.',
+            'response': "I'm taking a nap right now. Please ask me again in a little while when I'm awake!"
+        })
 
 @chatgpt_bp.route('/api/generate-story', methods=['POST'])
 @login_required
@@ -129,29 +172,67 @@ def generate_story():
     child = Child.query.get(current_user.id)
     child_age = child.age if hasattr(child, 'age') and child.age else 4
     
-    # Generate interactive story
-    story = chatgpt_helper.generate_interactive_story(
-        prompt, 
-        child_age=child_age,
-        include_questions=include_questions
-    )
-    
-    # Track story generation
-    from app import tracking
-    tracking.track_custom_event(
-        event_type='ai_assistant',
-        event_name='story_generated',
-        event_data={
-            'prompt': prompt,
-            'title': story.get('title', 'Interactive Story'),
-            'pages': len(story.get('pages', []))
+    try:
+        # Generate interactive story
+        story = chatgpt_helper.generate_interactive_story(
+            prompt, 
+            child_age=child_age,
+            include_questions=include_questions
+        )
+        
+        # Check if we got the default backup story (error case)
+        if story.get('title') == "The Adventure of the Curious Child" and not prompt.lower().startswith("curious child"):
+            logging.warning("Failed to generate story. OpenAI API may be unavailable.")
+            return jsonify({
+                'success': False,
+                'message': 'The story creator is taking a break. Please try again later!',
+                'story': story  # Still return the backup story so the UI can show something
+            })
+        
+        # Track story generation
+        from app import tracking
+        tracking.track_custom_event(
+            event_type='ai_assistant',
+            event_name='story_generated',
+            event_data={
+                'prompt': prompt,
+                'title': story.get('title', 'Interactive Story'),
+                'pages': len(story.get('pages', []))
+            }
+        )
+        
+        return jsonify({
+            'success': True,
+            'story': story
+        })
+        
+    except Exception as e:
+        logging.error(f"Error in generate_story endpoint: {e}")
+        
+        # Create a backup story
+        backup_story = {
+            "title": "The Adventure of the Curious Child",
+            "pages": [
+                {
+                    "content": "Once upon a time, there was a curious child who loved to explore the castle.",
+                    "question": "What do you think the child found in the castle?"
+                },
+                {
+                    "content": "The child found magical friends who taught them about kindness and friendship.",
+                    "question": None
+                },
+                {
+                    "content": "Together, they had wonderful adventures and learned important lessons. The End!",
+                    "question": "What was your favorite part of the story?"
+                }
+            ]
         }
-    )
-    
-    return jsonify({
-        'success': True,
-        'story': story
-    })
+        
+        return jsonify({
+            'success': False,
+            'message': 'Could not create your story right now. Here is another story instead!',
+            'story': backup_story
+        })
 
 @chatgpt_bp.route('/api/answer-question', methods=['POST'])
 @login_required
@@ -179,28 +260,46 @@ def answer_question():
     child = Child.query.get(current_user.id)
     child_age = child.age if hasattr(child, 'age') and child.age else 4
     
-    # Generate response to the child's answer
-    response = chatgpt_helper.answer_story_question(
-        story_context=story_context,
-        question=question,
-        child_age=child_age
-    )
-    
-    # Track the interaction
-    from app import tracking
-    tracking.track_custom_event(
-        event_type='ai_assistant',
-        event_name='question_answered',
-        event_data={
-            'question': question,
-            'answer_length': len(answer)
-        }
-    )
-    
-    return jsonify({
-        'success': True,
-        'response': response
-    })
+    try:
+        # Generate response to the child's answer
+        response = chatgpt_helper.answer_story_question(
+            story_context=story_context,
+            question=question,
+            child_age=child_age
+        )
+        
+        # Check if we received the default encouraging response
+        if response == "That's a wonderful answer! You're so creative and smart!":
+            # This could indicate an API error as it's the default fallback response
+            if not answer.lower().startswith("that's a wonderful"):  # Make sure not an echo
+                logging.warning("Received default response from answer_story_question, possible API error")
+        
+        # Track the interaction
+        from app import tracking
+        tracking.track_custom_event(
+            event_type='ai_assistant',
+            event_name='question_answered',
+            event_data={
+                'question': question,
+                'answer_length': len(answer)
+            }
+        )
+        
+        return jsonify({
+            'success': True,
+            'response': response
+        })
+        
+    except Exception as e:
+        logging.error(f"Error in answer_question endpoint: {e}")
+        
+        # Return a default encouraging response
+        default_response = "That's a wonderful answer! You're so creative and smart!"
+        
+        return jsonify({
+            'success': True,  # Still return success to not disrupt the UX for the child
+            'response': default_response
+        })
 
 @chatgpt_bp.route('/parent/chat-history/<int:child_id>')
 @login_required
@@ -323,62 +422,88 @@ def parent_tip():
         if child and hasattr(child, 'age') and child.age:
             child_age = child.age
     
+    # Track analytics for this request
+    try:
+        from app import tracking
+        tracking.track_custom_event(
+            event_type='parent_assistant',
+            event_name='tip_requested' if topic else 'question_asked',
+            event_data={
+                'question': question,
+                'topic': topic,
+                'user_id': current_user.id
+            }
+        )
+    except Exception as e:
+        logging.error(f"Error tracking parent tip request: {e}")
+    
     # Check if this is a question or a topic request
-    if question:        
-        # Add this interaction to the database for future reference
-        try:
-            # Track the parent's question
-            from app import tracking
-            tracking.track_custom_event(
-                event_type='parent_assistant',
-                event_name='question_asked',
-                event_data={
-                    'question': question,
-                    'user_id': current_user.id
-                }
-            )
-        except Exception as e:
-            logging.error(f"Error tracking parent question: {e}")
-        
-        # Process specific question types
-        if any(keyword in question.lower() for keyword in ['limit screen time', 'screen time', 'time limit']):
-            response = chatgpt_helper.generate_parent_advice(
-                "Here are some strategies for limiting screen time effectively: " +
-                "Set clear boundaries with specific time limits. " +
-                "Create screen-free zones in your home. " +
-                "Use the parental controls in Children's Castle to set daily usage limits. " +
-                "Offer engaging alternatives like reading physical books or outdoor play. " +
-                "Be consistent with the rules you establish."
-            )
-        elif any(keyword in question.lower() for keyword in ['stories', 'read today', 'reading history']):
-            response = "You can view your child's reading history in the Activity Summaries section of this dashboard. " + \
-                       "Look for the 'Recent Activity' card to see which stories they've engaged with recently."
-        elif any(keyword in question.lower() for keyword in ['bedtime', 'bedtime mode']):
-            response = "To enable bedtime mode, go to the Control Center section of this dashboard. " + \
-                       "In the 'Access Controls' card, you can set specific bedtime hours when the app will " + \
-                       "automatically show calming content and gradually reduce stimulation."
-        elif any(keyword in question.lower() for keyword in ['asked', 'questions', 'chat history']):
-            response = "You can view your child's chat history with the AI assistant by clicking on 'Chat History' " + \
-                       "in the child's section of the dashboard. This shows all questions your child has asked, " + \
-                       "the responses they received, and any content that might need your attention."
+    try:
+        if question:        
+            # Process specific question types that don't require API
+            if any(keyword in question.lower() for keyword in ['limit screen time', 'screen time', 'time limit']):
+                response = "Here are some strategies for limiting screen time effectively: " + \
+                           "Set clear boundaries with specific time limits. " + \
+                           "Create screen-free zones in your home. " + \
+                           "Use the parental controls in Children's Castle to set daily usage limits. " + \
+                           "Offer engaging alternatives like reading physical books or outdoor play. " + \
+                           "Be consistent with the rules you establish."
+            elif any(keyword in question.lower() for keyword in ['stories', 'read today', 'reading history']):
+                response = "You can view your child's reading history in the Activity Summaries section of this dashboard. " + \
+                           "Look for the 'Recent Activity' card to see which stories they've engaged with recently."
+            elif any(keyword in question.lower() for keyword in ['bedtime', 'bedtime mode']):
+                response = "To enable bedtime mode, go to the Control Center section of this dashboard. " + \
+                           "In the 'Access Controls' card, you can set specific bedtime hours when the app will " + \
+                           "automatically show calming content and gradually reduce stimulation."
+            elif any(keyword in question.lower() for keyword in ['asked', 'questions', 'chat history']):
+                response = "You can view your child's chat history with the AI assistant by clicking on 'Chat History' " + \
+                           "in the child's section of the dashboard. This shows all questions your child has asked, " + \
+                           "the responses they received, and any content that might need your attention."
+            else:
+                # It's a general question, so use the GPT-4o API
+                response = chatgpt_helper.generate_parent_advice(question, child_age)
+                
+                # Check if the API failed (default response)
+                if "I recommend focusing on your child's interests" in response and not question.lower().startswith("what interests"):
+                    logging.warning("Parent advice API may have failed - received default response")
+            
+            return jsonify({
+                'success': True,
+                'response': response
+            })
+            
+        elif topic:
+            # It's a topic request, generate a learning tip
+            tip = chatgpt_helper.generate_learning_tip(topic, child_age)
+            
+            # Check if we got a default tip (API error)
+            default_tip = f"Try incorporating {topic} into everyday activities through play."
+            if default_tip in tip:
+                logging.warning("Learning tip API may have failed - received default response")
+            
+            return jsonify({
+                'success': True,
+                'response': tip
+            })
+            
         else:
-            # Generate a response for any other question
-            # It's a general question, so just generate advice
-            response = chatgpt_helper.generate_parent_advice(question, child_age)
+            return jsonify({
+                'success': False, 
+                'message': 'No question or topic provided'
+            }), 400
+            
+    except Exception as e:
+        logging.error(f"Error in parent_tip endpoint: {e}")
+        
+        # Provide a helpful response even if the API fails
+        if topic:
+            # Default tip response that doesn't require API
+            response = f"Integrate {topic} learning into everyday activities. Use real-life situations to teach concepts naturally. Keep it fun and build on your child's interests. The most effective learning happens when children are engaged and enjoying themselves."
+        else:
+            # Default advice response that doesn't require API
+            response = "Focus on creating consistent routines and setting clear expectations. Encourage your child's natural curiosity by asking open-ended questions. Remember that children learn best through play and exploration. The Children's Castle app offers personalized content based on your child's interests and learning style."
         
         return jsonify({
-            'success': True,
+            'success': True,  # Still return success to avoid disrupting the UX
             'response': response
         })
-    elif topic:
-        # It's a topic request, generate a learning tip
-        tip = chatgpt_helper.generate_learning_tip(topic, child_age)
-        return jsonify({
-            'success': True,
-            'response': tip
-        })
-    else:
-        return jsonify({
-            'success': False, 
-            'message': 'No question or topic provided'
-        }), 400

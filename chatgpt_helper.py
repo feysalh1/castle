@@ -6,14 +6,40 @@ This module provides helper functions to interact with OpenAI's GPT models.
 import os
 import json
 import logging
+import traceback
 from openai import OpenAI
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Initialize OpenAI client
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
-    logging.warning("OpenAI API key not found in environment variables.")
+    logger.error("OPENAI_API_KEY not found in environment variables. ChatGPT functions will not work.")
+else:
+    logger.info("OPENAI_API_KEY found. Length: %d", len(OPENAI_API_KEY))
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+# Set a default value for the client
+client = None
+
+# Only attempt to initialize if we have a key
+if OPENAI_API_KEY:
+    try:
+        client = OpenAI(api_key=OPENAI_API_KEY)
+        logger.info("OpenAI client initialized, testing connection with a simple request...")
+        
+        # Test the client with a simple completion to verify credentials
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "system", "content": "Hello"}],
+            max_tokens=5
+        )
+        logger.info(f"OpenAI test successful: {response.model}")
+    except Exception as e:
+        error_trace = traceback.format_exc()
+        logger.error(f"Failed to initialize OpenAI client: {e}\n{error_trace}")
+        client = None
 
 def generate_kid_friendly_response(prompt, child_age=4, max_tokens=200):
     """
@@ -27,6 +53,16 @@ def generate_kid_friendly_response(prompt, child_age=4, max_tokens=200):
     Returns:
         str: Kid-friendly response
     """
+    # Check if OpenAI client is properly initialized
+    if client is None:
+        logger.error("OpenAI client not initialized. Cannot generate response.")
+        return "I'm having a little nap right now. Please ask an adult to wake me up!"
+        
+    # Check if API key is valid
+    if not OPENAI_API_KEY or len(OPENAI_API_KEY) < 20:
+        logger.error("Invalid OPENAI_API_KEY. Cannot generate response.")
+        return "I'm having a little nap right now. Please ask an adult to wake me up!"
+        
     try:
         # Build the system message with age-appropriate instructions
         system_message = f"""
@@ -91,6 +127,8 @@ def generate_kid_friendly_response(prompt, child_age=4, max_tokens=200):
             """
             system_message += instruction
         
+        logger.info(f"Sending request to OpenAI for prompt: {prompt[:30]}...")
+        
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
         response = client.chat.completions.create(
@@ -103,9 +141,12 @@ def generate_kid_friendly_response(prompt, child_age=4, max_tokens=200):
             temperature=0.7,
         )
         
+        logger.info("Successfully received response from OpenAI")
         return response.choices[0].message.content
     except Exception as e:
-        logging.error(f"Error generating kid-friendly response: {e}")
+        error_trace = traceback.format_exc()
+        logger.error(f"Error generating kid-friendly response: {e}\n{error_trace}")
+        # Return a friendly error message
         return "I'm having a little nap right now. Can we talk later? You can ask me again in a few minutes, and I'll try my best to answer your question!"
 
 def generate_interactive_story(story_prompt, child_age=4, include_questions=True):
@@ -120,6 +161,32 @@ def generate_interactive_story(story_prompt, child_age=4, include_questions=True
     Returns:
         dict: Story content with pages and optional questions
     """
+    # Check if OpenAI client is properly initialized
+    if client is None:
+        logger.error("OpenAI client not initialized. Cannot generate interactive story.")
+        
+    # Check if API key is valid
+    if not OPENAI_API_KEY or len(OPENAI_API_KEY) < 20:
+        logger.error("Invalid OPENAI_API_KEY. Cannot generate interactive story.")
+        # Return a simple backup story
+        return {
+            "title": "The Adventure of the Curious Child",
+            "pages": [
+                {
+                    "content": "Once upon a time, there was a curious child who loved to explore the castle.",
+                    "question": "What do you think the child found in the castle?"
+                },
+                {
+                    "content": "The child found magical friends who taught them about kindness and friendship.",
+                    "question": None
+                },
+                {
+                    "content": "Together, they had wonderful adventures and learned important lessons. The End!",
+                    "question": "What was your favorite part of the story?"
+                }
+            ]
+        }
+        
     try:
         # Build the system message with age-appropriate instructions
         system_message = f"""
@@ -156,6 +223,8 @@ def generate_interactive_story(story_prompt, child_age=4, include_questions=True
         if include_questions:
             user_prompt += " Include some simple questions to make it interactive."
         
+        logger.info(f"Generating interactive story about: {story_prompt[:30]}...")
+        
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
         response = client.chat.completions.create(
@@ -176,9 +245,11 @@ def generate_interactive_story(story_prompt, child_age=4, include_questions=True
         if "title" not in story_content or "pages" not in story_content:
             raise ValueError("Story response is missing required structure")
         
+        logger.info(f"Successfully generated story: {story_content['title']}")
         return story_content
     except Exception as e:
-        logging.error(f"Error generating interactive story: {e}")
+        error_trace = traceback.format_exc()
+        logger.error(f"Error generating interactive story: {e}\n{error_trace}")
         # Return a simple backup story
         return {
             "title": "The Adventure of the Curious Child",
@@ -210,6 +281,16 @@ def answer_story_question(story_context, question, child_age=4):
     Returns:
         str: Encouraging response to the child's answer
     """
+    # Check if OpenAI client is properly initialized
+    if client is None:
+        logger.error("OpenAI client not initialized. Cannot generate story question response.")
+        return "That's a wonderful answer! You're so creative and smart!"
+        
+    # Check if API key is valid
+    if not OPENAI_API_KEY or len(OPENAI_API_KEY) < 20:
+        logger.error("Invalid OPENAI_API_KEY. Cannot generate story question response.")
+        return "That's a wonderful answer! You're so creative and smart!"
+        
     try:
         # Build the system message with age-appropriate instructions
         system_message = f"""
@@ -225,6 +306,8 @@ def answer_story_question(story_context, question, child_age=4):
         - Be supportive, friendly, and kind
         """
         
+        logger.info(f"Generating response to story question: {question[:30]}...")
+        
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
         response = client.chat.completions.create(
@@ -237,9 +320,11 @@ def answer_story_question(story_context, question, child_age=4):
             temperature=0.7,
         )
         
+        logger.info("Successfully generated question response")
         return response.choices[0].message.content
     except Exception as e:
-        logging.error(f"Error generating answer response: {e}")
+        error_trace = traceback.format_exc()
+        logger.error(f"Error generating answer response: {e}\n{error_trace}")
         return "That's a wonderful answer! You're so creative and smart!"
 
 def generate_learning_tip(topic, child_age=4):
@@ -253,6 +338,16 @@ def generate_learning_tip(topic, child_age=4):
     Returns:
         str: A short learning tip for parents
     """
+    # Check if OpenAI client is properly initialized
+    if client is None:
+        logger.error("OpenAI client not initialized. Cannot generate learning tip.")
+        return f"Try incorporating {topic} into everyday activities through play. Children learn best when they're having fun and don't even realize they're learning!"
+        
+    # Check if API key is valid
+    if not OPENAI_API_KEY or len(OPENAI_API_KEY) < 20:
+        logger.error("Invalid OPENAI_API_KEY. Cannot generate learning tip.")
+        return f"Try incorporating {topic} into everyday activities through play. Children learn best when they're having fun and don't even realize they're learning!"
+        
     try:
         # Build the system message with age-appropriate instructions
         system_message = f"""
@@ -267,6 +362,8 @@ def generate_learning_tip(topic, child_age=4):
         - Include why the activity helps development
         """
         
+        logger.info(f"Generating learning tip about: {topic}")
+        
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
         response = client.chat.completions.create(
@@ -279,9 +376,11 @@ def generate_learning_tip(topic, child_age=4):
             temperature=0.7,
         )
         
+        logger.info("Successfully generated learning tip")
         return response.choices[0].message.content
     except Exception as e:
-        logging.error(f"Error generating learning tip: {e}")
+        error_trace = traceback.format_exc()
+        logger.error(f"Error generating learning tip: {e}\n{error_trace}")
         return f"Try incorporating {topic} into everyday activities through play. Children learn best when they're having fun and don't even realize they're learning!"
         
 def generate_parent_advice(question, child_age=4):
@@ -295,6 +394,16 @@ def generate_parent_advice(question, child_age=4):
     Returns:
         str: A helpful response for the parent
     """
+    # Check if OpenAI client is properly initialized
+    if client is None:
+        logger.error("OpenAI client not initialized. Cannot generate parent advice.")
+        return "I recommend focusing on your child's interests and building learning opportunities around them. The Children's Castle app offers personalized recommendations based on your child's engagement patterns that you can find in the Activity Summaries section."
+        
+    # Check if API key is valid
+    if not OPENAI_API_KEY or len(OPENAI_API_KEY) < 20:
+        logger.error("Invalid OPENAI_API_KEY. Cannot generate parent advice.")
+        return "I recommend focusing on your child's interests and building learning opportunities around them. The Children's Castle app offers personalized recommendations based on your child's engagement patterns that you can find in the Activity Summaries section."
+        
     try:
         # Build the system message for the parent assistant
         system_message = f"""
@@ -315,6 +424,8 @@ def generate_parent_advice(question, child_age=4):
         # Preprocess the question to add context and improve responses
         enhanced_question = f"As a parent of a {child_age}-year-old using the Children's Castle app, I'd like advice about: {question}"
         
+        logger.info(f"Generating parent advice for question: {question[:30]}...")
+        
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
         response = client.chat.completions.create(
@@ -327,7 +438,9 @@ def generate_parent_advice(question, child_age=4):
             temperature=0.7,
         )
         
+        logger.info("Successfully generated parent advice")
         return response.choices[0].message.content
     except Exception as e:
-        logging.error(f"Error generating parent advice: {e}")
+        error_trace = traceback.format_exc()
+        logger.error(f"Error generating parent advice: {e}\n{error_trace}")
         return "I recommend focusing on your child's interests and building learning opportunities around them. The Children's Castle app offers personalized recommendations based on your child's engagement patterns that you can find in the Activity Summaries section."

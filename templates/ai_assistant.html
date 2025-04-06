@@ -215,6 +215,15 @@
         background: #f8f4ff;
         border-left: 3px solid #6a11cb;
     }
+    .api-error-message {
+        padding: 15px;
+        background: #fff6e7;
+        border-radius: 10px;
+        margin: 20px 0;
+        text-align: center;
+        border: 1px dashed #ffc107;
+    }
+
 
     .page-indicator {
         text-align: center;
@@ -445,8 +454,23 @@
                         topic_detected: data.topic || 'general'
                     });
                 } else {
-                    addMessage("I'm having trouble thinking right now. Can we try something else?");
+                    // Show a friendly error message, possibly the one from the server
+                    if (data.response) {
+                        addMessage(data.response);
+                    } else {
+                        addMessage("I'm having trouble thinking right now. Can we try something else?");
+                    }
                     console.error('Error:', data.message);
+                    
+                    // If we have evidence it's an API issue, show a friendly "taking a nap" message
+                    if (data.message && data.message.includes('unavailable')) {
+                        const napDiv = document.createElement('div');
+                        napDiv.className = 'api-error-message';
+                        napDiv.innerHTML = '<p>Castle Buddy is having a little nap right now. Please try again later!</p>' +
+                                          '<img src="/static/images/sleeping-buddy.svg" alt="Sleeping Castle Buddy" style="width: 200px; margin: 10px;">';
+                        conversation.appendChild(napDiv);
+                        conversation.scrollTop = conversation.scrollHeight;
+                    }
                 }
             })
             .catch(error => {
@@ -502,8 +526,25 @@
                         pages: currentStory.pages.length
                     });
                 } else {
-                    addMessage("I'm having trouble creating a story right now. Can we try something else?");
+
+                } else {
+                    // Show a friendly error message, possibly the one from the server
+                    if (data.response) {
+                        addMessage(data.response);
+                    } else {
+                        addMessage("I'm having trouble creating a story right now. Can we try something else?");
+                    }
                     console.error('Error:', data.message);
+                    
+                    // If we have evidence it's an API issue, show a friendly "taking a nap" message
+                    if (data.message && data.message.includes('unavailable')) {
+                        const napDiv = document.createElement('div');
+                        napDiv.className = 'api-error-message';
+                        napDiv.innerHTML = '<p>Castle Buddy is having a little nap right now. Please try again later!</p>' +
+                                          '<img src="/static/images/sleeping-buddy.svg" alt="Sleeping Castle Buddy" style="width: 200px; margin: 10px;">';
+                        conversation.appendChild(napDiv);
+                        conversation.scrollTop = conversation.scrollHeight;
+                    }
                 }
             })
             .catch(error => {
@@ -602,7 +643,24 @@
                         page: currentPage + 1,
                         question: currentQuestion
                     });
+
                 } else {
+                    // Show a friendly error message, possibly the one from the server
+                    const responseDiv = document.createElement('div');
+                    responseDiv.className = 'assistant-message api-error-message';
+                    responseDiv.style.marginTop = '15px';
+                    
+                    if (data.response) {
+                        responseDiv.textContent = data.response;
+                    } else {
+                        responseDiv.textContent = "I'm having trouble understanding your answer right now. Let's continue with the story!";
+                    }
+                    answerArea.after(responseDiv);
+                    
+                    // Clear input and hide answer area
+                    questionInput.value = '';
+                    answerArea.style.display = 'none';
+                    
                     console.error('Error:', data.message);
                 }
             })
