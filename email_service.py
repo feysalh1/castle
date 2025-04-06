@@ -101,6 +101,24 @@ def send_email(to_email, subject, html_content, from_email=None):
     smtp_password = os.environ.get('SMTP_PASSWORD')
     sender_email = from_email or os.environ.get('SENDER_EMAIL', 'noreply@childrenscastle.app')
     
+    # Check if we're running in development mode (no SMTP configured)
+    if smtp_server == 'localhost' and not smtp_username:
+        # In development mode, just log the email
+        logger.info(f"DEVELOPMENT MODE: Email would be sent to {to_email}")
+        logger.info(f"Subject: {subject}")
+        logger.info(f"Content: {html_content[:100]}...")
+        
+        # Show mock email in console for development testing
+        mock_email = get_mock_email_content(to_email, subject, html_content)
+        print("\n" + "-" * 80)
+        print("DEVELOPMENT EMAIL (No SMTP Configured)")
+        print("-" * 80)
+        print(mock_email)
+        print("-" * 80 + "\n")
+        
+        return True
+    
+    # Production mode - send real email
     # Create message
     msg = MIMEMultipart()
     msg['From'] = sender_email
