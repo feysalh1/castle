@@ -936,3 +936,173 @@ document.head.insertAdjacentHTML('beforeend', `
         }
     </style>
 `);
+
+// Fix Starfall and other external sites by updating URLs and handling frames better
+(function() {
+    // Update external game URLs to more iframe-friendly alternatives
+    const updatedExternalGames = {
+        // Age 4 games
+        'abcya_shapes': { 
+            url: 'https://www.abcya.com/games/shapes_geometry_game', 
+            title: 'Shape Matching' 
+        },
+        'pbs_games': { 
+            url: 'https://pbskids.org/games', 
+            title: 'PBS Kids Games' 
+        },
+        'sesame_street': { 
+            url: 'https://www.sesamestreet.org/games', 
+            title: 'Sesame Street Games' 
+        },
+        
+        // Age 5 games
+        'starfall': { 
+            url: 'https://www.abcya.com/games/alphabet_bubble_letter_match', 
+            title: 'Alphabet Bubble Letters' 
+        },
+        'funbrain': { 
+            url: 'https://www.funbrain.com/games/poptropica-forgotten-islands', 
+            title: 'Funbrain Games' 
+        },
+        'national_geographic': { 
+            url: 'https://www.abcya.com/games/animal_rhythm', 
+            title: 'Animal Rhythm Game' 
+        }
+    };
+    
+    // Update original EXTERNAL_GAMES with working URLs
+    if (typeof EXTERNAL_GAMES !== 'undefined') {
+        // Update Age 4 games
+        EXTERNAL_GAMES[4].forEach(game => {
+            if (updatedExternalGames[game.id]) {
+                game.url = updatedExternalGames[game.id].url;
+                game.title = updatedExternalGames[game.id].title;
+            }
+        });
+        
+        // Update Age 5 games
+        EXTERNAL_GAMES[5].forEach(game => {
+            if (updatedExternalGames[game.id]) {
+                game.url = updatedExternalGames[game.id].url;
+                game.title = updatedExternalGames[game.id].title;
+            }
+        });
+    }
+    
+    // Enhance external game loading with fallback options
+    const origLoadExternal = loadExternalGame;
+    loadExternalGame = function(url, title) {
+        // Show loading indicator
+        const gameContentContainer = document.getElementById('game-content-container');
+        if (!gameContentContainer) return;
+        
+        gameContentContainer.innerHTML = '<div class="loading-indicator">Loading game...</div>';
+        gameContentContainer.style.display = 'block';
+        
+        // Hide games list immediately
+        const gamesListContainer = document.getElementById('games-list-container');
+        if (gamesListContainer) {
+            gamesListContainer.style.display = 'none';
+        }
+        
+        // Create the game content
+        setTimeout(() => {
+            const gameContent = document.createElement('div');
+            gameContent.className = 'game-content external-game-content';
+            gameContent.innerHTML = `
+                <h3>${title}</h3>
+                <div class="parent-message">
+                    <p><strong>Parents:</strong> This is an external educational website. If the game doesn't appear below, use the "Open in New Tab" button.</p>
+                </div>
+                <div class="external-game-container">
+                    <iframe 
+                        src="${url}"
+                        title="${title}"
+                        class="external-game-frame"
+                        allow="fullscreen"
+                        sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+                        referrerpolicy="no-referrer"
+                    ></iframe>
+                </div>
+                <p class="game-instructions">For the best experience, you can use the button below to open the game in a new tab.</p>
+                <a href="${url}" target="_blank" class="open-external-btn">Open in New Tab</a>
+            `;
+            
+            gameContentContainer.innerHTML = '';
+            gameContentContainer.appendChild(gameContent);
+            
+            // Add back button
+            const backButton = document.createElement('button');
+            backButton.className = 'btn back-to-games-btn';
+            backButton.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Games';
+            backButton.addEventListener('click', () => {
+                const gamesListContainer = document.getElementById('games-list-container');
+                if (gamesListContainer) {
+                    gamesListContainer.style.display = 'block';
+                }
+                gameContentContainer.style.display = 'none';
+            });
+            
+            // Add buttons to container
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'game-buttons';
+            buttonContainer.appendChild(backButton);
+            gameContentContainer.appendChild(buttonContainer);
+            
+            // Adjust iframe height
+            adjustIframeHeight();
+            
+            // Add error handler for iframe
+            const iframe = gameContentContainer.querySelector('iframe');
+            if (iframe) {
+                iframe.onerror = function() {
+                    iframe.style.display = 'none';
+                    const container = iframe.parentElement;
+                    container.innerHTML = `
+                        <div class="iframe-error">
+                            <p>This game couldn't be loaded in the frame.</p>
+                            <p>Please use the "Open in New Tab" button below to play.</p>
+                        </div>
+                    `;
+                    container.appendChild(iframe);
+                };
+            }
+        }, 10);
+    };
+})();
+
+// Add iframe error styling
+document.head.insertAdjacentHTML('beforeend', `
+    <style>
+        .iframe-error {
+            padding: 20px;
+            text-align: center;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            margin: 20px 0;
+        }
+        
+        .iframe-error p {
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+        
+        .open-external-btn {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .open-external-btn:hover {
+            background-color: #e05d5d;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+    </style>
+`);
