@@ -1,15 +1,23 @@
 import os
 import logging
+import json
 from datetime import datetime
-from flask import Flask, render_template, redirect, url_for, flash, request, session, jsonify
+from flask import Flask, render_template, redirect, url_for, flash, request, session, jsonify, send_file
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_wtf.csrf import CSRFProtect
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 from models import (
     db, Parent, Child, ParentSettings, Progress, Reward, Session,
     LearningGoal, StoryQueue, SkillProgress, WeeklyReport, DevicePairing
 )
+
+# Import custom ElevenLabs voice generation module
+import generate_elevenlabs_audio
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -31,6 +39,8 @@ csrf.exempt('/api/save-learning-goal')
 csrf.exempt('/api/delete-learning-goal')
 csrf.exempt('/api/save-story-queue')
 csrf.exempt('/api/generate-pairing-code')
+csrf.exempt('/api/generate-voice')
+csrf.exempt('/api/voices')
 
 # Configure database
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
@@ -637,6 +647,75 @@ def generate_pairing_code():
         'expires_at': expires_at.isoformat()
     })
 
+
+@app.route('/api/generate-voice', methods=['POST'])
+@login_required
+def generate_voice():
+    """API endpoint to generate voice narration using ElevenLabs"""
+    try:
+        # Get request data
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'message': 'No data provided'}), 400
+        
+        text = data.get('text')
+        voice_type = data.get('voice_type', 'narrator')
+        story_title = data.get('story_title')
+        
+        if not text:
+            return jsonify({'success': False, 'message': 'No text provided'}), 400
+        
+        # Check if it's a full story generation or just a text snippet
+        if story_title:
+            # Generate audio for an entire story
+            output_path = generate_elevenlabs_audio.generate_story_audio(text, story_title)
+            if output_path:
+                audio_url = url_for('static', filename=output_path.replace('static/', ''))
+                return jsonify({
+                    'success': True, 
+                    'audio_url': audio_url,
+                    'message': f'Story audio generated for {story_title}'
+                })
+            else:
+                return jsonify({'success': False, 'message': 'Failed to generate story audio'}), 500
+        else:
+            # Generate audio for a text snippet (character speech)
+            output_dir = 'static/audio/snippets'
+            os.makedirs(output_dir, exist_ok=True)
+            
+            # Create a unique filename based on a hash of the text
+            import hashlib
+            filename = hashlib.md5(text.encode()).hexdigest()
+            output_path = f"{output_dir}/{filename}.mp3"
+            
+            result = generate_elevenlabs_audio.generate_character_audio(
+                text, 
+                character_type=voice_type, 
+                output_path=output_path
+            )
+            
+            if result:
+                audio_url = url_for('static', filename=output_path.replace('static/', ''))
+                return jsonify({
+                    'success': True, 
+                    'audio_url': audio_url,
+                    'message': 'Audio generated successfully'
+                })
+            else:
+                return jsonify({'success': False, 'message': 'Failed to generate audio'}), 500
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/voices')
+@login_required
+def list_voices():
+    """API endpoint to get available ElevenLabs voices with their IDs"""
+    try:
+        voices = generate_elevenlabs_audio.list_available_voices()
+        return jsonify({'success': True, 'voices': voices})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 @app.route('/story-mode')
 @login_required
