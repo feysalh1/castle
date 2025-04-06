@@ -1981,7 +1981,11 @@ if __name__ == '__main__':
 @login_required
 def admin_dashboard():
     """Admin dashboard to view app statistics and parent emails"""
-    if session.get('user_type') != 'parent' or current_user.id != 1:  # Assuming admin is the first parent account
+    # Get current user type from the database directly
+    parent = Parent.query.filter_by(id=current_user.id).first()
+    
+    # Admin is user with ID 1
+    if not parent or parent.id != 1:
         flash('Access denied. Admin privileges required.', 'error')
         return redirect(url_for('index'))
     
@@ -2019,7 +2023,11 @@ def admin_dashboard():
 @login_required
 def admin_export_emails():
     """Export all parent emails as CSV"""
-    if session.get('user_type') != 'parent' or current_user.id != 1:  # Assuming admin is the first parent account
+    # Get current user type from the database directly
+    parent = Parent.query.filter_by(id=current_user.id).first()
+    
+    # Admin is user with ID 1
+    if not parent or parent.id != 1:
         flash('Access denied. Admin privileges required.', 'error')
         return redirect(url_for('index'))
     
