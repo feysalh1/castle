@@ -857,3 +857,131 @@ footer {
     border-top: 1px dashed #ddd;
     padding-top: 15px;
 }
+
+/* Game Mode Styles */
+.game-container {
+    width: 95%;
+    margin: 0 auto;
+}
+
+.age-filter {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.filter-label {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: var(--accent-color);
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.age-filter-btn {
+    background-color: var(--secondary-color);
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 15px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.age-filter-btn:hover {
+    background-color: var(--accent-color);
+}
+
+.age-filter-btn.active {
+    background-color: var(--primary-color);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.games-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.game-card {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    width: 250px;
+    text-align: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.game-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.game-card h3 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.game-card p {
+    color: #666;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+.play-game-btn {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 15px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.play-game-btn:hover {
+    background-color: var(--primary-color);
+}
+
+.game-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.back-to-games-btn {
+    background-color: #f8f8f8;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 8px 15px;
+    cursor: pointer;
+}
+
+.game-complete-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 15px;
+    cursor: pointer;
+}
+
+.game-instructions {
+    font-style: italic;
+    color: #666;
+    font-size: 0.85rem;
+    margin-top: 15px;
+}

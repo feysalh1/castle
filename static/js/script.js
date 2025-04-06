@@ -53,68 +53,79 @@ const stories = {
 // DOM elements
 document.addEventListener('DOMContentLoaded', function() {
     // Sections
-    const modeSelectionSection = document.getElementById('mode-selection');
-    const storyModeSection = document.getElementById('story-mode');
-    const gameModeSection = document.getElementById('game-mode');
+    const sections = {
+        modeSelection: document.getElementById('mode-selection'),
+        storyMode: document.getElementById('story-mode'),
+        gameMode: document.getElementById('game-mode'),
+        badgesSection: document.getElementById('badges-section')
+    };
     
     // Buttons
-    const storyModeBtn = document.getElementById('story-mode-btn');
-    const gameModeBtn = document.getElementById('game-mode-btn');
-    const backToModesBtn = document.getElementById('back-to-modes-btn');
-    const backToModesFromGameBtn = document.getElementById('back-to-modes-from-game-btn');
-    const playStoryBtn = document.getElementById('play-story-btn');
+    const buttons = {
+        storyModeBtn: document.getElementById('story-mode-btn'),
+        gameModeBtn: document.getElementById('game-mode-btn'),
+        rewardsBtn: document.getElementById('rewards-btn'),
+        backToModesBtn: document.getElementById('back-to-modes-btn'),
+        backToModesFromGameBtn: document.getElementById('back-to-modes-from-game-btn'),
+        backToModesFromBadgesBtn: document.getElementById('back-to-modes-from-badges-btn'),
+        playStoryBtn: document.getElementById('play-story-btn'),
+        doneReadingBtn: document.getElementById('done-reading-btn')
+    };
     
     // Story elements
-    const storyDropdown = document.getElementById('story-dropdown');
-    const storyTitle = document.getElementById('story-title');
-    const storyText = document.getElementById('story-text');
-    const storyImage = document.getElementById('story-image');
-    const storyAudio = document.getElementById('story-audio');
-    const audioSource = document.getElementById('audio-source');
+    const storyElements = {
+        storySelect: document.getElementById('story-select'),
+        storyTitle: document.getElementById('story-title'),
+        storyText: document.getElementById('story-text'),
+        storyImage: document.getElementById('story-image'),
+        storyAudio: document.getElementById('story-audio'),
+        audioSource: document.getElementById('audio-source')
+    };
     
     // Navigation between sections
-    storyModeBtn.addEventListener('click', function() {
-        showSection(storyModeSection);
-    });
-    
-    gameModeBtn.addEventListener('click', function() {
-        showSection(gameModeSection);
-    });
-    
-    backToModesBtn.addEventListener('click', function() {
-        showSection(modeSelectionSection);
-    });
-    
-    backToModesFromGameBtn.addEventListener('click', function() {
-        showSection(modeSelectionSection);
-    });
+    buttons.storyModeBtn?.addEventListener('click', () => showSection('story-mode'));
+    buttons.gameModeBtn?.addEventListener('click', () => showSection('game-mode'));
+    buttons.rewardsBtn?.addEventListener('click', () => showSection('badges-section'));
+    buttons.backToModesBtn?.addEventListener('click', () => showSection('mode-selection'));
+    buttons.backToModesFromGameBtn?.addEventListener('click', () => showSection('mode-selection'));
+    buttons.backToModesFromBadgesBtn?.addEventListener('click', () => showSection('mode-selection'));
     
     // Story selection change
-    storyDropdown.addEventListener('change', function() {
+    storyElements.storySelect?.addEventListener('change', function() {
         updateStory(this.value);
     });
     
     // Play story button
-    playStoryBtn.addEventListener('click', function() {
-        playCurrentStory();
-    });
+    buttons.playStoryBtn?.addEventListener('click', () => playCurrentStory());
+    
+    // Done reading button
+    buttons.doneReadingBtn?.addEventListener('click', () => completeStory());
     
     // Initialize with the first story
-    updateStory('little_fox');
+    if (storyElements.storySelect) {
+        updateStory(storyElements.storySelect.value || 'little_fox');
+    }
     
     // Functions
-    function showSection(section) {
+    window.showSection = function(sectionId) {
         // Hide all sections
-        modeSelectionSection.classList.remove('active');
-        storyModeSection.classList.remove('active');
-        gameModeSection.classList.remove('active');
+        for (const key in sections) {
+            if (sections[key]) {
+                sections[key].classList.remove('active');
+            }
+        }
         
         // Show selected section
-        section.classList.add('active');
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.classList.add('active');
+        }
         
         // Pause any playing audio when changing sections
-        storyAudio.pause();
-    }
+        if (storyElements.storyAudio) {
+            storyElements.storyAudio.pause();
+        }
+    };
     
     function updateStory(storyId) {
         const story = stories[storyId];
@@ -125,26 +136,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Update story content
-        storyTitle.textContent = story.title;
-        storyText.textContent = story.text;
+        storyElements.storyTitle.textContent = story.title;
+        storyElements.storyText.textContent = story.text;
         
         // Update image path
         const imagePath = `/static/images/${story.image}`;
-        storyImage.src = imagePath;
-        storyImage.alt = story.title;
+        storyElements.storyImage.src = imagePath;
+        storyElements.storyImage.alt = story.title;
         
         // Update audio path but don't autoplay
         const audioPath = `/static/audio/${story.audio}`;
-        audioSource.src = audioPath;
-        storyAudio.load(); // Reload the audio element with the new source
+        storyElements.audioSource.src = audioPath;
+        storyElements.storyAudio.load(); // Reload the audio element with the new source
     }
     
     function playCurrentStory() {
         // Reset audio to beginning
-        storyAudio.currentTime = 0;
+        storyElements.storyAudio.currentTime = 0;
         
         // Play audio
-        storyAudio.play().catch(error => {
+        storyElements.storyAudio.play().catch(error => {
             console.error('Error playing audio:', error);
             alert('Sorry, there was a problem playing the story audio. Please try again.');
         });
@@ -174,33 +185,8 @@ function completeStory() {
     if (storySelect) {
         const storyId = storySelect.value;
         // Award badge through rewards system
-        awardStoryCompletionBadge(storyId);
+        if (typeof awardStoryCompletionBadge === 'function') {
+            awardStoryCompletionBadge(storyId);
+        }
     }
-    
-    // Return to story selection
-    showSection('story-select-section');
 }
-
-// Game completion function
-function completeGame() {
-    // Award game completion badge
-    awardBadge('puzzle_master');
-    
-    // Show completion message
-    showAchievementPopup('🧩', 'Puzzle Master', 'You completed the animal puzzle! You earned a badge and 5 stars!');
-}
-
-// Add event listener for the game section
-document.addEventListener('DOMContentLoaded', function() {
-    // Add game completion demo button (temporary for demonstration)
-    const gameContainer = document.getElementById('game-container');
-    if (gameContainer) {
-        const completeGameBtn = document.createElement('button');
-        completeGameBtn.textContent = 'Complete Puzzle';
-        completeGameBtn.className = 'action-btn';
-        completeGameBtn.style.marginTop = '20px';
-        completeGameBtn.addEventListener('click', completeGame);
-        
-        gameContainer.appendChild(completeGameBtn);
-    }
-});
