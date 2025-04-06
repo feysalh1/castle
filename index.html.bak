@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baby Girl - Interactive Storytime</title>
@@ -13,9 +12,6 @@
     <div class="container">
         <header>
             <h1 class="app-title">Baby Girl</h1>
-            <div class="rewards-display">
-                <div class="total-stars"><i class="fas fa-star"></i><span id="star-count">0</span></div>
-            </div>
             <div class="app-subtitle">Interactive Storytime</div>
             <div class="rewards-display">
                 <div class="total-stars">
@@ -26,41 +22,11 @@
         
         <main>
             <!-- Mode Selection Screen (Initial View) -->
-            <!-- Badges Collection Screen -->
-            <div id="badges-section" class="section">
-                <div class="navigation-bar">
-                    <button id="back-to-modes-from-badges-btn" class="back-btn">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                    <h2>My Rewards</h2>
-                </div>
-                
-                <h3 class="badges-title">Story Badges Collection</h3>
-                <div class="badges-container" id="story-badges">
-                    <!-- Badges will be added here dynamically -->
-                </div>
-                
-                <div class="reward-message" id="reward-message">
-                    Complete stories to earn badges and stars!
-                </div>
-            </div>
-
             <div id="mode-selection" class="section active">
                 <h2>Choose Your Mode</h2>
                 <div class="mode-buttons">
                     <button id="story-mode-btn" class="mode-btn">
                         <div class="mode-icon">📖</div>
-                        <div class="mode-label">Story Mode</div>
-                    </button>
-                    <button id="game-mode-btn" class="mode-btn">
-                        <div class="mode-icon">🎮</div>
-                        <div class="mode-label">Game Mode</div>
-                    </button>
-                    <button id="rewards-btn" class="mode-btn">
-                        <div class="mode-icon">🏆</div>
-                        <div class="mode-label">My Rewards</div>
-                    </button>
-                </div>
                         <div class="mode-label">Story Mode</div>
                     </button>
                     <button id="game-mode-btn" class="mode-btn">

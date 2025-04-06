@@ -166,3 +166,41 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Story completion function
+function completeStory() {
+    // Get current story ID
+    const storySelect = document.getElementById('story-select');
+    if (storySelect) {
+        const storyId = storySelect.value;
+        // Award badge through rewards system
+        awardStoryCompletionBadge(storyId);
+    }
+    
+    // Return to story selection
+    showSection('story-select-section');
+}
+
+// Game completion function
+function completeGame() {
+    // Award game completion badge
+    awardBadge('puzzle_master');
+    
+    // Show completion message
+    showAchievementPopup('🧩', 'Puzzle Master', 'You completed the animal puzzle! You earned a badge and 5 stars!');
+}
+
+// Add event listener for the game section
+document.addEventListener('DOMContentLoaded', function() {
+    // Add game completion demo button (temporary for demonstration)
+    const gameContainer = document.getElementById('game-container');
+    if (gameContainer) {
+        const completeGameBtn = document.createElement('button');
+        completeGameBtn.textContent = 'Complete Puzzle';
+        completeGameBtn.className = 'action-btn';
+        completeGameBtn.style.marginTop = '20px';
+        completeGameBtn.addEventListener('click', completeGame);
+        
+        gameContainer.appendChild(completeGameBtn);
+    }
+});

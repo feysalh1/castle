@@ -40,6 +40,7 @@ header {
     text-align: center;
     padding: 20px 0;
     margin-bottom: 20px;
+    position: relative;
 }
 
 .app-title {
@@ -52,6 +53,201 @@ header {
 .app-subtitle {
     font-size: 1.5rem;
     color: var(--secondary-color);
+    margin-bottom: 10px;
+}
+
+/* Rewards System Styles */
+.rewards-display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.total-stars {
+    background-color: var(--tertiary-color);
+    color: var(--text-color);
+    border-radius: 30px;
+    padding: 5px 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.total-stars .fa-star {
+    color: gold;
+    margin-right: 8px;
+    font-size: 1.3rem;
+}
+
+/* Star Animation */
+@keyframes star-animation {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.5); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.star-reward {
+    position: fixed;
+    color: gold;
+    font-size: 50px;
+    z-index: 1000;
+    animation: star-animation 0.5s ease-out;
+}
+
+/* Badge Collection */
+.badges-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 15px 0;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: var(--border-radius);
+}
+
+.badge {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    background-color: #e0e0e0;
+    color: #aaa;
+    transition: all 0.3s ease;
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.badge.earned {
+    background-color: var(--accent-color);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 3px 7px rgba(0,0,0,0.2);
+}
+
+.badge-tooltip {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.badge:hover .badge-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+    margin-bottom: 10px;
+}
+
+/* Rewards System Styles */
+.rewards-display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.total-stars {
+    background-color: var(--tertiary-color);
+    color: var(--text-color);
+    border-radius: 30px;
+    padding: 5px 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.total-stars .fa-star {
+    color: gold;
+    margin-right: 8px;
+    font-size: 1.3rem;
+}
+
+/* Star Animation */
+@keyframes star-animation {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.5); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.star-reward {
+    position: fixed;
+    color: gold;
+    font-size: 50px;
+    z-index: 1000;
+    animation: star-animation 0.5s ease-out;
+}
+
+/* Badge Collection */
+.badges-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 15px 0;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: var(--border-radius);
+}
+
+.badge {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    background-color: #e0e0e0;
+    color: #aaa;
+    transition: all 0.3s ease;
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.badge.earned {
+    background-color: var(--accent-color);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 3px 7px rgba(0,0,0,0.2);
+}
+
+.badge-tooltip {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.badge:hover .badge-tooltip {
+    opacity: 1;
+    visibility: visible;
 }
 
 /* Main Content Area */
@@ -309,5 +505,110 @@ footer {
 
     #story-title {
         font-size: 1.5rem;
+    }
+}
+
+/* Rewards Section Styles */
+#rewards-btn {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.badges-title {
+    color: var(--primary-color);
+    margin: 10px 0 20px;
+    text-align: center;
+}
+
+.reward-message {
+    text-align: center;
+    padding: 15px;
+    margin-top: 20px;
+    font-size: 1.1rem;
+    color: var(--text-color);
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: var(--border-radius);
+    max-width: 80%;
+}
+
+/* Achievement popup */
+.achievement-popup {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 300px;
+}
+
+.achievement-popup .achievement-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    color: gold;
+}
+
+.achievement-popup .achievement-title {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+.achievement-popup .achievement-message {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+}
+
+.achievement-popup .close-btn {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    padding: 8px 20px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.achievement-popup .close-btn:hover {
+    background-color: #7ac85f;
+}
+
+/* Media Queries for Rewards */
+@media (min-width: 768px) {
+    .mode-buttons {
+        flex-wrap: wrap;
+    }
+    
+    .mode-btn {
+        width: 30%;
+    }
+    
+    .badges-container {
+        max-width: 600px;
+    }
+}
+
+@media (max-width: 480px) {
+    .total-stars {
+        font-size: 1rem;
+        padding: 4px 12px;
+    }
+    
+    .badge {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .achievement-popup {
+        width: 90%;
     }
 }

@@ -1,0 +1,116 @@
+/* Header Styles */
+header {
+    text-align: center;
+    padding: 20px 0;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.app-title {
+    font-size: 3rem;
+    color: var(--primary-color);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 5px;
+}
+
+.app-subtitle {
+    font-size: 1.5rem;
+    color: var(--secondary-color);
+    margin-bottom: 10px;
+}
+
+/* Rewards System Styles */
+.rewards-display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.total-stars {
+    background-color: var(--tertiary-color);
+    color: var(--text-color);
+    border-radius: 30px;
+    padding: 5px 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.total-stars .fa-star {
+    color: gold;
+    margin-right: 8px;
+    font-size: 1.3rem;
+}
+
+/* Star Animation */
+@keyframes star-animation {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.5); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.star-reward {
+    position: fixed;
+    color: gold;
+    font-size: 50px;
+    z-index: 1000;
+    animation: star-animation 0.5s ease-out;
+}
+
+/* Badge Collection */
+.badges-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 15px 0;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: var(--border-radius);
+}
+
+.badge {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    background-color: #e0e0e0;
+    color: #aaa;
+    transition: all 0.3s ease;
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.badge.earned {
+    background-color: var(--accent-color);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 3px 7px rgba(0,0,0,0.2);
+}
+
+.badge-tooltip {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.badge:hover .badge-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
