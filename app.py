@@ -12,6 +12,11 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+# Define constants for file paths
+STORIES_DIR = "static/stories"
+IMAGES_DIR = "static/images/stories"
+AUDIO_DIR = "static/audio"
+
 from models import (
     db, Parent, Child, ParentSettings, Progress, Reward, Session,
     LearningGoal, StoryQueue, SkillProgress, WeeklyReport, DevicePairing
@@ -118,7 +123,11 @@ def load_user(user_id):
 
 # Import and register ChatGPT routes
 from chatgpt_routes import chatgpt_bp
+from story_enhancement_routes import story_enhancement
+
+# Register blueprints
 app.register_blueprint(chatgpt_bp)
+app.register_blueprint(story_enhancement)
 
 # Create database tables
 with app.app_context():
@@ -911,6 +920,27 @@ def story_mode():
     # Fetch stories that are appropriate for this child's age
     # In a full implementation, this would filter stories by age appropriateness
     
+    # Check for enhanced stories with diverse audio narration
+    enhanced_stories = []
+    if os.path.exists(STORIES_DIR):
+        for file in os.listdir(STORIES_DIR):
+            if file.endswith('.json'):
+                story_id = os.path.splitext(file)[0]
+                try:
+                    with open(os.path.join(STORIES_DIR, file), 'r') as f:
+                        story_data = json.load(f)
+                    
+                    has_audio = all('audio' in page and page['audio'] 
+                                   for page in story_data.get('pages', []))
+                    
+                    enhanced_stories.append({
+                        'id': story_id,
+                        'title': story_data.get('title', f"Story {story_id}"),
+                        'has_audio': has_audio
+                    })
+                except Exception as e:
+                    app.logger.warning(f"Error reading story file {file}: {str(e)}")
+    
     # Record story mode access in session activity log
     user_session = Session.query.filter_by(
         user_type='child',
@@ -922,7 +952,7 @@ def story_mode():
         user_session.record_activity('view_story_mode')
         db.session.commit()
     
-    return render_template('story_mode.html')
+    return render_template('story_mode.html', enhanced_stories=enhanced_stories)
 
 
 @app.route('/game-mode')

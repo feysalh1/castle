@@ -1,0 +1,72 @@
+<!-- Enhanced Stories Section -->
+{% if enhanced_stories %}
+<div class="story-selection enhanced-stories-section">
+    <h3>Enhanced Stories with Character Voices</h3>
+    <p>These stories feature character-specific voices and diverse representation.</p>
+    
+    <div class="enhanced-stories-grid">
+        {% for story in enhanced_stories %}
+        <div class="enhanced-story-card">
+            <h4>{{ story.title }}</h4>
+            {% if story.has_audio %}
+            <span class="audio-badge">ElevenLabs Narration</span>
+            {% endif %}
+            <p>Enjoy this interactive story with unique voices for each character!</p>
+            <a href="{{ url_for('story_enhancement.story_preview', story_id=story.id) }}" class="primary-btn">Read Story</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .enhanced-stories-section {
+        margin-bottom: 40px;
+        background-color: #f0e6ff;
+        border: 2px solid #d4baff;
+    }
+    
+    .enhanced-stories-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .enhanced-story-card {
+        background-color: white;
+        border-radius: 12px;
+        padding: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .enhanced-story-card h4 {
+        color: #5a208f;
+        margin-bottom: 5px;
+    }
+    
+    .enhanced-story-card p {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 15px;
+    }
+    
+    .audio-badge {
+        display: inline-block;
+        background-color: #8a5fff;
+        color: white;
+        font-size: 0.7rem;
+        padding: 3px 8px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+    }
+    
+    @media (max-width: 768px) {
+        .enhanced-stories-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endif %}

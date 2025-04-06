@@ -1,0 +1,10 @@
+<svg width="600" height="400" xmlns="http://www.w3.org/2000/svg">
+    <rect width="600" height="400" fill="#fff4e6"/>
+    <circle cx="300" cy="200" r="100" fill="#ff9a3c"/>
+    <text x="300" y="200" font-family="Arial" font-size="24" fill="#7a3d00" text-anchor="middle">The Little Fox - Page 2</text>
+    <path d="M 250 150 L 270 120 L 290 150 Z" fill="#7a3d00" /> <!-- Left ear -->
+    <path d="M 310 150 L 330 120 L 350 150 Z" fill="#7a3d00" /> <!-- Right ear -->
+    <circle cx="270" cy="180" r="5" fill="#000" /> <!-- Left eye -->
+    <circle cx="330" cy="180" r="5" fill="#000" /> <!-- Right eye -->
+    <path d="M 300 190 L 290 200 L 310 200 Z" fill="#000" /> <!-- Nose -->
+</svg>
