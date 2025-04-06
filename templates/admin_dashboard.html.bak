@@ -38,7 +38,6 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
             text-align: center;
-            position: relative;
         }
         
         .stat-card h3 {
@@ -57,27 +56,6 @@
         .stat-change {
             font-size: 14px;
             color: #4caf50;
-        }
-        
-        .stat-status {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-        
-        .status-good {
-            background-color: #4caf50;
-        }
-        
-        .status-warning {
-            background-color: #ff9800;
-        }
-        
-        .status-critical {
-            background-color: #f44336;
         }
         
         .data-table {
@@ -351,28 +329,6 @@
                 <div class="stat-status {{ 'status-good' if system_health.error_count_24h == 0 else 'status-warning' if system_health.error_count_24h < 10 else 'status-critical' }}"></div>
             </div>
         </div>
-        
-        {% if recent_errors and recent_errors|length > 0 %}
-        <h2 class="section-title">Recent Errors</h2>
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Time</th>
-                    <th>Source</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for error in recent_errors %}
-                <tr>
-                    <td>{{ error.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                    <td>{{ error.source }}</td>
-                    <td>{{ error.event_data.description if error.event_data and error.event_data.description else 'No description' }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% endif %}
         
         <h2 class="section-title">Recent Parent Registrations</h2>
         <table class="data-table">

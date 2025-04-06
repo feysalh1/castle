@@ -4,6 +4,9 @@ import json
 import re
 import qrcode
 import io
+import psutil
+import platform
+import sys
 from datetime import datetime, timedelta, date
 from flask import Flask, render_template, redirect, url_for, flash, request, session, jsonify, send_file, abort
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -66,6 +69,22 @@ def detect_device_type(user_agent_string):
 
 # Import custom ElevenLabs voice generation module
 import generate_elevenlabs_audio
+
+# Define function to get database size (will be executed after db is initialized)
+def get_database_size():
+    """Get the size of the database in MB"""
+    try:
+        # Extract DB name from connection string
+        db_name = os.environ.get("PGDATABASE", "postgres")
+        # Try to get database size via db connection
+        with db.engine.connect() as conn:
+            result = conn.execute(db.text(f"SELECT pg_database_size('{db_name}') / (1024*1024) as size_mb;"))
+            size_mb = result.scalar()
+            return round(size_mb or 0, 2)
+    except Exception as e:
+        # Fallback if SQL query fails
+        logging.error(f"Failed to get database size: {str(e)}")
+        return 0
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -2006,17 +2025,57 @@ def admin_dashboard():
         ).count(),
     }
     
+    # Get system health information
+    import psutil
+    import platform
+    import sys
+    
+    # Check if OpenAI API key is configured
+    openai_key_status = bool(os.environ.get('OPENAI_API_KEY'))
+    
+    # Check if ElevenLabs API key is configured
+    elevenlabs_key_status = bool(os.environ.get('ELEVENLABS_API_KEY'))
+    
+    # Check database connection
+    db_status = True
+    try:
+        db.session.execute(db.select(Parent).limit(1))
+    except Exception:
+        db_status = False
+    
+    system_health = {
+        'cpu_usage': round(psutil.cpu_percent(), 1),
+        'memory_usage': round(psutil.virtual_memory().percent, 1),
+        'disk_usage': round(psutil.disk_usage('/').percent, 1),
+        'python_version': platform.python_version(),
+        'os_info': f"{platform.system()} {platform.release()}",
+        'app_uptime': datetime.now() - datetime.fromtimestamp(psutil.boot_time()),
+        'database_status': db_status,
+        'openai_api_configured': openai_key_status,
+        'elevenlabs_api_configured': elevenlabs_key_status,
+        'database_size': get_database_size(),
+        'error_count_24h': Event.query.filter(
+            Event.event_name == 'error',
+            Event.timestamp >= datetime.now() - timedelta(hours=24)
+        ).count()
+    }
+    
     # Get recent parent registrations
     recent_parents = Parent.query.order_by(Parent.created_at.desc()).limit(10).all()
     
     # Get all parents for email list
     all_parents = Parent.query.order_by(Parent.email).all()
     
+    # Get recent error events
+    recent_errors = Event.query.filter_by(event_name='error').order_by(Event.timestamp.desc()).limit(10).all()
+    
     return render_template(
         'admin_dashboard.html', 
         stats=stats,
+        system_health=system_health,
         recent_parents=recent_parents,
-        all_parents=all_parents
+        all_parents=all_parents,
+        recent_errors=recent_errors
     )
 
 @app.route('/admin/export-emails')

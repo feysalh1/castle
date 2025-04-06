@@ -24,4 +24,6 @@ dependencies = [
     "sqlalchemy>=2.0.40",
     "openai>=1.70.0",
     "pyjwt>=2.10.1",
+    "psutil>=7.0.0",
+    "wtforms>=3.2.1",
 ]
