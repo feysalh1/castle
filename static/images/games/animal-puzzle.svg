@@ -1,0 +1,74 @@
+<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="300" height="300" fill="#f9f9f9" rx="10" ry="10"/>
+  
+  <!-- Puzzle grid -->
+  <line x1="100" y1="0" x2="100" y2="300" stroke="#ddd" stroke-width="2"/>
+  <line x1="200" y1="0" x2="200" y2="300" stroke="#ddd" stroke-width="2"/>
+  <line x1="0" y1="100" x2="300" y2="100" stroke="#ddd" stroke-width="2"/>
+  <line x1="0" y1="200" x2="300" y2="200" stroke="#ddd" stroke-width="2"/>
+  
+  <!-- Animal Pieces -->
+  <!-- Piece 1: Dog head -->
+  <circle cx="50" cy="50" r="40" fill="#B87333"/>
+  <circle cx="35" cy="40" r="8" fill="#000"/>
+  <circle cx="65" cy="40" r="8" fill="#000"/>
+  <ellipse cx="50" cy="60" rx="10" ry="5" fill="#000"/>
+  
+  <!-- Piece 2: Cat head -->
+  <circle cx="150" cy="50" r="40" fill="#888"/>
+  <polygon points="150,10 130,40 170,40" fill="#888"/>
+  <circle cx="135" cy="40" r="6" fill="#000"/>
+  <circle cx="165" cy="40" r="6" fill="#000"/>
+  <ellipse cx="150" cy="55" rx="8" ry="3" fill="#000"/>
+  
+  <!-- Piece 3: Bird -->
+  <circle cx="250" cy="50" r="35" fill="#4682B4"/>
+  <polygon points="250,85 280,120 220,120" fill="#4682B4"/>
+  <polygon points="260,30 300,20 270,50" fill="#FFD700"/>
+  <circle cx="235" cy="40" r="5" fill="#000"/>
+  
+  <!-- Piece 4: Rabbit -->
+  <circle cx="50" cy="150" r="40" fill="#E6E6FA"/>
+  <ellipse cx="50" cy="100" rx="10" ry="30" fill="#E6E6FA"/>
+  <ellipse cx="70" cy="105" rx="10" ry="25" fill="#E6E6FA"/>
+  <circle cx="40" cy="140" r="5" fill="#000"/>
+  <circle cx="60" cy="140" r="5" fill="#000"/>
+  
+  <!-- Piece 5: Lion -->
+  <circle cx="150" cy="150" r="40" fill="#DAA520"/>
+  <circle cx="150" cy="150" r="55" fill="none" stroke="#DAA520" stroke-width="10"/>
+  <circle cx="135" cy="140" r="5" fill="#000"/>
+  <circle cx="165" cy="140" r="5" fill="#000"/>
+  <path d="M140,160 Q150,170 160,160" fill="none" stroke="#000" stroke-width="2"/>
+  
+  <!-- Piece 6: Elephant -->
+  <circle cx="250" cy="150" r="40" fill="#A9A9A9"/>
+  <path d="M290,150 Q320,130 290,110" fill="#A9A9A9" stroke="#A9A9A9" stroke-width="20"/>
+  <circle cx="235" cy="140" r="5" fill="#000"/>
+  <circle cx="265" cy="140" r="5" fill="#000"/>
+  
+  <!-- Piece 7: Monkey -->
+  <circle cx="50" cy="250" r="40" fill="#8B4513"/>
+  <circle cx="35" cy="240" r="12" fill="#FFE4C4"/>
+  <circle cx="65" cy="240" r="12" fill="#FFE4C4"/>
+  <circle cx="35" cy="240" r="5" fill="#000"/>
+  <circle cx="65" cy="240" r="5" fill="#000"/>
+  <ellipse cx="50" cy="260" rx="15" ry="8" fill="#FFE4C4"/>
+  
+  <!-- Piece 8: Giraffe -->
+  <circle cx="150" cy="250" r="35" fill="#F5DEB3"/>
+  <rect x="145" y="200" width="10" height="50" fill="#F5DEB3"/>
+  <circle cx="150" cy="200" r="15" fill="#F5DEB3"/>
+  <circle cx="140" cy="230" r="5" fill="#8B4513"/>
+  <circle cx="135" cy="240" r="5" fill="#000"/>
+  <circle cx="165" cy="240" r="5" fill="#000"/>
+  
+  <!-- Piece 9: Frog -->
+  <circle cx="250" cy="250" r="40" fill="#90EE90"/>
+  <ellipse cx="230" cy="230" rx="15" ry="10" fill="#fff"/>
+  <ellipse cx="270" cy="230" rx="15" ry="10" fill="#fff"/>
+  <circle cx="230" cy="230" r="8" fill="#000"/>
+  <circle cx="270" cy="230" r="8" fill="#000"/>
+  <path d="M230,270 Q250,280 270,270" fill="none" stroke="#000" stroke-width="3"/>
+</svg>

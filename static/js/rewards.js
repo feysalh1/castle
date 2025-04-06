@@ -14,8 +14,16 @@ const storyBadges = {
 
 // Game badges
 const gameBadges = {
-    'puzzle_master': { icon: '🧩', title: 'Puzzle Master', description: 'Completed the animal puzzle game' },
-    'fast_solver': { icon: '⏱️', title: 'Speed Champion', description: 'Solved a puzzle in under 1 minute' }
+    // Age 4 badges
+    'puzzle_master': { icon: '🧩', title: 'Puzzle Master', description: 'Completed the animal puzzle game', age: 4 },
+    'coloring_master': { icon: '🎨', title: 'Coloring Artist', description: 'Completed the coloring game', age: 4 },
+    
+    // Age 5+ badges
+    'letter_master': { icon: '🔤', title: 'Letter Champion', description: 'Completed the letter matching game', age: 5 },
+    'number_master': { icon: '🔢', title: 'Number Whiz', description: 'Completed the number game', age: 5 },
+    
+    // Special badges
+    'fast_solver': { icon: '⏱️', title: 'Speed Champion', description: 'Solved a puzzle in under 1 minute', age: 'special' }
 };
 
 // Initialize rewards
@@ -146,8 +154,57 @@ function renderBadges() {
         badgesContainer.appendChild(badgeElement);
     });
     
+    // Add age-appropriate game badges section
+    const badgesSection = document.getElementById('badges-section');
+    if (badgesSection) {
+        // Remove any existing game badge sections
+        const existingGameBadges = badgesSection.querySelectorAll('.age-badges-section');
+        existingGameBadges.forEach(el => el.remove());
+        
+        // Age 4 badges
+        addGameBadgeSection(badgesSection, 'Age 4 Game Badges', 4);
+        
+        // Age 5+ badges
+        addGameBadgeSection(badgesSection, 'Age 5+ Game Badges', 5);
+        
+        // Special badges
+        addGameBadgeSection(badgesSection, 'Special Achievements', 'special');
+    }
+    
     // Update reward message
     updateRewardMessage();
+}
+
+// Add game badge section for specific age
+function addGameBadgeSection(container, title, age) {
+    const filteredBadges = Object.keys(gameBadges).filter(key => gameBadges[key].age === age);
+    
+    // Skip if no badges for this age
+    if (filteredBadges.length === 0) return;
+    
+    const sectionDiv = document.createElement('div');
+    sectionDiv.className = 'age-badges-section';
+    sectionDiv.innerHTML = `<h3 class="badges-title">${title}</h3>`;
+    
+    const badgesContainer = document.createElement('div');
+    badgesContainer.className = 'badges-container';
+    
+    filteredBadges.forEach(badgeId => {
+        const badge = gameBadges[badgeId];
+        const isEarned = earnedBadges[badgeId] || false;
+        
+        const badgeElement = document.createElement('div');
+        badgeElement.className = `badge ${isEarned ? 'earned' : ''}`;
+        badgeElement.innerHTML = `
+            ${badge.icon}
+            <span class="badge-tooltip">${badge.title}</span>
+        `;
+        
+        badgesContainer.appendChild(badgeElement);
+    });
+    
+    sectionDiv.appendChild(badgesContainer);
+    container.appendChild(sectionDiv);
 }
 
 // Update reward message based on progress
@@ -159,7 +216,7 @@ function updateRewardMessage() {
     const totalBadges = Object.keys(storyBadges).length + Object.keys(gameBadges).length;
     
     if (earnedCount === 0) {
-        rewardMessage.textContent = 'Complete stories to earn badges and stars!';
+        rewardMessage.textContent = 'Complete stories and games to earn badges and stars!';
     } else if (earnedCount < totalBadges / 2) {
         rewardMessage.textContent = `Great job! You've earned ${earnedCount} badges and ${starCount} stars!`;
     } else if (earnedCount < totalBadges) {
