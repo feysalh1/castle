@@ -1379,3 +1379,190 @@ footer {
     background-color: var(--secondary-color);
     color: white;
 }
+
+/* Responsive Game Layout Fixes */
+@media (max-width: 992px) {
+    .container {
+        max-width: 100%;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    
+    .game-container {
+        width: 100%;
+    }
+    
+    .game-card {
+        width: 100%;
+        max-width: 220px;
+    }
+    
+    .external-game-container {
+        height: 350px;
+    }
+}
+
+@media (max-width: 768px) {
+    .game-card {
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .games-list {
+        display: block;
+    }
+    
+    .puzzle-container, .coloring-container {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+    
+    .memory-board, .match-container {
+        max-width: 100%;
+        gap: 5px;
+    }
+    
+    .memory-card, .match-card {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .external-game-container {
+        height: 300px;
+    }
+    
+    .puzzle-board {
+        max-width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .puzzle-pieces {
+        max-width: 100%;
+    }
+    
+    .puzzle-target {
+        width: 100%;
+        height: 70px;
+    }
+    
+    .shape-game-container {
+        flex-direction: column;
+    }
+    
+    .coloring-area {
+        width: 100%;
+        height: auto;
+        min-height: 200px;
+    }
+}
+
+/* Ensure full-width for the game mode section */
+#game-mode {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Make sure the content doesn't overflow */
+.section {
+    overflow-x: hidden;
+}
+
+/* Ensure games list container is full width */
+#games-list-container {
+    width: 100%;
+}
+
+/* Make external game iframe responsive */
+.external-game-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    overflow: hidden;
+}
+
+/* Fix for games layout in small screens */
+.game-content {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Main layout fixes */
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    width: 100%;
+}
+
+.container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0 10px;
+}
+
+main {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* Fix for smaller screens */
+@media (max-width: 576px) {
+    .app-title {
+        font-size: 2rem;
+    }
+    
+    .app-subtitle {
+        font-size: 1rem;
+    }
+    
+    .section {
+        padding: 15px 5px;
+    }
+    
+    .navigation-bar h2 {
+        font-size: 1.5rem;
+    }
+    
+    .game-container {
+        padding: 10px 0;
+    }
+    
+    .age-filter {
+        padding: 10px;
+    }
+    
+    .source-buttons {
+        flex-wrap: wrap;
+    }
+    
+    .source-btn, .age-filter-btn {
+        font-size: 0.9rem;
+        padding: 6px 12px;
+    }
+    
+    .filter-buttons {
+        flex-wrap: wrap;
+    }
+    
+    .modal-container {
+        width: 95%;
+        padding: 15px;
+    }
+    
+    .puzzle-piece {
+        font-size: 2rem;
+    }
+    
+    .shape, .shape-target {
+        font-size: 1.8rem;
+    }
+    
+    .color-swatch {
+        width: 30px;
+        height: 30px;
+    }
+}
