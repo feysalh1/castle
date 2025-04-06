@@ -203,7 +203,12 @@ def parent_register():
         parent.set_password(password)
         
         # Create default settings
-        settings = ParentSettings(parent=parent)
+        settings = ParentSettings(
+            parent=parent,
+            allow_external_games=True,
+            max_daily_playtime=90,
+            content_age_filter=6
+        )
         
         # Save to database
         db.session.add(parent)
