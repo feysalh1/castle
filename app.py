@@ -149,34 +149,7 @@ def parent_login():
     return render_template('parent_login.html')
 
 
-@app.route('/child/login', methods=['GET', 'POST'])
-def child_login():
-    """Login for child accounts"""
-    if current_user.is_authenticated:
-        return redirect(url_for('child_dashboard'))
-    
-    if request.method == 'POST':
-        username = request.form.get('username')
-        pin = request.form.get('pin')
-        
-        child = Child.query.filter_by(username=username).first()
-        
-        if not child or not child.check_pin(pin):
-            flash('Invalid username or PIN', 'error')
-            return redirect(url_for('child_login'))
-        
-        # Log in the child
-        login_user(child)
-        session['user_type'] = 'child'
-        
-        # Record login session
-        new_session = Session(user_type='child', user_id=child.id)
-        db.session.add(new_session)
-        db.session.commit()
-        
-        return redirect(url_for('child_dashboard'))
-    
-    return render_template('child_login.html')
+# Child login is no longer needed as children access through parent accounts
 
 
 @app.route('/logout')
