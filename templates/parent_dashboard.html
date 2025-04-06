@@ -6,267 +6,20 @@
     <title>Parent Dashboard - Children's Castle</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}">
-    <style>
-        .dashboard-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            margin: 30px 0;
-        }
-        
-        .dashboard-sidebar {
-            flex: 1;
-            min-width: 250px;
-            background-color: rgba(180, 220, 255, 0.8);
-            border-radius: var(--border-radius);
-            padding: 25px;
-            box-shadow: var(--box-shadow);
-            border: 2px solid white;
-        }
-        
-        .dashboard-main {
-            flex: 2;
-            min-width: 300px;
-        }
-        
-        .parent-profile {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
-        }
-        
-        .parent-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-            border: 2px solid var(--primary-color);
-        }
-        
-        .parent-avatar img {
-            width: 85%;
-            height: 85%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-        
-        .parent-info h3 {
-            margin: 0;
-            color: var(--primary-dark);
-        }
-        
-        .parent-info p {
-            margin: 5px 0 0;
-            font-size: 0.9rem;
-            color: var(--accent-dark);
-        }
-        
-        .nav-menu {
-            margin-top: 30px;
-        }
-        
-        .nav-menu ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .nav-menu li {
-            margin-bottom: 10px;
-        }
-        
-        .nav-menu a {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            border-radius: var(--border-radius);
-            color: var(--primary-dark);
-            text-decoration: none;
-            font-weight: bold;
-            transition: var(--transition-speed);
-        }
-        
-        .nav-menu a:hover, .nav-menu a.active {
-            background-color: rgba(255, 255, 255, 0.5);
-            transform: translateX(5px);
-        }
-        
-        .nav-menu a svg {
-            margin-right: 10px;
-            width: 20px;
-            height: 20px;
-        }
-        
-        .logout-btn {
-            margin-top: 30px;
-        }
-        
-        .welcome-card {
-            background-color: rgba(180, 220, 255, 0.8);
-            border-radius: var(--border-radius);
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: var(--box-shadow);
-            border: 2px solid white;
-        }
-        
-        .welcome-card h2 {
-            color: var(--primary-dark);
-            margin-top: 0;
-        }
-        
-        .stats-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            flex: 1;
-            min-width: 150px;
-            background-color: rgba(180, 220, 255, 0.8);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            text-align: center;
-            box-shadow: var(--box-shadow);
-            border: 2px solid white;
-        }
-        
-        .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--primary-dark);
-            margin: 10px 0;
-        }
-        
-        .stat-label {
-            color: var(--accent-dark);
-            font-size: 0.9rem;
-        }
-        
-        .children-section {
-            margin-top: 40px;
-        }
-        
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .children-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-        }
-        
-        .child-card {
-            background-color: rgba(180, 220, 255, 0.8);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            text-align: center;
-            box-shadow: var(--box-shadow);
-            border: 2px solid white;
-            cursor: pointer;
-            transition: transform var(--transition-speed);
-        }
-        
-        .child-card:hover {
-            transform: translateY(-10px);
-        }
-        
-        .child-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background-color: white;
-            margin: 0 auto 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 3px solid var(--accent-color);
-        }
-        
-        .child-avatar img {
-            width: 90%;
-            height: 90%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-        
-        .child-name {
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin: 10px 0 5px;
-            color: var(--primary-dark);
-        }
-        
-        .child-age {
-            font-size: 0.9rem;
-            color: var(--accent-dark);
-            margin-bottom: 15px;
-        }
-        
-        .child-stats {
-            font-size: 0.8rem;
-            color: var(--primary-dark);
-            margin-bottom: 20px;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            background-color: rgba(180, 220, 255, 0.8);
-            border-radius: var(--border-radius);
-            border: 2px solid white;
-        }
-        
-        .empty-state h3 {
-            color: var(--primary-dark);
-        }
-        
-        .empty-state p {
-            margin-bottom: 20px;
-        }
-        
-        @media (max-width: 768px) {
-            .dashboard-container {
-                flex-direction: column;
-            }
-            
-            .dashboard-sidebar {
-                order: 2;
-            }
-            
-            .dashboard-main {
-                order: 1;
-            }
-            
-            .stats-container {
-                flex-direction: column;
-            }
-            
-            .children-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading-animations.css') }}">
 </head>
 <body>
-    <header>
+    <header class="dashboard-header">
         <div class="container">
             <div class="logo">
                 <h1>Children's Castle</h1>
                 <small>Developed for Menira</small>
             </div>
+            <nav>
+                <a href="{{ url_for('parent_dashboard') }}" class="active">Dashboard</a>
+                <a href="{{ url_for('parent_settings') }}">Settings</a>
+                <a href="{{ url_for('logout') }}">Sign Out</a>
+            </nav>
         </div>
     </header>
     
@@ -281,119 +34,85 @@
                 {% endfor %}
             </div>
             
-            <div class="dashboard-container">
-                <div class="dashboard-sidebar">
-                    <div class="parent-profile">
-                        <div class="parent-avatar">
-                            <img src="{{ url_for('static', filename='images/avatars/parent_default.png') }}" alt="Parent Avatar">
-                        </div>
-                        <div class="parent-info">
-                            <h3>{{ current_user.first_name }} {{ current_user.last_name }}</h3>
-                            <p>{{ current_user.email }}</p>
-                        </div>
-                    </div>
+            <div class="dashboard-content">
+                <h2 class="welcome-back">Welcome back, {{ current_user.first_name }}!</h2>
+                
+                <div class="dashboard-card">
+                    <h3>Your Child Accounts</h3>
                     
-                    <div class="nav-menu">
-                        <ul>
-                            <li>
-                                <a href="{{ url_for('parent_dashboard') }}" class="active">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                                    Dashboard
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ url_for('parent_settings') }}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                                    Settings
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                                    Activity Log
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                                    Notifications
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                                    Help & Support
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
+                    {% if children %}
+                        <div class="children-list">
+                            {% for child in children %}
+                                <div class="child-card">
+                                    <div class="child-avatar">
+                                        <img src="{{ url_for('static', filename='images/avatars/' + child.avatar) }}" alt="{{ child.display_name }}'s Avatar">
+                                    </div>
+                                    <div class="child-info">
+                                        <h3>{{ child.display_name }}</h3>
+                                        <p>Age: {{ child.age }}</p>
+                                    </div>
+                                    <div class="child-actions">
+                                        <a href="#" class="btn outline-btn">View Activity</a>
+                                        <a href="#" class="btn">Edit Profile</a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <p>You haven't added any child accounts yet.</p>
+                        </div>
+                    {% endif %}
                     
-                    <div class="logout-btn">
-                        <a href="{{ url_for('logout') }}" class="btn">Logout</a>
-                    </div>
+                    <a href="{{ url_for('add_child') }}" class="add-child-btn">
+                        <i class="plus-icon">+</i> Add a Child Account
+                    </a>
                 </div>
                 
-                <div class="dashboard-main">
-                    <div class="welcome-card">
-                        <h2>Welcome, {{ current_user.first_name }}!</h2>
-                        <p>Manage your children's accounts and monitor their progress in Children's Castle.</p>
-                    </div>
-                    
-                    <div class="stats-container">
-                        <div class="stat-card">
-                            <div class="stat-value">{{ children|length }}</div>
-                            <div class="stat-label">Children</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">12</div>
-                            <div class="stat-label">Stories</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">8</div>
-                            <div class="stat-label">Games</div>
-                        </div>
-                    </div>
-                    
-                    <div class="children-section">
-                        <div class="section-header">
-                            <h2>Children</h2>
-                            <a href="{{ url_for('add_child') }}" class="btn">+ Add Child</a>
-                        </div>
-                        
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>Recent Activity</h3>
                         {% if children %}
-                            <div class="children-grid">
-                                {% for child in children %}
-                                    <a href="{{ url_for('access_child_view', child_id=child.id) }}" class="child-card">
-                                        <div class="child-avatar">
-                                            <img src="{{ url_for('static', filename='images/avatars/' + child.avatar) }}" alt="{{ child.display_name }}'s Avatar">
-                                        </div>
-                                        <div class="child-name">{{ child.display_name }}</div>
-                                        <div class="child-age">{{ child.age }} years old</div>
-                                        <div class="child-stats">
-                                            <div>Stories Completed: {{ child.progress|selectattr('content_type', 'equalto', 'story')|selectattr('completed', 'equalto', true)|list|length }}</div>
-                                            <div>Games Completed: {{ child.progress|selectattr('content_type', 'equalto', 'game')|selectattr('completed', 'equalto', true)|list|length }}</div>
-                                        </div>
-                                        <button class="btn secondary-btn">Start Playing</button>
-                                    </a>
-                                {% endfor %}
+                            <div class="activity-list">
+                                <div class="activity-item">
+                                    <p>No recent activity to display.</p>
+                                </div>
                             </div>
                         {% else %}
                             <div class="empty-state">
-                                <h3>No children added yet</h3>
-                                <p>Add your first child to get started with Children's Castle!</p>
-                                <a href="{{ url_for('add_child') }}" class="btn secondary-btn">Add Child</a>
+                                <p>Add a child account to track activity.</p>
                             </div>
                         {% endif %}
+                    </div>
+                    
+                    <div class="dashboard-card">
+                        <h3>Quick Settings</h3>
+                        <div class="settings-shortcuts">
+                            <a href="{{ url_for('parent_settings') }}" class="settings-shortcut">
+                                <i class="settings-icon">⚙️</i>
+                                <span>Content Filters</span>
+                            </a>
+                            <a href="{{ url_for('parent_settings') }}" class="settings-shortcut">
+                                <i class="settings-icon">⏱️</i>
+                                <span>Time Limits</span>
+                            </a>
+                            <a href="{{ url_for('parent_settings') }}" class="settings-shortcut">
+                                <i class="settings-icon">🔒</i>
+                                <span>Access Controls</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </main>
     
-    <footer>
+    <footer class="dashboard-footer">
         <div class="container">
             <p>&copy; 2025 Children's Castle. All rights reserved.</p>
         </div>
     </footer>
+    
+    <script src="{{ url_for('static', filename='js/loading-animations.js') }}"></script>
 </body>
 </html>

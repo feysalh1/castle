@@ -78,28 +78,18 @@ def parent_register():
         first_name = request.form.get('first_name')
         last_name = request.form.get('last_name')
         
-        # Validation checks
-        error = False
-        
-        if not username or not email or not password or not confirm_password:
-            flash('All fields are required', 'error')
-            error = True
-        
         if password != confirm_password:
             flash('Passwords do not match', 'error')
-            error = True
+            return redirect(url_for('parent_register'))
         
         # Check if username or email already exists
         if Parent.query.filter_by(username=username).first():
             flash('Username already exists', 'error')
-            error = True
+            return redirect(url_for('parent_register'))
         
         if Parent.query.filter_by(email=email).first():
             flash('Email already exists', 'error')
-            error = True
-        
-        if error:
-            return render_template('parent_register.html')
+            return redirect(url_for('parent_register'))
         
         # Create new parent
         parent = Parent(
@@ -114,19 +104,12 @@ def parent_register():
         settings = ParentSettings(parent=parent)
         
         # Save to database
-        try:
-            db.session.add(parent)
-            db.session.add(settings)
-            db.session.commit()
-            
-            # Success! Redirect to login
-            flash('Registration successful! Please log in.', 'success')
-            return redirect(url_for('parent_login'))
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Database error during registration: {str(e)}")
-            flash('An error occurred during registration. Please try again.', 'error')
-            return render_template('parent_register.html')
+        db.session.add(parent)
+        db.session.add(settings)
+        db.session.commit()
+        
+        flash('Registration successful! Please log in.', 'success')
+        return redirect(url_for('parent_login'))
     
     return render_template('parent_register.html')
 
@@ -166,7 +149,34 @@ def parent_login():
     return render_template('parent_login.html')
 
 
-# Child login is no longer needed as children access through parent accounts
+@app.route('/child/login', methods=['GET', 'POST'])
+def child_login():
+    """Login for child accounts"""
+    if current_user.is_authenticated:
+        return redirect(url_for('child_dashboard'))
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        pin = request.form.get('pin')
+        
+        child = Child.query.filter_by(username=username).first()
+        
+        if not child or not child.check_pin(pin):
+            flash('Invalid username or PIN', 'error')
+            return redirect(url_for('child_login'))
+        
+        # Log in the child
+        login_user(child)
+        session['user_type'] = 'child'
+        
+        # Record login session
+        new_session = Session(user_type='child', user_id=child.id)
+        db.session.add(new_session)
+        db.session.commit()
+        
+        return redirect(url_for('child_dashboard'))
+    
+    return render_template('child_login.html')
 
 
 @app.route('/logout')
@@ -246,50 +256,19 @@ def add_child():
     return render_template('add_child.html')
 
 
-@app.route('/access-child/<int:child_id>')
-@login_required
-def access_child_view(child_id):
-    """Allow parent to access child's view"""
-    if session.get('user_type') != 'parent':
-        flash('Access denied. Only parents can access this feature.', 'error')
-        return redirect(url_for('index'))
-    
-    # Check if the child belongs to the current parent
-    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
-    
-    if not child:
-        flash('Child not found or does not belong to you.', 'error')
-        return redirect(url_for('parent_dashboard'))
-    
-    # Store the child ID in the session for child view access
-    session['active_child_id'] = child.id
-    session['active_child_name'] = child.display_name
-    
-    # Redirect to child dashboard
-    return redirect(url_for('child_dashboard'))
-
-
 @app.route('/child/dashboard')
 @login_required
 def child_dashboard():
     """Child dashboard"""
-    if session.get('user_type') != 'parent' or not session.get('active_child_id'):
-        flash('Access denied. Please log in as a parent and select a child profile.', 'error')
+    if session.get('user_type') != 'child':
+        flash('Access denied. This page is for children only.', 'error')
         return redirect(url_for('index'))
     
-    # Get child's information
-    child_id = session.get('active_child_id')
-    child = Child.query.get(child_id)
-    
-    if not child or child.parent_id != current_user.id:
-        flash('Child not found or does not belong to you.', 'error')
-        return redirect(url_for('parent_dashboard'))
-    
     # Get child's progress and rewards
-    progress = Progress.query.filter_by(child_id=child_id).all()
-    rewards = Reward.query.filter_by(child_id=child_id).all()
+    progress = Progress.query.filter_by(child_id=current_user.id).all()
+    rewards = Reward.query.filter_by(child_id=current_user.id).all()
     
-    return render_template('child_dashboard.html', child=child, progress=progress, rewards=rewards)
+    return render_template('child_dashboard.html', progress=progress, rewards=rewards)
 
 
 @app.route('/parent/settings', methods=['GET', 'POST'])
@@ -319,81 +298,51 @@ def parent_settings():
 @login_required
 def story_mode():
     """Story mode page for children"""
-    if session.get('user_type') != 'parent' or not session.get('active_child_id'):
-        flash('Access denied. Please log in as a parent and select a child profile.', 'error')
+    if session.get('user_type') != 'child':
+        flash('Access denied. This page is for children only.', 'error')
         return redirect(url_for('index'))
-    
-    # Get child's information
-    child_id = session.get('active_child_id')
-    child = Child.query.get(child_id)
-    
-    if not child or child.parent_id != current_user.id:
-        flash('Child not found or does not belong to you.', 'error')
-        return redirect(url_for('parent_dashboard'))
     
     # Fetch stories that are appropriate for this child's age
     # In a full implementation, this would filter stories by age appropriateness
     
-    return render_template('story_mode.html', child=child)
+    return render_template('story_mode.html')
 
 
 @app.route('/game-mode')
 @login_required
 def game_mode():
     """Game mode page for children"""
-    if session.get('user_type') != 'parent' or not session.get('active_child_id'):
-        flash('Access denied. Please log in as a parent and select a child profile.', 'error')
+    if session.get('user_type') != 'child':
+        flash('Access denied. This page is for children only.', 'error')
         return redirect(url_for('index'))
     
-    # Get child's information
-    child_id = session.get('active_child_id')
-    child = Child.query.get(child_id)
+    # Get the parent's settings for this child to apply age filters
+    parent = Parent.query.get(current_user.parent_id)
+    settings = ParentSettings.query.filter_by(parent_id=parent.id).first()
     
-    if not child or child.parent_id != current_user.id:
-        flash('Child not found or does not belong to you.', 'error')
-        return redirect(url_for('parent_dashboard'))
-    
-    # Get parent settings to apply age filters
-    settings = ParentSettings.query.filter_by(parent_id=current_user.id).first()
-    
-    return render_template('game_mode.html', child=child, settings=settings)
+    return render_template('game_mode.html', settings=settings)
 
 
 @app.route('/rewards')
 @login_required
 def rewards():
     """Child's rewards page"""
-    if session.get('user_type') != 'parent' or not session.get('active_child_id'):
-        flash('Access denied. Please log in as a parent and select a child profile.', 'error')
+    if session.get('user_type') != 'child':
+        flash('Access denied. This page is for children only.', 'error')
         return redirect(url_for('index'))
     
-    # Get child's information
-    child_id = session.get('active_child_id')
-    child = Child.query.get(child_id)
-    
-    if not child or child.parent_id != current_user.id:
-        flash('Child not found or does not belong to you.', 'error')
-        return redirect(url_for('parent_dashboard'))
-    
     # Get child's rewards from database
-    child_rewards = Reward.query.filter_by(child_id=child_id).all()
+    child_rewards = Reward.query.filter_by(child_id=current_user.id).all()
     
-    return render_template('rewards.html', child=child, rewards=child_rewards)
+    return render_template('rewards.html', rewards=child_rewards)
 
 
 @app.route('/api/track-progress', methods=['POST'])
 @login_required
 def track_progress():
     """API endpoint to track child's progress"""
-    if session.get('user_type') != 'parent' or not session.get('active_child_id'):
+    if session.get('user_type') != 'child':
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
-    
-    # Get child's information
-    child_id = session.get('active_child_id')
-    child = Child.query.get(child_id)
-    
-    if not child or child.parent_id != current_user.id:
-        return jsonify({'success': False, 'message': 'Child not found or unauthorized'}), 403
     
     data = request.json
     content_type = data.get('content_type')  # 'story' or 'game'
@@ -403,7 +352,7 @@ def track_progress():
     
     # Find existing progress or create new
     progress = Progress.query.filter_by(
-        child_id=child_id,
+        child_id=current_user.id,
         content_type=content_type,
         content_id=content_id
     ).first()
@@ -420,7 +369,7 @@ def track_progress():
             if progress.completion_count == 1:
                 if content_type == 'story':
                     reward = Reward(
-                        child_id=child_id,
+                        child_id=current_user.id,
                         badge_id=f"story_{content_id}",
                         badge_name=f"Story Master: {content_id.title()}",
                         badge_description=f"Completed the {content_id.title()} story",
@@ -428,7 +377,7 @@ def track_progress():
                     )
                 else:  # game
                     reward = Reward(
-                        child_id=child_id,
+                        child_id=current_user.id,
                         badge_id=f"game_{content_id}",
                         badge_name=f"Game Master: {content_id.title()}",
                         badge_description=f"Completed the {content_id.title()} game",
@@ -438,7 +387,7 @@ def track_progress():
                 db.session.add(reward)
     else:
         progress = Progress(
-            child_id=child_id,
+            child_id=current_user.id,
             content_type=content_type,
             content_id=content_id,
             completed=completed,
@@ -464,26 +413,19 @@ def track_progress():
 @login_required
 def get_progress():
     """API endpoint to get child's progress"""
-    if session.get('user_type') != 'parent' or not session.get('active_child_id'):
+    if session.get('user_type') != 'child':
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
-    
-    # Get child's information
-    child_id = session.get('active_child_id')
-    child = Child.query.get(child_id)
-    
-    if not child or child.parent_id != current_user.id:
-        return jsonify({'success': False, 'message': 'Child not found or unauthorized'}), 403
     
     content_type = request.args.get('content_type')
     
     if content_type:
         progress_items = Progress.query.filter_by(
-            child_id=child_id,
+            child_id=current_user.id,
             content_type=content_type
         ).all()
     else:
         progress_items = Progress.query.filter_by(
-            child_id=child_id
+            child_id=current_user.id
         ).all()
     
     progress_data = [{
@@ -505,17 +447,10 @@ def get_progress():
 @login_required
 def get_rewards():
     """API endpoint to get child's rewards"""
-    if session.get('user_type') != 'parent' or not session.get('active_child_id'):
+    if session.get('user_type') != 'child':
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
-    # Get child's information
-    child_id = session.get('active_child_id')
-    child = Child.query.get(child_id)
-    
-    if not child or child.parent_id != current_user.id:
-        return jsonify({'success': False, 'message': 'Child not found or unauthorized'}), 403
-    
-    rewards = Reward.query.filter_by(child_id=child_id).all()
+    rewards = Reward.query.filter_by(child_id=current_user.id).all()
     
     rewards_data = [{
         'badge_id': reward.badge_id,
