@@ -17,7 +17,7 @@
             </div>
             <nav>
                 <a href="{{ url_for('index') }}">Home</a>
-                <a href="{{ url_for('parent_login') }}" class="active">Parent Login</a>
+                <a href="{{ url_for('parent_register') }}">Register</a>
                 <a href="{{ url_for('child_login') }}">Child Login</a>
             </nav>
         </div>
@@ -37,10 +37,13 @@
             <div class="auth-container">
                 <div class="auth-header">
                     <h2>Parent Login</h2>
-                    <p>Access your account to manage profiles and settings</p>
+                    <p>Sign in to manage your child's account and settings</p>
                 </div>
                 
                 <form class="auth-form" method="POST" action="{{ url_for('parent_login') }}">
+                    <!-- CSRF Token -->
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    
                     <div class="form-group">
                         <label for="username">Username</label>
                         <input type="text" id="username" name="username" required>
@@ -51,20 +54,18 @@
                         <input type="password" id="password" name="password" required>
                     </div>
                     
-                    <div class="checkbox-group">
+                    <div class="form-group checkbox">
                         <input type="checkbox" id="remember" name="remember">
                         <label for="remember">Remember me</label>
                     </div>
                     
                     <div class="form-actions">
-                        <button type="submit" class="btn">Sign In</button>
-                        <a href="#" class="forgot-password">Forgot Password?</a>
+                        <button type="submit" class="btn">Login</button>
                     </div>
                 </form>
                 
                 <div class="auth-links">
                     <p>Don't have an account? <a href="{{ url_for('parent_register') }}">Register here</a></p>
-                    <p>Are you a child? <a href="{{ url_for('child_login') }}">Child login</a></p>
                 </div>
             </div>
         </div>

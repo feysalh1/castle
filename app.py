@@ -4,6 +4,7 @@ from datetime import datetime
 from flask import Flask, render_template, redirect, url_for, flash, request, session, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.middleware.proxy_fix import ProxyFix
+from flask_wtf.csrf import CSRFProtect
 
 from models import db, Parent, Child, ParentSettings, Progress, Reward, Session
 
@@ -14,6 +15,14 @@ logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "childrens_castle_app_secret")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # needed for url_for to generate with https
+
+# Initialize CSRF protection
+csrf = CSRFProtect(app)
+
+# Exempt API endpoints from CSRF protection
+csrf.exempt('/api/track-progress')
+csrf.exempt('/api/get-progress')
+csrf.exempt('/api/get-rewards')
 
 # Configure database
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")

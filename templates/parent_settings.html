@@ -38,6 +38,9 @@
                 <h2 class="welcome-back">Parent Settings</h2>
                 
                 <form class="settings-form" method="POST" action="{{ url_for('parent_settings') }}">
+                    <!-- CSRF Token -->
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    
                     <div class="settings-section">
                         <h3>Content Controls</h3>
                         
