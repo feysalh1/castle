@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="300" height="300" fill="#f5e7d3"/>
+  
+  <!-- House -->
+  <rect x="50" y="100" width="200" height="150" fill="#8B4513"/>
+  <polygon points="50,100 150,40 250,100" fill="#A52A2A"/>
+  <rect x="130" y="190" width="40" height="60" fill="#4B2D10"/>
+  
+  <!-- Windows -->
+  <rect x="80" y="130" width="40" height="40" fill="#87CEEB"/>
+  <rect x="180" y="130" width="40" height="40" fill="#87CEEB"/>
+  <line x1="80" y1="150" x2="120" y2="150" stroke="#000" stroke-width="2"/>
+  <line x1="100" y1="130" x2="100" y2="170" stroke="#000" stroke-width="2"/>
+  <line x1="180" y1="150" x2="220" y2="150" stroke="#000" stroke-width="2"/>
+  <line x1="200" y1="130" x2="200" y2="170" stroke="#000" stroke-width="2"/>
+  
+  <!-- Goldilocks -->
+  <circle cx="190" cy="240" r="15" fill="#FFD700"/> <!-- Hair -->
+  <circle cx="190" cy="240" r="10" fill="#FFDAB9"/> <!-- Face -->
+  <rect x="185" y="250" width="10" height="20" fill="#ADD8E6"/> <!-- Dress body -->
+  <rect x="180" y="250" width="5" height="15" fill="#ADD8E6"/> <!-- Left arm -->
+  <rect x="195" y="250" width="5" height="15" fill="#ADD8E6"/> <!-- Right arm -->
+  <rect x="185" y="270" width="4" height="10" fill="#000"/> <!-- Left leg -->
+  <rect x="191" y="270" width="4" height="10" fill="#000"/> <!-- Right leg -->
+  
+  <!-- Three Bears (simple representation) -->
+  <circle cx="110" cy="250" r="15" fill="#8B4513"/> <!-- Big bear head -->
+  <rect x="105" y="265" width="10" height="15" fill="#8B4513"/> <!-- Big bear body -->
+  
+  <circle cx="140" cy="255" r="12" fill="#A0522D"/> <!-- Medium bear head -->
+  <rect x="135" y="267" width="10" height="13" fill="#A0522D"/> <!-- Medium bear body -->
+  
+  <circle cx="165" cy="260" r="8" fill="#CD853F"/> <!-- Small bear head -->
+  <rect x="162" y="268" width="6" height="10" fill="#CD853F"/> <!-- Small bear body -->
+  
+  <!-- Three Bowls -->
+  <ellipse cx="85" cy="220" rx="15" ry="5" fill="#D2B48C" stroke="#000" stroke-width="1"/>
+  <ellipse cx="120" cy="220" rx="12" ry="4" fill="#D2B48C" stroke="#000" stroke-width="1"/>
+  <ellipse cx="150" cy="220" rx="8" ry="3" fill="#D2B48C" stroke="#000" stroke-width="1"/>
+  
+  <!-- Title -->
+  <text x="150" y="25" font-family="Arial" font-size="16" text-anchor="middle" fill="#000">Goldilocks and the Three Bears</text>
+</svg>
