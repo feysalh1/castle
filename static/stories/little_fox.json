@@ -1,0 +1,21 @@
+{
+  "title": "The Little Fox",
+  "author": "Children's Castle",
+  "pages": [
+    {
+      "image": "/static/images/stories/little_fox/page1.svg",
+      "text": "Once upon a time, there was a little fox who lived in a beautiful forest. The little fox had bright orange fur and a big bushy tail.",
+      "audio": "/static/audio/little_fox/page1.mp3"
+    },
+    {
+      "image": "/static/images/stories/little_fox/page2.svg",
+      "text": "One sunny day, the little fox decided to go for a walk. As he walked through the forest, he saw colorful butterflies flying between the flowers.",
+      "audio": "/static/audio/little_fox/page2.mp3"
+    },
+    {
+      "image": "/static/images/stories/little_fox/page3.svg",
+      "text": "The little fox came to a stream with clear blue water. In the water, he could see fish swimming happily. The fox smiled and continued his adventure through the forest.",
+      "audio": "/static/audio/little_fox/page3.mp3"
+    }
+  ]
+}

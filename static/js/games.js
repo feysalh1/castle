@@ -1,1124 +1,943 @@
-// Games Management
+/**
+ * Games functionality for Children's Castle
+ * Handles game mode and all interactive games
+ */
 
-// Constants
-const GAMES_BY_AGE = {
-    4: [
-        { id: 'animal_puzzle', title: 'Animal Puzzle', description: 'Match animal pieces together' },
-        { id: 'coloring_fun', title: 'Coloring Fun', description: 'Color cute pictures' },
-        { id: 'shape_match', title: 'Shape Match', description: 'Match shapes and colors' }
-    ],
-    5: [
-        { id: 'letter_match', title: 'Letter Match', description: 'Match uppercase and lowercase letters' },
-        { id: 'number_fun', title: 'Number Fun', description: 'Count and match numbers' },
-        { id: 'memory_game', title: 'Memory Game', description: 'Find matching pairs' }
-    ]
-};
+document.addEventListener('DOMContentLoaded', function() {
+    // Game mode elements
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const gameGrids = document.querySelectorAll('.game-grid');
+    const gameCards = document.querySelectorAll('.game-card:not(.external)');
+    const externalGameCards = document.querySelectorAll('.game-card.external');
+    const gamePlayContainer = document.getElementById('game-play-container');
+    const gameContent = document.getElementById('game-content');
+    const currentGameTitle = document.getElementById('current-game-title');
+    const closeGameBtn = document.getElementById('close-game-btn');
 
-// External educational games that are safe for children
-const EXTERNAL_GAMES = {
-    4: [
-        { id: 'abcya_shapes', title: 'Shape Matching', url: 'https://www.abcya.com/games/shapes_colors_bingo', description: 'Learn shapes and colors', enabled: true },
-        { id: 'pbs_games', title: 'PBS Kids Games', url: 'https://pbskids.org/games/all-topics/', description: 'Educational games from PBS Kids', enabled: true },
-        { id: 'sesame_street', title: 'Sesame Street Games', url: 'https://www.sesamestreet.org/games', description: 'Play with Sesame Street characters', enabled: true }
-    ],
-    5: [
-        { id: 'starfall', title: 'Starfall', url: 'https://www.starfall.com/h/index-kindergarten.php', description: 'Learn to read games', enabled: true },
-        { id: 'funbrain', title: 'Funbrain Jr', url: 'https://www.funbrain.com/pre-k-and-k-playground', description: 'Math and reading games', enabled: true },
-        { id: 'national_geographic', title: 'National Geographic Kids', url: 'https://kids.nationalgeographic.com/games/', description: 'Science and nature games', enabled: true }
-    ]
-};
-
-// Load enabled status from localStorage if available
-function loadExternalGameSettings() {
-    const savedSettings = localStorage.getItem('babyGirlExternalGameSettings');
-    if (savedSettings) {
-        const settings = JSON.parse(savedSettings);
-        
-        // Update enabled status for each game
-        Object.keys(EXTERNAL_GAMES).forEach(ageGroup => {
-            EXTERNAL_GAMES[ageGroup].forEach(game => {
-                if (settings[game.id] !== undefined) {
-                    game.enabled = settings[game.id];
-                }
-            });
-        });
-    }
-}
-
-// Save enabled status to localStorage
-function saveExternalGameSettings() {
-    const settings = {};
+    // Initialize game settings
+    const gameSettings = loadExternalGameSettings();
     
-    // Collect enabled status for each game
-    Object.keys(EXTERNAL_GAMES).forEach(ageGroup => {
-        EXTERNAL_GAMES[ageGroup].forEach(game => {
-            settings[game.id] = game.enabled;
-        });
-    });
-    
-    localStorage.setItem('babyGirlExternalGameSettings', JSON.stringify(settings));
-}
-
-// Current game state
-let currentGame = null;
-let currentAgeFilter = 4; // Default to age 4
-let gameSource = 'internal'; // 'internal' or 'external'
-
-// Initialize game section
-function initGames() {
-    // Load external game settings
-    loadExternalGameSettings();
-    
-    // Set up age filter buttons
-    document.getElementById('age-4-btn')?.addEventListener('click', () => filterGamesByAge(4));
-    document.getElementById('age-5-btn')?.addEventListener('click', () => filterGamesByAge(5));
-    
-    // Set up game source buttons
-    document.getElementById('internal-games-btn')?.addEventListener('click', () => switchGameSource('internal'));
-    document.getElementById('external-games-btn')?.addEventListener('click', () => switchGameSource('external'));
-    
-    // Set up parental controls button
-    document.getElementById('parental-controls-btn')?.addEventListener('click', showParentalControls);
-    
-    // Init with age 4 internal games
-    filterGamesByAge(4);
-}
-
-// Switch between internal and external games
-function switchGameSource(source) {
-    gameSource = source;
-    
-    // Update active button
-    document.querySelectorAll('.source-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    const activeBtn = document.getElementById(`${source}-games-btn`);
-    if (activeBtn) {
-        activeBtn.classList.add('active');
-    }
-    
-    // Re-filter games with current age
-    filterGamesByAge(currentAgeFilter);
-}
-
-// Show parental controls modal
-function showParentalControls() {
-    // Create modal background
-    const modalBackground = document.createElement('div');
-    modalBackground.className = 'modal-background';
-    
-    // Create modal container
-    const modalContainer = document.createElement('div');
-    modalContainer.className = 'modal-container';
-    modalContainer.innerHTML = `
-        <h3>Parental Controls</h3>
-        <p>Enable or disable external websites. Disabled sites won't be shown to your child.</p>
-        <div class="parental-controls-content">
-            <h4>Age 4 Games</h4>
-            <div id="age-4-controls" class="controls-list"></div>
-            
-            <h4>Age 5+ Games</h4>
-            <div id="age-5-controls" class="controls-list"></div>
-        </div>
-        <div class="modal-buttons">
-            <button id="save-controls-btn" class="btn btn-primary">Save Settings</button>
-            <button id="close-controls-btn" class="btn btn-secondary">Close</button>
-        </div>
-    `;
-    
-    // Add to body
-    modalBackground.appendChild(modalContainer);
-    document.body.appendChild(modalBackground);
-    
-    // Populate controls for each age group
-    [4, 5].forEach(age => {
-        const controlsList = document.getElementById(`age-${age}-controls`);
-        if (!controlsList) return;
-        
-        EXTERNAL_GAMES[age].forEach(game => {
-            const controlItem = document.createElement('div');
-            controlItem.className = 'control-item';
-            controlItem.innerHTML = `
-                <label>
-                    <input type="checkbox" data-game-id="${game.id}" ${game.enabled ? 'checked' : ''}>
-                    ${game.title} - ${game.description}
-                </label>
-            `;
-            controlsList.appendChild(controlItem);
-        });
-    });
-    
-    // Set up event listeners
-    document.getElementById('save-controls-btn')?.addEventListener('click', () => {
-        // Save all checkbox states
-        document.querySelectorAll('.control-item input[type="checkbox"]').forEach(checkbox => {
-            const gameId = checkbox.getAttribute('data-game-id');
-            
-            // Find and update the game
-            Object.keys(EXTERNAL_GAMES).forEach(ageGroup => {
-                EXTERNAL_GAMES[ageGroup].forEach(game => {
-                    if (game.id === gameId) {
-                        game.enabled = checkbox.checked;
+    // Initialize game tabs
+    if (tabButtons.length > 0) {
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active tab
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Show the corresponding game grid
+                const category = this.getAttribute('data-category');
+                gameGrids.forEach(grid => {
+                    if (grid.classList.contains(`${category}-games`)) {
+                        grid.style.display = 'grid';
+                    } else {
+                        grid.style.display = 'none';
                     }
                 });
-            });
-        });
-        
-        // Save settings
-        saveExternalGameSettings();
-        
-        // Refresh games list
-        filterGamesByAge(currentAgeFilter);
-        
-        // Close modal
-        document.body.removeChild(modalBackground);
-    });
-    
-    document.getElementById('close-controls-btn')?.addEventListener('click', () => {
-        document.body.removeChild(modalBackground);
-    });
-}
-
-// Filter games by age
-function filterGamesByAge(ageFilter) {
-    currentAgeFilter = ageFilter;
-    
-    // Update active button
-    document.querySelectorAll('.age-filter-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    const ageBtn = document.getElementById(`age-${ageFilter}-btn`);
-    if (ageBtn) {
-        ageBtn.classList.add('active');
-    }
-    
-    // Get games list container
-    const gamesListContainer = document.getElementById('games-list');
-    if (!gamesListContainer) return;
-    
-    gamesListContainer.innerHTML = '';
-    
-    if (gameSource === 'internal') {
-        // Display internal games
-        const games = GAMES_BY_AGE[ageFilter] || [];
-        
-        if (games.length === 0) {
-            gamesListContainer.innerHTML = '<p>No games available for this age.</p>';
-            return;
-        }
-        
-        // Create game cards for internal games
-        games.forEach(game => {
-            const gameCard = document.createElement('div');
-            gameCard.className = 'game-card';
-            gameCard.innerHTML = `
-                <div class="game-icon">🎮</div>
-                <h3>${game.title}</h3>
-                <p>${game.description}</p>
-                <button class="play-game-btn" data-game-id="${game.id}">Play</button>
-            `;
-            
-            gamesListContainer.appendChild(gameCard);
-            
-            // Add event listener to play button
-            const playButton = gameCard.querySelector('.play-game-btn');
-            playButton.addEventListener('click', () => loadGameWithAnimation(game.id));
-        });
-    } else {
-        // Display only enabled external games
-        const externalGames = (EXTERNAL_GAMES[ageFilter] || []).filter(game => game.enabled);
-        
-        if (externalGames.length === 0) {
-            gamesListContainer.innerHTML = '<p>No external games available for this age. Parents can enable games in Parental Controls.</p>';
-            return;
-        }
-        
-        // Create game cards for external games
-        externalGames.forEach(game => {
-            const gameCard = document.createElement('div');
-            gameCard.className = 'game-card external-game';
-            gameCard.innerHTML = `
-                <div class="game-icon">🌐</div>
-                <h3>${game.title}</h3>
-                <p>${game.description}</p>
-                <button class="play-external-btn" data-game-url="${game.url}">Play</button>
-            `;
-            
-            gamesListContainer.appendChild(gameCard);
-            
-            // Add event listener to play button
-            const playButton = gameCard.querySelector('.play-external-btn');
-            playButton.addEventListener('click', () => {
-                loadExternalGameWithAnimation(game.url, game.title);
+                
+                // Hide the game play container if it's visible
+                if (gamePlayContainer) {
+                    gamePlayContainer.style.display = 'none';
+                }
             });
         });
     }
+    
+    // Game card clicks
+    if (gameCards.length > 0) {
+        gameCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const gameId = this.getAttribute('data-game-id');
+                const gameTitle = this.querySelector('h3').textContent;
+                
+                showLoading();
+                
+                // Hide all game grids
+                gameGrids.forEach(grid => {
+                    grid.style.display = 'none';
+                });
+                
+                // Show game play container
+                if (gamePlayContainer) {
+                    gamePlayContainer.style.display = 'block';
+                    currentGameTitle.textContent = gameTitle;
+                }
+                
+                // Load the game
+                loadGame(gameId);
+                
+                // Track this in the database
+                trackProgress(gameId, 'game', false);
+                
+                hideLoading();
+            });
+        });
+    }
+    
+    // External game card clicks
+    if (externalGameCards.length > 0) {
+        externalGameCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const externalUrl = this.getAttribute('data-external-url');
+                const externalTitle = this.getAttribute('data-external-title');
+                
+                // Check parent settings
+                if (gameSettings.parentalControlsEnabled) {
+                    showParentalControls(externalUrl, externalTitle);
+                } else {
+                    loadExternalGame(externalUrl, externalTitle);
+                }
+            });
+        });
+    }
+    
+    // Close game button
+    if (closeGameBtn) {
+        closeGameBtn.addEventListener('click', function() {
+            // Hide game play container
+            gamePlayContainer.style.display = 'none';
+            
+            // Show the appropriate game grid based on active tab
+            const activeTab = document.querySelector('.tab-btn.active');
+            if (activeTab) {
+                const category = activeTab.getAttribute('data-category');
+                
+                gameGrids.forEach(grid => {
+                    if (grid.classList.contains(`${category}-games`)) {
+                        grid.style.display = 'grid';
+                    }
+                });
+            } else {
+                // Show the first grid if no active tab
+                if (gameGrids.length > 0) {
+                    gameGrids[0].style.display = 'grid';
+                }
+            }
+            
+            // Clear game content
+            if (gameContent) {
+                gameContent.innerHTML = '';
+            }
+        });
+    }
+    
+    // Initialize games
+    initGames();
+});
+
+/**
+ * Load external game settings from localStorage
+ */
+function loadExternalGameSettings() {
+    const defaultSettings = {
+        parentalControlsEnabled: true,
+        ageFilter: 4
+    };
+    
+    const savedSettings = localStorage.getItem('childrensCastleGameSettings');
+    return savedSettings ? JSON.parse(savedSettings) : defaultSettings;
 }
 
-// Load an external game
-function loadExternalGame(url, title) {
-    // Show loading animation before loading external game
-    if (window.loadingAnimations) {
-        window.loadingAnimations.showLoading(2500); // Longer loading time for external content
-    }
+/**
+ * Save external game settings to localStorage
+ */
+function saveExternalGameSettings(settings) {
+    localStorage.setItem('childrensCastleGameSettings', JSON.stringify(settings));
+}
+
+/**
+ * Initialize games functionality
+ */
+function initGames() {
+    // Set up window resize handler for game iframes
+    window.addEventListener('resize', adjustIframeHeight);
     
-    const gameContentContainer = document.getElementById('game-content-container');
-    if (!gameContentContainer) return;
+    // Add click feedback to all interactive elements
+    addClickFeedback('.game-card');
+    addClickFeedback('.tab-btn');
+    addClickFeedback('.close-btn');
+}
+
+/**
+ * Switch between game sources (internal vs external)
+ */
+function switchGameSource(source) {
+    const gameSettings = loadExternalGameSettings();
+    gameSettings.gameSource = source;
+    saveExternalGameSettings(gameSettings);
     
-    // Hide games list, show game content
-    const gamesListContainer = document.getElementById('games-list-container');
-    if (gamesListContainer) {
-        gamesListContainer.style.display = 'none';
-    }
+    document.querySelectorAll('.source-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
     
-    gameContentContainer.style.display = 'block';
+    document.querySelector(`.source-tab[data-source="${source}"]`).classList.add('active');
     
-    // Clear previous game content
-    gameContentContainer.innerHTML = '';
+    document.querySelectorAll('.games-container').forEach(container => {
+        container.style.display = 'none';
+    });
     
-    // Create iframe for external game with parent message
-    const gameContent = document.createElement('div');
-    gameContent.className = 'game-content external-game-content';
-    gameContent.innerHTML = `
-        <h3>${title}</h3>
-        <div class="parent-message">
-            <p><strong>Parents:</strong> This is an external educational website. You can manage which sites are available in the Parental Controls.</p>
+    document.getElementById(`${source}-games`).style.display = 'block';
+}
+
+/**
+ * Show parental controls overlay
+ */
+function showParentalControls(externalUrl, externalTitle) {
+    const overlay = document.createElement('div');
+    overlay.className = 'parental-controls-overlay';
+    
+    const content = document.createElement('div');
+    content.className = 'parental-controls-content';
+    
+    content.innerHTML = `
+        <h3>Parental Confirmation</h3>
+        <p>Your child is trying to visit an external website:</p>
+        <p class="external-site">${externalTitle}</p>
+        <p>Please confirm this is allowed.</p>
+        <div class="pc-actions">
+            <button id="pc-cancel-btn" class="btn outline-btn">Cancel</button>
+            <button id="pc-approve-btn" class="btn">Approve</button>
         </div>
-        <div class="external-game-container">
-            <iframe 
-                src="${url}"
-                title="${title}"
-                class="external-game-frame"
-                allow="fullscreen"
-                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-            ></iframe>
-        </div>
-        <p class="game-instructions">If you can't see the game, you can use the button below to open it in a new tab.</p>
-        <a href="${url}" target="_blank" class="open-external-btn">Open in New Tab</a>
     `;
     
-    gameContentContainer.appendChild(gameContent);
+    overlay.appendChild(content);
+    document.body.appendChild(overlay);
     
-    // Add back button
-    const backButton = document.createElement('button');
-    backButton.className = 'btn back-to-games-btn';
-    backButton.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Games';
-    backButton.addEventListener('click', () => {
-        const gamesListContainer = document.getElementById('games-list-container');
-        if (gamesListContainer) {
-            gamesListContainer.style.display = 'block';
-        }
-        gameContentContainer.style.display = 'none';
+    // Button actions
+    document.getElementById('pc-cancel-btn').addEventListener('click', function() {
+        overlay.remove();
     });
     
-    // Add buttons to container
-    const buttonContainer = document.createElement('div');
-    buttonContainer.className = 'game-buttons';
-    buttonContainer.appendChild(backButton);
-    gameContentContainer.appendChild(buttonContainer);
+    document.getElementById('pc-approve-btn').addEventListener('click', function() {
+        overlay.remove();
+        loadExternalGame(externalUrl, externalTitle);
+    });
 }
 
-// Load a specific internal game
+/**
+ * Filter games by age
+ */
+function filterGamesByAge(ageFilter) {
+    const gameSettings = loadExternalGameSettings();
+    gameSettings.ageFilter = ageFilter;
+    saveExternalGameSettings(gameSettings);
+    
+    document.querySelectorAll('.age-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    document.querySelector(`.age-tab[data-age="${ageFilter}"]`).classList.add('active');
+    
+    document.querySelectorAll('.game-card').forEach(game => {
+        const gameAge = parseInt(game.getAttribute('data-age') || '0');
+        
+        if (gameAge <= ageFilter) {
+            game.style.display = 'block';
+        } else {
+            game.style.display = 'none';
+        }
+    });
+}
+
+/**
+ * Load an external game in an iframe
+ */
+function loadExternalGame(url, title) {
+    // Track this in the database
+    trackProgress(`external_${title.replace(/\s+/g, '_').toLowerCase()}`, 'game', false);
+    
+    // Open in a new tab
+    window.open(url, '_blank');
+}
+
+/**
+ * Load a game into the game container
+ */
 function loadGame(gameId) {
-    currentGame = gameId;
+    const gameContent = document.getElementById('game-content');
+    if (!gameContent) return;
     
-    // Show loading animation before loading the game
-    if (window.loadingAnimations) {
-        window.loadingAnimations.showLoading(1500);
-    }
+    // Clear the container
+    gameContent.innerHTML = '';
     
-    // Hide games list, show game content
-    const gamesListContainer = document.getElementById('games-list-container');
-    const gameContentContainer = document.getElementById('game-content-container');
-    
-    if (!gamesListContainer || !gameContentContainer) return;
-    
-    // Apply transition effect
-    gamesListContainer.style.opacity = '0';
-    setTimeout(() => {
-        gamesListContainer.style.display = 'none';
-        gameContentContainer.style.display = 'block';
-        
-        // Clear previous game content
-        gameContentContainer.innerHTML = '';
-        gameContentContainer.style.opacity = '0';
-        
-        // Short delay to allow loading animation to show
-        setTimeout(() => {
-            // Load game based on ID
-            switch(gameId) {
-                case 'animal_puzzle':
-                    loadAnimalPuzzleGame(gameContentContainer);
-                    break;
-                case 'coloring_fun':
-                    loadColoringGame(gameContentContainer);
-            break;
-        case 'shape_match':
-            loadShapeMatchGame(gameContentContainer);
+    // Load different games based on ID
+    switch (gameId) {
+        case 'matching_shapes':
+            loadShapeMatchGame(gameContent);
             break;
         case 'letter_match':
-            loadLetterMatchGame(gameContentContainer);
+            loadLetterMatchGame(gameContent);
             break;
-        case 'number_fun':
-            loadNumberGame(gameContentContainer);
+        case 'number_game':
+            loadNumberGame(gameContent);
             break;
         case 'memory_game':
-            loadMemoryGame(gameContentContainer);
+            loadMemoryGame(gameContent);
+            break;
+        case 'coloring':
+            // Placeholder for coloring game
+            gameContent.innerHTML = '<div class="game-placeholder"><p>The coloring game is under construction. Check back soon!</p></div>';
+            break;
+        case 'animal_sounds':
+            // Placeholder for animal sounds game
+            gameContent.innerHTML = '<div class="game-placeholder"><p>The animal sounds game is under construction. Check back soon!</p></div>';
+            break;
+        case 'counting':
+            // Simplified counting game (similar to number game but simpler)
+            loadNumberGame(gameContent, true); // Simple version
+            break;
+        case 'puzzle':
+            // Placeholder for puzzle game
+            gameContent.innerHTML = '<div class="game-placeholder"><p>The puzzle game is under construction. Check back soon!</p></div>';
             break;
         default:
-            gameContentContainer.innerHTML = '<p>Game not found.</p>';
-            break;
+            gameContent.innerHTML = '<div class="game-placeholder"><p>This game is under construction. Check back soon!</p></div>';
     }
-    
-    // Add back button
-    const backButton = document.createElement('button');
-    backButton.className = 'btn back-to-games-btn';
-    backButton.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Games';
-    backButton.addEventListener('click', () => {
-        document.getElementById('games-list-container').style.display = 'block';
-        gameContentContainer.style.display = 'none';
-        currentGame = null;
-    });
-    
-    // Add complete button
-    const completeButton = document.createElement('button');
-    completeButton.className = 'btn game-complete-btn';
-    completeButton.textContent = 'I Finished This Game!';
-    completeButton.addEventListener("click", () => completeGameWithAnimation(gameId));
-    
-    // Add buttons to container
-    const buttonContainer = document.createElement('div');
-    buttonContainer.className = 'game-buttons';
-    buttonContainer.appendChild(backButton);
-    buttonContainer.appendChild(completeButton);
-    gameContentContainer.appendChild(buttonContainer);
 }
 
-// Load Animal Puzzle Game (Age 4)
-function loadAnimalPuzzleGame(container) {
-    const gameContent = document.createElement('div');
-    gameContent.className = 'game-content animal-puzzle';
-    gameContent.innerHTML = `
-        <h3>Animal Puzzle</h3>
-        <p>Help put the animal puzzle together! Tap or click the pieces to rotate them.</p>
-        <div class="puzzle-container">
-            <div class="puzzle-pieces">
-                <div class="puzzle-piece" data-emoji="🦁" onclick="this.classList.toggle('rotated')">🦁</div>
-                <div class="puzzle-piece" data-emoji="🐯" onclick="this.classList.toggle('rotated')">🐯</div>
-                <div class="puzzle-piece" data-emoji="🐘" onclick="this.classList.toggle('rotated')">🐘</div>
-                <div class="puzzle-piece" data-emoji="🦒" onclick="this.classList.toggle('rotated')">🦒</div>
-                <div class="puzzle-piece" data-emoji="🦓" onclick="this.classList.toggle('rotated')">🦓</div>
-                <div class="puzzle-piece" data-emoji="🐒" onclick="this.classList.toggle('rotated')">🐒</div>
-            </div>
-            <div class="puzzle-board">
-                <div class="puzzle-target"></div>
-                <div class="puzzle-target"></div>
-                <div class="puzzle-target"></div>
-                <div class="puzzle-target"></div>
-                <div class="puzzle-target"></div>
-                <div class="puzzle-target"></div>
-            </div>
-        </div>
-    `;
-    
-    container.appendChild(gameContent);
-    
-    // Initialize puzzle interaction
-    setTimeout(() => {
-        const pieces = gameContent.querySelectorAll('.puzzle-piece');
-        const targets = gameContent.querySelectorAll('.puzzle-target');
-        
-        pieces.forEach(piece => {
-            piece.addEventListener('click', () => {
-                piece.classList.toggle('selected');
-            });
-            
-            piece.addEventListener('dragstart', e => {
-                e.dataTransfer.setData('text/plain', piece.getAttribute('data-emoji'));
-                piece.classList.add('dragging');
-            });
-            
-            piece.addEventListener('dragend', () => {
-                piece.classList.remove('dragging');
-            });
-            
-            // Make pieces draggable
-            piece.setAttribute('draggable', 'true');
-        });
-        
-        targets.forEach(target => {
-            target.addEventListener('dragover', e => {
-                e.preventDefault();
-                target.classList.add('drag-over');
-            });
-            
-            target.addEventListener('dragleave', () => {
-                target.classList.remove('drag-over');
-            });
-            
-            target.addEventListener('drop', e => {
-                e.preventDefault();
-                target.classList.remove('drag-over');
-                if (!target.hasChildNodes()) {
-                    const emoji = e.dataTransfer.getData('text/plain');
-                    // Find the piece by data attribute
-                    const draggedPiece = document.querySelector(`.puzzle-piece[data-emoji="${emoji}"]`);
-                    if (draggedPiece) {
-                        const clone = draggedPiece.cloneNode(true);
-                        target.appendChild(clone);
-                        draggedPiece.style.visibility = 'hidden';
-                    }
-                }
-            });
-        });
-    }, 100);
-}
-
-// Load Coloring Game (Age 4)
-function loadColoringGame(container) {
-    const gameContent = document.createElement('div');
-    gameContent.className = 'game-content coloring-game';
-    gameContent.innerHTML = `
-        <h3>Coloring Fun</h3>
-        <p>Color the picture! Choose a color and tap inside the areas.</p>
-        <div class="color-palette">
-            <div class="color-swatch" style="background-color: #FF0000;" data-color="#FF0000"></div>
-            <div class="color-swatch" style="background-color: #0000FF;" data-color="#0000FF"></div>
-            <div class="color-swatch" style="background-color: #008000;" data-color="#008000"></div>
-            <div class="color-swatch" style="background-color: #FFFF00;" data-color="#FFFF00"></div>
-            <div class="color-swatch" style="background-color: #800080;" data-color="#800080"></div>
-            <div class="color-swatch" style="background-color: #FFA500;" data-color="#FFA500"></div>
-        </div>
-        <div class="coloring-container">
-            <div class="coloring-area">
-                <div class="coloring-region" data-name="sky"></div>
-                <div class="coloring-region" data-name="sun"></div>
-                <div class="coloring-region" data-name="ground"></div>
-                <div class="coloring-region" data-name="tree"></div>
-                <div class="coloring-region" data-name="house"></div>
-                <div class="coloring-region" data-name="roof"></div>
-            </div>
-        </div>
-    `;
-    
-    container.appendChild(gameContent);
-    
-    // Set up coloring game interaction
-    setTimeout(() => {
-        let currentColor = '#FF0000';
-        
-        const colorSwatches = gameContent.querySelectorAll('.color-swatch');
-        const coloringRegions = gameContent.querySelectorAll('.coloring-region');
-        
-        colorSwatches.forEach(swatch => {
-            swatch.addEventListener('click', () => {
-                currentColor = swatch.getAttribute('data-color');
-                colorSwatches.forEach(s => s.classList.remove('selected'));
-                swatch.classList.add('selected');
-            });
-        });
-        
-        coloringRegions.forEach(region => {
-            region.addEventListener('click', () => {
-                region.style.backgroundColor = currentColor;
-            });
-        });
-        
-        // Select the first color by default
-        colorSwatches[0].classList.add('selected');
-    }, 100);
-}
-
-// Load Shape Match Game (Age 4)
+/**
+ * Load the shape matching game
+ */
 function loadShapeMatchGame(container) {
-    const gameContent = document.createElement('div');
-    gameContent.className = 'game-content shape-match-game';
-    gameContent.innerHTML = `
-        <h3>Shape Match</h3>
-        <p>Drag the shapes to their matching outlines!</p>
-        <div class="shape-game-container">
-            <div class="shapes-to-match">
-                <div class="shape circle" draggable="true">●</div>
-                <div class="shape square" draggable="true">■</div>
-                <div class="shape triangle" draggable="true">▲</div>
-                <div class="shape star" draggable="true">★</div>
-            </div>
-            <div class="shape-targets">
-                <div class="shape-target" data-shape="circle">○</div>
-                <div class="shape-target" data-shape="square">□</div>
-                <div class="shape-target" data-shape="triangle">△</div>
-                <div class="shape-target" data-shape="star">☆</div>
-            </div>
-        </div>
-    `;
+    const shapes = ['circle', 'square', 'triangle', 'rectangle', 'star'];
+    const gameArea = document.createElement('div');
+    gameArea.className = 'shape-match-game';
     
-    container.appendChild(gameContent);
+    // Create game instructions
+    const instructions = document.createElement('p');
+    instructions.textContent = 'Drag the shapes to their matching outlines!';
+    gameArea.appendChild(instructions);
     
-    // Initialize shape matching
-    setTimeout(() => {
-        const shapes = gameContent.querySelectorAll('.shape');
-        const targets = gameContent.querySelectorAll('.shape-target');
+    // Create drop targets
+    const dropArea = document.createElement('div');
+    dropArea.className = 'shape-drop-area';
+    
+    shapes.forEach(shape => {
+        const target = document.createElement('div');
+        target.className = `shape-target ${shape}-target`;
+        target.setAttribute('data-shape', shape);
+        dropArea.appendChild(target);
+    });
+    
+    gameArea.appendChild(dropArea);
+    
+    // Create draggable shapes
+    const shapesArea = document.createElement('div');
+    shapesArea.className = 'shape-drag-area';
+    
+    // Shuffle shapes
+    const shuffledShapes = [...shapes].sort(() => Math.random() - 0.5);
+    
+    shuffledShapes.forEach(shape => {
+        const dragShape = document.createElement('div');
+        dragShape.className = `shape-draggable ${shape}-shape`;
+        dragShape.setAttribute('data-shape', shape);
+        dragShape.setAttribute('draggable', 'true');
+        shapesArea.appendChild(dragShape);
         
-        shapes.forEach(shape => {
-            shape.addEventListener('dragstart', e => {
-                // Get shape type from class name (circle, square, etc.)
-                const className = Array.from(shape.classList).find(cls => 
-                    ['circle', 'square', 'triangle', 'star'].includes(cls));
-                    
-                e.dataTransfer.setData('text/plain', className);
-                shape.classList.add('dragging');
-            });
-            
-            shape.addEventListener('dragend', () => {
-                shape.classList.remove('dragging');
-            });
+        // Add drag functionality
+        dragShape.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('text/plain', shape);
         });
-        
-        targets.forEach(target => {
-            target.addEventListener('dragover', e => {
-                e.preventDefault();
-                target.classList.add('drag-over');
-            });
-            
-            target.addEventListener('dragleave', () => {
-                target.classList.remove('drag-over');
-            });
-            
-            target.addEventListener('drop', e => {
-                e.preventDefault();
-                target.classList.remove('drag-over');
-                
-                const data = e.dataTransfer.getData('text/plain');
-                const shapeType = target.getAttribute('data-shape');
-                
-                if (data === shapeType) {
-                    target.classList.add('matched');
-                    document.querySelector(`.shape.${shapeType}`)?.classList.add('matched');
-                }
-            });
-        });
-    }, 100);
-}
-
-// Load Letter Match Game (Age 5+)
-function loadLetterMatchGame(container) {
-    const gameContent = document.createElement('div');
-    gameContent.className = 'game-content letter-match';
-    gameContent.innerHTML = `
-        <h3>Letter Match</h3>
-        <p>Match the uppercase and lowercase letters!</p>
-        <div class="match-container">
-            <div class="match-card" data-letter="a">A</div>
-            <div class="match-card" data-letter="b">B</div>
-            <div class="match-card" data-letter="c">C</div>
-            <div class="match-card" data-letter="a">a</div>
-            <div class="match-card" data-letter="b">b</div>
-            <div class="match-card" data-letter="c">c</div>
-        </div>
-    `;
+    });
     
-    container.appendChild(gameContent);
+    gameArea.appendChild(shapesArea);
     
-    // Initialize letter matching
-    setTimeout(() => {
-        const cards = gameContent.querySelectorAll('.match-card');
-        let selectedCard = null;
-        
-        cards.forEach(card => {
-            card.addEventListener('click', () => {
-                card.classList.add('flipped');
-                
-                if (!selectedCard) {
-                    // First card selected
-                    selectedCard = card;
-                } else {
-                    // Second card selected
-                    if (selectedCard.getAttribute('data-letter') === card.getAttribute('data-letter') && 
-                        selectedCard !== card) {
-                        // Match found
-                        selectedCard.classList.add('matched');
-                        card.classList.add('matched');
-                    } else {
-                        // No match
-                        setTimeout(() => {
-                            selectedCard.classList.remove('flipped');
-                            card.classList.remove('flipped');
-                        }, 1000);
-                    }
-                    selectedCard = null;
-                }
-            });
-        });
-    }, 100);
-}
-
-// Load Number Game (Age 5+)
-function loadNumberGame(container) {
-    const gameContent = document.createElement('div');
-    gameContent.className = 'game-content number-game';
-    gameContent.innerHTML = `
-        <h3>Number Fun</h3>
-        <p>Count the objects and select the right number!</p>
-        <div class="number-container">
-            <div class="number-question">
-                <div class="number-objects">🌟 🌟 🌟</div>
-                <p>How many stars do you see?</p>
-                <div class="number-options">
-                    <button class="number-option" data-value="2">2</button>
-                    <button class="number-option" data-value="3">3</button>
-                    <button class="number-option" data-value="4">4</button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    container.appendChild(gameContent);
-    
-    // Initialize number game
-    setTimeout(() => {
-        const options = gameContent.querySelectorAll('.number-option');
-        const correctAnswer = "3";
-        
-        options.forEach(option => {
-            option.addEventListener('click', () => {
-                const value = option.getAttribute('data-value');
-                options.forEach(opt => opt.classList.remove('selected', 'correct', 'incorrect'));
-                
-                option.classList.add('selected');
-                
-                if (value === correctAnswer) {
-                    option.classList.add('correct');
-                } else {
-                    option.classList.add('incorrect');
-                }
-            });
-        });
-    }, 100);
-}
-
-// Load Memory Game (Age 5+)
-function loadMemoryGame(container) {
-    const gameContent = document.createElement('div');
-    gameContent.className = 'game-content memory-game';
-    gameContent.innerHTML = `
-        <h3>Memory Game</h3>
-        <p>Find the matching pairs of animals!</p>
-        <div class="memory-board">
-            <div class="memory-card" data-animal="cat">🐱</div>
-            <div class="memory-card" data-animal="dog">🐶</div>
-            <div class="memory-card" data-animal="rabbit">🐰</div>
-            <div class="memory-card" data-animal="cat">🐱</div>
-            <div class="memory-card" data-animal="dog">🐶</div>
-            <div class="memory-card" data-animal="rabbit">🐰</div>
-        </div>
-    `;
-    
-    container.appendChild(gameContent);
-    
-    // Initialize memory game
-    setTimeout(() => {
-        const cards = gameContent.querySelectorAll('.memory-card');
-        let hasFlippedCard = false;
-        let lockBoard = false;
-        let firstCard, secondCard;
-        
-        function flipCard() {
-            if (lockBoard) return;
-            if (this === firstCard) return;
-            
-            this.classList.add('flipped');
-            
-            if (!hasFlippedCard) {
-                // First card flipped
-                hasFlippedCard = true;
-                firstCard = this;
-                return;
-            }
-            
-            // Second card flipped
-            secondCard = this;
-            checkForMatch();
-        }
-        
-        function checkForMatch() {
-            const isMatch = firstCard.dataset.animal === secondCard.dataset.animal;
-            isMatch ? disableCards() : unflipCards();
-        }
-        
-        function disableCards() {
-            firstCard.classList.add('matched');
-            secondCard.classList.add('matched');
-            
-            resetBoard();
-        }
-        
-        function unflipCards() {
-            lockBoard = true;
-            
-            setTimeout(() => {
-                firstCard.classList.remove('flipped');
-                secondCard.classList.remove('flipped');
-                
-                resetBoard();
-            }, 1500);
-        }
-        
-        function resetBoard() {
-            [hasFlippedCard, lockBoard] = [false, false];
-            [firstCard, secondCard] = [null, null];
-        }
-        
-        cards.forEach(card => card.addEventListener('click', flipCard));
-        
-        // Shuffle cards
-        cards.forEach(card => {
-            const randomPosition = Math.floor(Math.random() * cards.length);
-            card.style.order = randomPosition;
-        });
-    }, 100);
-}
-
-// Handle game completion and rewards
-function completeGame(gameId) {
-    // Map game IDs to badge IDs
-    const badgeMap = {
-        'animal_puzzle': 'puzzle_master',
-        'coloring_fun': 'coloring_master',
-        'shape_match': 'shape_master',
-        'letter_match': 'letter_master',
-        'number_fun': 'number_master',
-        'memory_game': 'memory_master'
-    };
-    
-    // Award badge if it exists in the map
-    const badgeId = badgeMap[gameId];
-    if (badgeId && typeof awardBadge === 'function') {
-        awardBadge(badgeId);
-    }
-    
-    // Award some stars
-    if (typeof awardStars === 'function') {
-        awardStars(3);
-    }
-    
-    // Go back to games list
-    document.getElementById('games-list-container').style.display = 'block';
-    document.getElementById('game-content-container').style.display = 'none';
-    currentGame = null;
-}
-
-// Initialize games on load
-document.addEventListener('DOMContentLoaded', () => {
-    // Init games if we're in game mode section
-    const gameSection = document.getElementById('game-mode');
-    if (gameSection) {
-        initGames();
-    }
-});
-
-// Function to adjust iframe height
-function adjustIframeHeight() {
-    // Make the iframe take up more space on the page
-    const externalContainers = document.querySelectorAll('.external-game-container');
-    
-    if (externalContainers.length > 0) {
-        // Adjust the height based on available viewport height
-        const viewportHeight = window.innerHeight;
-        const containerHeight = Math.max(450, viewportHeight * 0.7); // At least 450px or 70% of viewport
-        
-        externalContainers.forEach(container => {
-            container.style.height = `${containerHeight}px`;
-        });
-    }
-}
-
-// Modify loadExternalGame function to include height adjustment
-const originalLoadExternalGame = loadExternalGame;
-loadExternalGame = function(url, title) {
-    originalLoadExternalGame(url, title);
-    
-    // After loading the external game, adjust iframe height
-    setTimeout(adjustIframeHeight, 100);
-    
-    // Also listen for window resize to readjust
-    window.addEventListener('resize', adjustIframeHeight);
-};
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-    // Original initialization
-    const gameSection = document.getElementById('game-mode');
-    if (gameSection) {
-        initGames();
-    }
-    
-    // Set up fullscreen button for external games
-    document.body.addEventListener('click', (e) => {
-        if (e.target && e.target.classList.contains('open-external-btn')) {
-            // Prevent default link behavior
+    // Add drop functionality to targets
+    const targets = dropArea.querySelectorAll('.shape-target');
+    targets.forEach(target => {
+        target.addEventListener('dragover', function(e) {
             e.preventDefault();
-            
-            // Get the URL from the href attribute
-            const url = e.target.getAttribute('href');
-            
-            // Open in a new tab that takes up the full screen
-            window.open(url, '_blank', 'noopener,noreferrer');
-        }
-    });
-});
-
-// More click responsiveness improvements
-document.addEventListener('DOMContentLoaded', function() {
-    // Make all clickable game elements more responsive
-    function addClickFeedback(selector) {
-        document.querySelectorAll(selector).forEach(element => {
-            element.addEventListener('click', function() {
-                // Add a temporary class for visual feedback
-                this.classList.add('clicked');
-                
-                // Remove it after animation completes
-                setTimeout(() => {
-                    this.classList.remove('clicked');
-                }, 150);
-            });
         });
-    }
-    
-    // For dynamically added elements, use event delegation
-    document.body.addEventListener('click', function(e) {
-        // Check if the clicked element is one we want to add feedback to
-        if (e.target.matches('.puzzle-piece, .match-card, .memory-card, .number-option')) {
-            e.target.classList.add('clicked');
+        
+        target.addEventListener('drop', function(e) {
+            e.preventDefault();
+            const shapeName = e.dataTransfer.getData('text/plain');
+            const targetShape = this.getAttribute('data-shape');
             
-            setTimeout(() => {
-                e.target.classList.remove('clicked');
-            }, 150);
-        }
+            if (shapeName === targetShape) {
+                // Correct match
+                this.classList.add('matched');
+                
+                // Find and hide the draggable shape
+                const draggedShape = document.querySelector(`.shape-draggable[data-shape="${shapeName}"]`);
+                if (draggedShape) {
+                    draggedShape.style.visibility = 'hidden';
+                }
+                
+                // Play success sound
+                playSuccessSound();
+                
+                // Check if game is complete
+                const allMatched = document.querySelectorAll('.shape-target.matched').length === shapes.length;
+                if (allMatched) {
+                    setTimeout(() => {
+                        // Show completion message
+                        createConfetti();
+                        alert('Great job! You matched all the shapes!');
+                        completeGame('matching_shapes');
+                    }, 500);
+                }
+            }
+        });
     });
     
-    // Remove any delay in the loadExternalGame and loadGame functions
-    const originalLoadGame = window.loadGame;
-    if (originalLoadGame) {
-        window.loadGame = function(gameId) {
-            // Call original function
-            originalLoadGame(gameId);
-            
-            // Force layout recalculation to prevent delay
-            document.body.offsetHeight;
-        };
-    }
+    container.appendChild(gameArea);
+}
+
+/**
+ * Load the letter matching game
+ */
+function loadLetterMatchGame(container) {
+    const letters = ['A', 'B', 'C', 'D', 'E'];
+    const gameArea = document.createElement('div');
+    gameArea.className = 'letter-match-game';
     
-    // Optimize external game loading
-    if (typeof loadExternalGame === 'function') {
-        const origLoadExternal = loadExternalGame;
-        loadExternalGame = function(url, title) {
-            // Show loading indicator
-            const gameContentContainer = document.getElementById('game-content-container');
-            if (gameContentContainer) {
-                gameContentContainer.innerHTML = '<div class="loading-indicator">Loading game...</div>';
-                gameContentContainer.style.display = 'block';
+    // Create game instructions
+    const instructions = document.createElement('p');
+    instructions.textContent = 'Match the uppercase letters with their lowercase pairs!';
+    gameArea.appendChild(instructions);
+    
+    // Create the game board
+    const gameBoard = document.createElement('div');
+    gameBoard.className = 'letter-game-board';
+    
+    // Create uppercase letters (targets)
+    const upperRow = document.createElement('div');
+    upperRow.className = 'letter-row upper-row';
+    
+    letters.forEach(letter => {
+        const upperLetter = document.createElement('div');
+        upperLetter.className = 'letter-target';
+        upperLetter.setAttribute('data-letter', letter);
+        upperLetter.textContent = letter;
+        upperRow.appendChild(upperLetter);
+    });
+    
+    gameBoard.appendChild(upperRow);
+    
+    // Create lowercase letters (draggables)
+    const lowerRow = document.createElement('div');
+    lowerRow.className = 'letter-row lower-row';
+    
+    // Shuffle lowercase letters
+    const shuffledLetters = [...letters].sort(() => Math.random() - 0.5);
+    
+    shuffledLetters.forEach(letter => {
+        const lowerLetter = document.createElement('div');
+        lowerLetter.className = 'letter-draggable';
+        lowerLetter.setAttribute('data-letter', letter);
+        lowerLetter.setAttribute('draggable', 'true');
+        lowerLetter.textContent = letter.toLowerCase();
+        lowerRow.appendChild(lowerLetter);
+        
+        // Add drag functionality
+        lowerLetter.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('text/plain', letter);
+        });
+    });
+    
+    gameBoard.appendChild(lowerRow);
+    gameArea.appendChild(gameBoard);
+    
+    // Add drop functionality to targets
+    const targets = upperRow.querySelectorAll('.letter-target');
+    targets.forEach(target => {
+        target.addEventListener('dragover', function(e) {
+            e.preventDefault();
+        });
+        
+        target.addEventListener('drop', function(e) {
+            e.preventDefault();
+            const letterDragged = e.dataTransfer.getData('text/plain');
+            const targetLetter = this.getAttribute('data-letter');
+            
+            if (letterDragged === targetLetter) {
+                // Correct match
+                this.classList.add('matched');
                 
-                // Hide games list immediately
-                const gamesListContainer = document.getElementById('games-list-container');
-                if (gamesListContainer) {
-                    gamesListContainer.style.display = 'none';
+                // Find and hide the draggable letter
+                const draggedLetter = document.querySelector(`.letter-draggable[data-letter="${letterDragged}"]`);
+                if (draggedLetter) {
+                    draggedLetter.style.visibility = 'hidden';
+                }
+                
+                // Play success sound
+                playSuccessSound();
+                
+                // Check if game is complete
+                const allMatched = document.querySelectorAll('.letter-target.matched').length === letters.length;
+                if (allMatched) {
+                    setTimeout(() => {
+                        // Show completion message
+                        createConfetti();
+                        alert('Great job! You matched all the letters!');
+                        completeGame('letter_match');
+                    }, 500);
+                }
+            }
+        });
+    });
+    
+    container.appendChild(gameArea);
+}
+
+/**
+ * Load the number game
+ */
+function loadNumberGame(container, simpleMode = false) {
+    const gameArea = document.createElement('div');
+    gameArea.className = 'number-game';
+    
+    // Create game instructions
+    const instructions = document.createElement('p');
+    instructions.textContent = simpleMode ? 
+        'Count the objects and select the correct number!' :
+        'Solve the simple math problems!';
+    gameArea.appendChild(instructions);
+    
+    // Set up game state
+    let correctAnswers = 0;
+    const maxRounds = 5;
+    let currentRound = 1;
+    
+    // Create game content
+    function createProblem() {
+        const gameContent = document.createElement('div');
+        gameContent.className = 'number-game-content';
+        
+        if (simpleMode) {
+            // Simple counting game
+            // Generate random number of objects (1-5)
+            const objectCount = Math.floor(Math.random() * 5) + 1;
+            
+            // Create objects container
+            const objectsContainer = document.createElement('div');
+            objectsContainer.className = 'objects-container';
+            
+            // Add objects
+            for (let i = 0; i < objectCount; i++) {
+                const object = document.createElement('div');
+                object.className = 'counting-object';
+                objectsContainer.appendChild(object);
+            }
+            
+            gameContent.appendChild(objectsContainer);
+            
+            // Create number options
+            const numbersContainer = document.createElement('div');
+            numbersContainer.className = 'numbers-container';
+            
+            // Generate 3 options (including the correct answer)
+            const options = [objectCount];
+            
+            // Add 2 more unique options
+            while (options.length < 3) {
+                const option = Math.floor(Math.random() * 5) + 1;
+                if (!options.includes(option)) {
+                    options.push(option);
                 }
             }
             
-            // Short timeout to allow UI to update before heavy iframe loading
-            setTimeout(() => {
-                origLoadExternal(url, title);
-            }, 10);
-        };
-    }
-});
-
-// Add clicked class styling
-document.head.insertAdjacentHTML('beforeend', `
-    <style>
-        .clicked {
-            transform: scale(0.9) !important;
-            opacity: 0.8 !important;
-            transition: transform 0.1s ease, opacity 0.1s ease !important;
-        }
-        
-        .loading-indicator {
-            padding: 20px;
-            text-align: center;
-            font-size: 1.2rem;
-            color: var(--primary-color);
-        }
-    </style>
-`);
-
-// Fix Starfall and other external sites by updating URLs and handling frames better
-(function() {
-    // Update external game URLs to more iframe-friendly alternatives
-    const updatedExternalGames = {
-        // Age 4 games
-        'abcya_shapes': { 
-            url: 'https://www.abcya.com/games/shapes_geometry_game', 
-            title: 'Shape Matching' 
-        },
-        'pbs_games': { 
-            url: 'https://pbskids.org/games', 
-            title: 'PBS Kids Games' 
-        },
-        'sesame_street': { 
-            url: 'https://www.sesamestreet.org/games', 
-            title: 'Sesame Street Games' 
-        },
-        
-        // Age 5 games
-        'starfall': { 
-            url: 'https://www.abcya.com/games/alphabet_bubble_letter_match', 
-            title: 'Alphabet Bubble Letters' 
-        },
-        'funbrain': { 
-            url: 'https://www.funbrain.com/games/poptropica-forgotten-islands', 
-            title: 'Funbrain Games' 
-        },
-        'national_geographic': { 
-            url: 'https://www.abcya.com/games/animal_rhythm', 
-            title: 'Animal Rhythm Game' 
-        }
-    };
-    
-    // Update original EXTERNAL_GAMES with working URLs
-    if (typeof EXTERNAL_GAMES !== 'undefined') {
-        // Update Age 4 games
-        EXTERNAL_GAMES[4].forEach(game => {
-            if (updatedExternalGames[game.id]) {
-                game.url = updatedExternalGames[game.id].url;
-                game.title = updatedExternalGames[game.id].title;
+            // Shuffle options
+            options.sort(() => Math.random() - 0.5);
+            
+            // Create number buttons
+            options.forEach(number => {
+                const numberButton = document.createElement('button');
+                numberButton.className = 'number-option';
+                numberButton.textContent = number;
+                
+                numberButton.addEventListener('click', function() {
+                    if (parseInt(this.textContent) === objectCount) {
+                        // Correct answer
+                        this.classList.add('correct');
+                        playSuccessSound();
+                        correctAnswers++;
+                        
+                        setTimeout(() => {
+                            // Move to next round or complete game
+                            if (currentRound < maxRounds) {
+                                currentRound++;
+                                gameArea.removeChild(gameContent);
+                                createProblem();
+                            } else {
+                                // Game complete
+                                completeNumberGame();
+                            }
+                        }, 1000);
+                    } else {
+                        // Incorrect answer
+                        this.classList.add('incorrect');
+                        setTimeout(() => {
+                            this.classList.remove('incorrect');
+                        }, 500);
+                    }
+                });
+                
+                numbersContainer.appendChild(numberButton);
+            });
+            
+            gameContent.appendChild(numbersContainer);
+        } else {
+            // Math game (addition/subtraction)
+            const operation = Math.random() > 0.5 ? '+' : '-';
+            let num1, num2, answer;
+            
+            if (operation === '+') {
+                // Addition (result max 10)
+                num1 = Math.floor(Math.random() * 5) + 1;
+                num2 = Math.floor(Math.random() * 5) + 1;
+                answer = num1 + num2;
+            } else {
+                // Subtraction (ensure positive result)
+                num1 = Math.floor(Math.random() * 5) + 6; // 6-10
+                num2 = Math.floor(Math.random() * 5) + 1; // 1-5
+                answer = num1 - num2;
             }
-        });
-        
-        // Update Age 5 games
-        EXTERNAL_GAMES[5].forEach(game => {
-            if (updatedExternalGames[game.id]) {
-                game.url = updatedExternalGames[game.id].url;
-                game.title = updatedExternalGames[game.id].title;
+            
+            // Create problem display
+            const problemDisplay = document.createElement('div');
+            problemDisplay.className = 'math-problem';
+            problemDisplay.innerHTML = `<span>${num1}</span> <span>${operation}</span> <span>${num2}</span> <span>=</span> <span>?</span>`;
+            gameContent.appendChild(problemDisplay);
+            
+            // Create answer options
+            const answersContainer = document.createElement('div');
+            answersContainer.className = 'numbers-container';
+            
+            // Generate 3 options (including the correct answer)
+            const options = [answer];
+            
+            // Add 2 more unique options (within reasonable range)
+            while (options.length < 3) {
+                const offset = Math.floor(Math.random() * 5) - 2; // -2 to +2
+                const option = answer + offset;
+                if (!options.includes(option) && option >= 0 && option <= 10) {
+                    options.push(option);
+                }
             }
-        });
-    }
-    
-    // Enhance external game loading with fallback options
-    const origLoadExternal = loadExternalGame;
-    loadExternalGame = function(url, title) {
-        // Show loading indicator
-        const gameContentContainer = document.getElementById('game-content-container');
-        if (!gameContentContainer) return;
-        
-        gameContentContainer.innerHTML = '<div class="loading-indicator">Loading game...</div>';
-        gameContentContainer.style.display = 'block';
-        
-        // Hide games list immediately
-        const gamesListContainer = document.getElementById('games-list-container');
-        if (gamesListContainer) {
-            gamesListContainer.style.display = 'none';
+            
+            // Shuffle options
+            options.sort(() => Math.random() - 0.5);
+            
+            // Create answer buttons
+            options.forEach(number => {
+                const numberButton = document.createElement('button');
+                numberButton.className = 'number-option';
+                numberButton.textContent = number;
+                
+                numberButton.addEventListener('click', function() {
+                    if (parseInt(this.textContent) === answer) {
+                        // Correct answer
+                        this.classList.add('correct');
+                        playSuccessSound();
+                        correctAnswers++;
+                        
+                        setTimeout(() => {
+                            // Move to next round or complete game
+                            if (currentRound < maxRounds) {
+                                currentRound++;
+                                gameArea.removeChild(gameContent);
+                                createProblem();
+                            } else {
+                                // Game complete
+                                completeNumberGame();
+                            }
+                        }, 1000);
+                    } else {
+                        // Incorrect answer
+                        this.classList.add('incorrect');
+                        setTimeout(() => {
+                            this.classList.remove('incorrect');
+                        }, 500);
+                    }
+                });
+                
+                answersContainer.appendChild(numberButton);
+            });
+            
+            gameContent.appendChild(answersContainer);
         }
         
-        // Create the game content
-        setTimeout(() => {
-            const gameContent = document.createElement('div');
-            gameContent.className = 'game-content external-game-content';
-            gameContent.innerHTML = `
-                <h3>${title}</h3>
-                <div class="parent-message">
-                    <p><strong>Parents:</strong> This is an external educational website. If the game doesn't appear below, use the "Open in New Tab" button.</p>
+        // Add progress indicator
+        const progressIndicator = document.createElement('div');
+        progressIndicator.className = 'game-progress';
+        progressIndicator.textContent = `Question ${currentRound} of ${maxRounds}`;
+        gameContent.appendChild(progressIndicator);
+        
+        gameArea.appendChild(gameContent);
+    }
+    
+    function completeNumberGame() {
+        // Determine if the player passed (got more than half correct)
+        const passed = correctAnswers >= Math.ceil(maxRounds / 2);
+        
+        // Create completion message
+        const completionMessage = document.createElement('div');
+        completionMessage.className = 'game-completion';
+        
+        if (passed) {
+            createConfetti();
+            playSuccessSound();
+            
+            completionMessage.innerHTML = `
+                <h3>Great job!</h3>
+                <p>You got ${correctAnswers} out of ${maxRounds} correct!</p>
+                <div class="completion-stars">
+                    ${Array(Math.ceil(correctAnswers / maxRounds * 5)).fill('<span class="star">⭐</span>').join('')}
                 </div>
-                <div class="external-game-container">
-                    <iframe 
-                        src="${url}"
-                        title="${title}"
-                        class="external-game-frame"
-                        allow="fullscreen"
-                        sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-                        referrerpolicy="no-referrer"
-                    ></iframe>
-                </div>
-                <p class="game-instructions">For the best experience, you can use the button below to open the game in a new tab.</p>
-                <a href="${url}" target="_blank" class="open-external-btn">Open in New Tab</a>
             `;
             
-            gameContentContainer.innerHTML = '';
-            gameContentContainer.appendChild(gameContent);
+            // Mark game as complete
+            completeGame(simpleMode ? 'counting' : 'number_game');
+        } else {
+            completionMessage.innerHTML = `
+                <h3>Good try!</h3>
+                <p>You got ${correctAnswers} out of ${maxRounds} correct.</p>
+                <p>Keep practicing!</p>
+                <button class="btn primary-btn retry-btn">Try Again</button>
+            `;
             
-            // Add back button
-            const backButton = document.createElement('button');
-            backButton.className = 'btn back-to-games-btn';
-            backButton.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Games';
-            backButton.addEventListener('click', () => {
-                const gamesListContainer = document.getElementById('games-list-container');
-                if (gamesListContainer) {
-                    gamesListContainer.style.display = 'block';
+            // Add retry button functionality
+            setTimeout(() => {
+                const retryBtn = completionMessage.querySelector('.retry-btn');
+                if (retryBtn) {
+                    retryBtn.addEventListener('click', function() {
+                        // Reset game
+                        correctAnswers = 0;
+                        currentRound = 1;
+                        gameArea.innerHTML = '';
+                        gameArea.appendChild(instructions);
+                        createProblem();
+                    });
                 }
-                gameContentContainer.style.display = 'none';
-            });
-            
-            // Add buttons to container
-            const buttonContainer = document.createElement('div');
-            buttonContainer.className = 'game-buttons';
-            buttonContainer.appendChild(backButton);
-            gameContentContainer.appendChild(buttonContainer);
-            
-            // Adjust iframe height
-            adjustIframeHeight();
-            
-            // Add error handler for iframe
-            const iframe = gameContentContainer.querySelector('iframe');
-            if (iframe) {
-                iframe.onerror = function() {
-                    iframe.style.display = 'none';
-                    const container = iframe.parentElement;
-                    container.innerHTML = `
-                        <div class="iframe-error">
-                            <p>This game couldn't be loaded in the frame.</p>
-                            <p>Please use the "Open in New Tab" button below to play.</p>
-                        </div>
-                    `;
-                    container.appendChild(iframe);
-                };
-            }
-        }, 10);
-    };
-})();
+            }, 100);
+        }
+        
+        gameArea.innerHTML = '';
+        gameArea.appendChild(completionMessage);
+    }
+    
+    // Start the first problem
+    createProblem();
+    
+    container.appendChild(gameArea);
+}
 
-// Add iframe error styling
-document.head.insertAdjacentHTML('beforeend', `
-    <style>
-        .iframe-error {
-            padding: 20px;
-            text-align: center;
-            background-color: #f8f9fa;
-            border-radius: var(--border-radius);
-            margin: 20px 0;
+/**
+ * Load the memory matching game
+ */
+function loadMemoryGame(container) {
+    const gameArea = document.createElement('div');
+    gameArea.className = 'memory-game';
+    
+    // Create game instructions
+    const instructions = document.createElement('p');
+    instructions.textContent = 'Find matching pairs of cards!';
+    gameArea.appendChild(instructions);
+    
+    // Create game grid
+    const gameGrid = document.createElement('div');
+    gameGrid.className = 'memory-game-grid';
+    
+    // Define card types (pairs)
+    const cardTypes = ['🐶', '🐱', '🐭', '🐰', '🦊', '🐻', '🐼', '🐨'];
+    
+    // Create pairs of cards
+    const cardsArray = [...cardTypes, ...cardTypes];
+    
+    // Shuffle cards
+    cardsArray.sort(() => Math.random() - 0.5);
+    
+    // Game variables
+    let hasFlippedCard = false;
+    let lockBoard = false;
+    let firstCard, secondCard;
+    let matchedPairs = 0;
+    
+    // Create cards
+    cardsArray.forEach((type, index) => {
+        const card = document.createElement('div');
+        card.className = 'memory-card';
+        card.setAttribute('data-card', type);
+        
+        const cardFront = document.createElement('div');
+        cardFront.className = 'card-front';
+        cardFront.textContent = '?';
+        
+        const cardBack = document.createElement('div');
+        cardBack.className = 'card-back';
+        cardBack.textContent = type;
+        
+        card.appendChild(cardFront);
+        card.appendChild(cardBack);
+        
+        // Add click event
+        card.addEventListener('click', flipCard);
+        
+        gameGrid.appendChild(card);
+    });
+    
+    gameArea.appendChild(gameGrid);
+    container.appendChild(gameArea);
+    
+    function flipCard() {
+        if (lockBoard) return;
+        if (this === firstCard) return;
+        
+        this.classList.add('flipped');
+        
+        if (!hasFlippedCard) {
+            // First card flipped
+            hasFlippedCard = true;
+            firstCard = this;
+            return;
         }
         
-        .iframe-error p {
-            margin: 10px 0;
-            font-size: 0.9rem;
+        // Second card flipped
+        secondCard = this;
+        checkForMatch();
+    }
+    
+    function checkForMatch() {
+        const isMatch = firstCard.getAttribute('data-card') === secondCard.getAttribute('data-card');
+        isMatch ? disableCards() : unflipCards();
+    }
+    
+    function disableCards() {
+        firstCard.removeEventListener('click', flipCard);
+        secondCard.removeEventListener('click', flipCard);
+        
+        firstCard.classList.add('matched');
+        secondCard.classList.add('matched');
+        
+        playSuccessSound();
+        matchedPairs++;
+        
+        if (matchedPairs === cardTypes.length) {
+            setTimeout(() => {
+                createConfetti();
+                alert('Great job! You found all the matches!');
+                completeGame('memory_game');
+            }, 500);
         }
         
-        .open-external-btn {
-            display: inline-block;
-            background-color: var(--accent-color);
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: var(--border-radius);
-            margin-top: 15px;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
+        resetBoard();
+    }
+    
+    function unflipCards() {
+        lockBoard = true;
         
-        .open-external-btn:hover {
-            background-color: #e05d5d;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-    </style>
-`);
+        setTimeout(() => {
+            firstCard.classList.remove('flipped');
+            secondCard.classList.remove('flipped');
+            resetBoard();
+        }, 1000);
+    }
+    
+    function resetBoard() {
+        [hasFlippedCard, lockBoard] = [false, false];
+        [firstCard, secondCard] = [null, null];
+    }
+}
+
+/**
+ * Mark a game as complete
+ */
+function completeGame(gameId) {
+    // Track progress in the database
+    trackProgress(gameId, 'game', true);
+    
+    // Play success sound
+    playSuccessSound();
+    
+    // Award badge if rewards.js is loaded
+    if (typeof awardBadge === 'function') {
+        awardBadge(`game_${gameId}`);
+    }
+}
+
+/**
+ * Track progress in the database
+ */
+function trackProgress(contentId, contentType, completed) {
+    fetch('/api/track-progress', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            content_type: contentType,
+            content_id: contentId,
+            completed: completed,
+            time_spent: 30 // Placeholder value in seconds
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Progress tracked:', data);
+    })
+    .catch(error => {
+        console.error('Error tracking progress:', error);
+    });
+}
+
+/**
+ * Adjust iframe height based on window size
+ */
+function adjustIframeHeight() {
+    const iframes = document.querySelectorAll('.game-iframe');
+    iframes.forEach(iframe => {
+        iframe.style.height = `${window.innerHeight * 0.7}px`;
+    });
+}
+
+/**
+ * Play success sound
+ */
+function playSuccessSound() {
+    const audio = document.getElementById('game-audio');
+    if (audio) {
+        audio.src = "/static/audio/success.mp3";
+        audio.play();
+    }
+}
+
+/**
+ * Create confetti animation effect
+ */
+function createConfetti() {
+    const confettiContainer = document.createElement('div');
+    confettiContainer.className = 'confetti-container';
+    document.body.appendChild(confettiContainer);
+    
+    // Create confetti pieces
+    for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = `${Math.random() * 100}%`;
+        confetti.style.animationDelay = `${Math.random() * 2}s`;
+        confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        confettiContainer.appendChild(confetti);
+    }
+    
+    // Remove confetti after animation
+    setTimeout(() => {
+        confettiContainer.remove();
+    }, 4000);
+}
+
+/**
+ * Add click feedback to interactive elements
+ */
+function addClickFeedback(selector) {
+    document.querySelectorAll(selector).forEach(element => {
+        element.addEventListener('click', function() {
+            this.classList.add('clicked');
+            setTimeout(() => {
+                this.classList.remove('clicked');
+            }, 150);
+        });
+    });
+}

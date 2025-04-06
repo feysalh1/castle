@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Settings - Children's Castle</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading-animations.css') }}">
+</head>
+<body>
+    <header class="dashboard-header">
+        <div class="container">
+            <div class="logo">
+                <h1>Children's Castle</h1>
+                <small>Developed for Menira</small>
+            </div>
+            <nav>
+                <a href="{{ url_for('parent_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('parent_settings') }}" class="active">Settings</a>
+                <a href="{{ url_for('logout') }}">Sign Out</a>
+            </nav>
+        </div>
+    </header>
+    
+    <main>
+        <div class="container">
+            <!-- Flash Messages -->
+            <div class="flash-messages">
+                {% for message in get_flashed_messages(with_categories=true) %}
+                    <div class="flash {{ message[0] }}">
+                        {{ message[1] }}
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="dashboard-content">
+                <h2 class="welcome-back">Parent Settings</h2>
+                
+                <form class="settings-form" method="POST" action="{{ url_for('parent_settings') }}">
+                    <div class="settings-section">
+                        <h3>Content Controls</h3>
+                        
+                        <div class="settings-row">
+                            <div class="setting-label">
+                                <h4>Allow External Games</h4>
+                                <p>Allow your child to access external educational games</p>
+                            </div>
+                            <div class="setting-control">
+                                <label class="switch">
+                                    <input type="checkbox" name="allow_external_games" {% if settings and settings.allow_external_games %}checked{% endif %}>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-row">
+                            <div class="setting-label">
+                                <h4>Content Age Filter</h4>
+                                <p>Maximum age-appropriate content to show</p>
+                            </div>
+                            <div class="setting-control">
+                                <input type="range" class="range-slider" name="content_age_filter" min="4" max="8" step="1" value="{{ settings.content_age_filter if settings else 4 }}">
+                                <div class="range-value"><span id="age-filter-value">{{ settings.content_age_filter if settings else 4 }}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>Time Management</h3>
+                        
+                        <div class="settings-row">
+                            <div class="setting-label">
+                                <h4>Daily Playtime Limit</h4>
+                                <p>Set the maximum daily screen time (in minutes)</p>
+                            </div>
+                            <div class="setting-control">
+                                <input type="range" class="range-slider" name="max_daily_playtime" min="30" max="120" step="15" value="{{ settings.max_daily_playtime if settings else 60 }}">
+                                <div class="range-value"><span id="playtime-value">{{ settings.max_daily_playtime if settings else 60 }}</span> minutes</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>Notifications</h3>
+                        
+                        <div class="settings-row">
+                            <div class="setting-label">
+                                <h4>Enable Notifications</h4>
+                                <p>Receive notifications about your child's activities</p>
+                            </div>
+                            <div class="setting-control">
+                                <label class="switch">
+                                    <input type="checkbox" name="notifications_enabled" {% if settings and settings.notifications_enabled %}checked{% endif %}>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn">Save Settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="dashboard-footer">
+        <div class="container">
+            <p>&copy; 2025 Children's Castle. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script src="{{ url_for('static', filename='js/loading-animations.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update range slider display values
+            const ageFilterSlider = document.querySelector('input[name="content_age_filter"]');
+            const ageFilterValue = document.getElementById('age-filter-value');
+            
+            ageFilterSlider.addEventListener('input', function() {
+                ageFilterValue.textContent = this.value;
+            });
+            
+            const playtimeSlider = document.querySelector('input[name="max_daily_playtime"]');
+            const playtimeValue = document.getElementById('playtime-value');
+            
+            playtimeSlider.addEventListener('input', function() {
+                playtimeValue.textContent = this.value;
+            });
+        });
+    </script>
+</body>
+</html>

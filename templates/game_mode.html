@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Mode - Children's Castle</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/child-dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/game-mode.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading-animations.css') }}">
+</head>
+<body class="game-mode-page">
+    <header class="dashboard-header child-header">
+        <div class="logo">
+            <h1>Children's Castle</h1>
+            <small>Developed for Menira</small>
+        </div>
+        <div class="game-nav">
+            <a href="{{ url_for('child_dashboard') }}" class="btn back-btn">Back to Dashboard</a>
+            <a href="{{ url_for('logout') }}" class="btn logout-btn">Sign Out</a>
+        </div>
+    </header>
+    
+    <main class="game-content">
+        <h2 class="game-title">Game Mode</h2>
+        
+        <div class="game-categories">
+            <div class="category-tabs">
+                <button class="tab-btn active" data-category="age4">Age 4</button>
+                <button class="tab-btn" data-category="age5">Age 5+</button>
+                
+                <!-- Parent Controls Indicator - visible only if parent has permitted external games -->
+                {% if settings and settings.allow_external_games %}
+                <button class="tab-btn" data-category="external">External Games</button>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="game-container">
+            <!-- Age 4 Games -->
+            <div class="game-grid age4-games">
+                <div class="game-card" data-game-id="matching_shapes">
+                    <div class="game-image">
+                        <img src="{{ url_for('static', filename='images/games/shape-match.svg') }}" alt="Shape Matching Game">
+                    </div>
+                    <div class="game-info">
+                        <h3>Shape Matching</h3>
+                        <p>Match the shapes to their outlines</p>
+                    </div>
+                </div>
+                
+                <div class="game-card" data-game-id="coloring">
+                    <div class="game-image">
+                        <img src="{{ url_for('static', filename='images/games/coloring.svg') }}" alt="Coloring Fun">
+                    </div>
+                    <div class="game-info">
+                        <h3>Coloring Fun</h3>
+                        <p>Color pictures with your favorite colors</p>
+                    </div>
+                </div>
+                
+                <div class="game-card" data-game-id="animal_sounds">
+                    <div class="game-image">
+                        <img src="{{ url_for('static', filename='images/games/animal-sounds.svg') }}" alt="Animal Sounds">
+                    </div>
+                    <div class="game-info">
+                        <h3>Animal Sounds</h3>
+                        <p>Learn and match animal sounds</p>
+                    </div>
+                </div>
+                
+                <div class="game-card" data-game-id="counting">
+                    <div class="game-image">
+                        <img src="{{ url_for('static', filename='images/games/counting.svg') }}" alt="Counting Game">
+                    </div>
+                    <div class="game-info">
+                        <h3>Count with Me</h3>
+                        <p>Learn to count objects from 1 to 10</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Age 5+ Games -->
+            <div class="game-grid age5-games" style="display: none;">
+                <div class="game-card" data-game-id="letter_match">
+                    <div class="game-image">
+                        <img src="{{ url_for('static', filename='images/games/letter-match.svg') }}" alt="Letter Matching">
+                    </div>
+                    <div class="game-info">
+                        <h3>Letter Match</h3>
+                        <p>Match uppercase and lowercase letters</p>
+                    </div>
+                </div>
+                
+                <div class="game-card" data-game-id="number_game">
+                    <div class="game-image">
+                        <img src="{{ url_for('static', filename='images/games/numbers.svg') }}" alt="Number Fun">
+                    </div>
+                    <div class="game-info">
+                        <h3>Number Fun</h3>
+                        <p>Simple math games with numbers</p>
+                    </div>
+                </div>
+                
+                <div class="game-card" data-game-id="memory_game">
+                    <div class="game-image">
+                        <img src="{{ url_for('static', filename='images/games/memory.svg') }}" alt="Memory Game">
+                    </div>
+                    <div class="game-info">
+                        <h3>Memory Match</h3>
+                        <p>Find matching pairs of cards</p>
+                    </div>
+                </div>
+                
+                <div class="game-card" data-game-id="puzzle">
+                    <div class="game-image">
+                        <img src="{{ url_for('static', filename='images/games/puzzle.svg') }}" alt="Simple Puzzles">
+                    </div>
+                    <div class="game-info">
+                        <h3>Simple Puzzles</h3>
+                        <p>Drag and drop puzzle pieces</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- External Games (only shown if parent allowed) -->
+            {% if settings and settings.allow_external_games %}
+            <div class="game-grid external-games" style="display: none;">
+                <div class="game-card external" data-external-url="https://pbskids.org/games/preschool/" data-external-title="PBS Kids Games">
+                    <div class="game-image">
+                        <img src="{{ url_for('static', filename='images/games/pbs-kids.svg') }}" alt="PBS Kids Games">
+                    </div>
+                    <div class="game-info">
+                        <h3>PBS Kids Games</h3>
+                        <p>Educational games from PBS Kids</p>
+                        <span class="external-tag">External</span>
+                    </div>
+                </div>
+                
+                <div class="game-card external" data-external-url="https://www.sesamestreet.org/games" data-external-title="Sesame Street Games">
+                    <div class="game-image">
+                        <img src="{{ url_for('static', filename='images/games/sesame-street.svg') }}" alt="Sesame Street Games">
+                    </div>
+                    <div class="game-info">
+                        <h3>Sesame Street</h3>
+                        <p>Fun games with Sesame Street characters</p>
+                        <span class="external-tag">External</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Game Container (for displaying the selected game) -->
+            <div id="game-play-container" class="game-play-container" style="display: none;">
+                <div class="game-header">
+                    <h3 id="current-game-title">Game Title</h3>
+                    <button id="close-game-btn" class="btn close-btn">Back to Games</button>
+                </div>
+                
+                <div id="game-content" class="game-content-area">
+                    <!-- Game content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="dashboard-footer">
+        <p>&copy; 2025 Children's Castle. All rights reserved.</p>
+    </footer>
+    
+    <!-- Audio element for game sounds -->
+    <audio id="game-audio" preload="none"></audio>
+    
+    <script src="{{ url_for('static', filename='js/loading-animations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/games.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/rewards.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize loading animations
+            initLoadingSystem();
+            
+            // Game category tabs
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const gameGrids = document.querySelectorAll('.game-grid');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Update active tab
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show the corresponding game grid
+                    const category = this.getAttribute('data-category');
+                    gameGrids.forEach(grid => {
+                        if (grid.classList.contains(`${category}-games`)) {
+                            grid.style.display = 'grid';
+                        } else {
+                            grid.style.display = 'none';
+                        }
+                    });
+                    
+                    // Hide the game play container if it's visible
+                    document.getElementById('game-play-container').style.display = 'none';
+                });
+            });
+            
+            // Game card clicks
+            const gameCards = document.querySelectorAll('.game-card:not(.external)');
+            const externalGameCards = document.querySelectorAll('.game-card.external');
+            const gamePlayContainer = document.getElementById('game-play-container');
+            const gameContent = document.getElementById('game-content');
+            const currentGameTitle = document.getElementById('current-game-title');
+            const closeGameBtn = document.getElementById('close-game-btn');
+            
+            gameCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const gameId = this.getAttribute('data-game-id');
+                    const gameTitle = this.querySelector('h3').textContent;
+                    
+                    showLoading();
+                    
+                    // Hide all game grids
+                    gameGrids.forEach(grid => {
+                        grid.style.display = 'none';
+                    });
+                    
+                    // Show game play container
+                    gamePlayContainer.style.display = 'block';
+                    currentGameTitle.textContent = gameTitle;
+                    
+                    // Load the game
+                    loadGame(gameId, gameContent);
+                    
+                    // Track this in the database
+                    trackProgress(gameId, false);
+                    
+                    hideLoading();
+                });
+            });
+            
+            // External game card clicks
+            externalGameCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const externalUrl = this.getAttribute('data-external-url');
+                    const externalTitle = this.getAttribute('data-external-title');
+                    
+                    // Confirm before navigating to external site
+                    if (confirm(`You are about to visit ${externalTitle}, which is an external website. Continue?`)) {
+                        // Track this in the database
+                        trackProgress(`external_${externalTitle.replace(/\s+/g, '_').toLowerCase()}`, false);
+                        
+                        // Open in a new tab
+                        window.open(externalUrl, '_blank');
+                    }
+                });
+            });
+            
+            // Close game button
+            closeGameBtn.addEventListener('click', function() {
+                // Hide game play container
+                gamePlayContainer.style.display = 'none';
+                
+                // Show the appropriate game grid based on active tab
+                const activeTab = document.querySelector('.tab-btn.active');
+                const category = activeTab.getAttribute('data-category');
+                
+                gameGrids.forEach(grid => {
+                    if (grid.classList.contains(`${category}-games`)) {
+                        grid.style.display = 'grid';
+                    }
+                });
+                
+                // Clear game content
+                gameContent.innerHTML = '';
+            });
+            
+            // Track progress in the database
+            function trackProgress(gameId, completed) {
+                fetch('/api/track-progress', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        content_type: 'game',
+                        content_id: gameId,
+                        completed: completed,
+                        time_spent: 30 // Just a placeholder value in seconds
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Progress tracked:', data);
+                })
+                .catch(error => {
+                    console.error('Error tracking progress:', error);
+                });
+            }
+            
+            // Function to load a game
+            function loadGame(gameId, container) {
+                // Clear the container
+                container.innerHTML = '';
+                
+                switch (gameId) {
+                    case 'matching_shapes':
+                        loadShapeMatchGame(container);
+                        break;
+                    case 'letter_match':
+                        loadLetterMatchGame(container);
+                        break;
+                    case 'number_game':
+                        loadNumberGame(container);
+                        break;
+                    case 'memory_game':
+                        loadMemoryGame(container);
+                        break;
+                    // Add more cases for other games
+                    default:
+                        container.innerHTML = '<div class="game-placeholder"><p>This game is under construction. Check back soon!</p></div>';
+                }
+            }
+            
+            // Basic game implementation functions
+            function loadShapeMatchGame(container) {
+                const shapes = ['circle', 'square', 'triangle', 'rectangle', 'star'];
+                const gameArea = document.createElement('div');
+                gameArea.className = 'shape-match-game';
+                
+                // Create game instructions
+                const instructions = document.createElement('p');
+                instructions.textContent = 'Drag the shapes to their matching outlines!';
+                gameArea.appendChild(instructions);
+                
+                // Create drop targets
+                const dropArea = document.createElement('div');
+                dropArea.className = 'shape-drop-area';
+                
+                shapes.forEach(shape => {
+                    const target = document.createElement('div');
+                    target.className = `shape-target ${shape}-target`;
+                    target.setAttribute('data-shape', shape);
+                    dropArea.appendChild(target);
+                });
+                
+                gameArea.appendChild(dropArea);
+                
+                // Create draggable shapes
+                const shapesArea = document.createElement('div');
+                shapesArea.className = 'shape-drag-area';
+                
+                // Shuffle shapes
+                const shuffledShapes = [...shapes].sort(() => Math.random() - 0.5);
+                
+                shuffledShapes.forEach(shape => {
+                    const dragShape = document.createElement('div');
+                    dragShape.className = `shape-draggable ${shape}-shape`;
+                    dragShape.setAttribute('data-shape', shape);
+                    dragShape.setAttribute('draggable', 'true');
+                    shapesArea.appendChild(dragShape);
+                    
+                    // Add drag functionality
+                    dragShape.addEventListener('dragstart', function(e) {
+                        e.dataTransfer.setData('text/plain', shape);
+                    });
+                });
+                
+                gameArea.appendChild(shapesArea);
+                
+                // Add drop functionality to targets
+                const targets = dropArea.querySelectorAll('.shape-target');
+                targets.forEach(target => {
+                    target.addEventListener('dragover', function(e) {
+                        e.preventDefault();
+                    });
+                    
+                    target.addEventListener('drop', function(e) {
+                        e.preventDefault();
+                        const shapeName = e.dataTransfer.getData('text/plain');
+                        const targetShape = this.getAttribute('data-shape');
+                        
+                        if (shapeName === targetShape) {
+                            // Correct match
+                            this.classList.add('matched');
+                            
+                            // Find and hide the draggable shape
+                            const draggedShape = document.querySelector(`.shape-draggable[data-shape="${shapeName}"]`);
+                            if (draggedShape) {
+                                draggedShape.style.visibility = 'hidden';
+                            }
+                            
+                            // Play success sound
+                            playSuccessSound();
+                            
+                            // Check if game is complete
+                            const allMatched = document.querySelectorAll('.shape-target.matched').length === shapes.length;
+                            if (allMatched) {
+                                setTimeout(() => {
+                                    alert('Great job! You matched all the shapes!');
+                                    completeGame('matching_shapes');
+                                }, 500);
+                            }
+                        }
+                    });
+                });
+                
+                container.appendChild(gameArea);
+            }
+            
+            function loadLetterMatchGame(container) {
+                const letters = ['A', 'B', 'C', 'D', 'E'];
+                const gameArea = document.createElement('div');
+                gameArea.className = 'letter-match-game';
+                
+                // Create game instructions
+                const instructions = document.createElement('p');
+                instructions.textContent = 'Match the uppercase letters with their lowercase pairs!';
+                gameArea.appendChild(instructions);
+                
+                // Create the game board
+                const gameBoard = document.createElement('div');
+                gameBoard.className = 'letter-game-board';
+                
+                // Create uppercase letters (targets)
+                const upperRow = document.createElement('div');
+                upperRow.className = 'letter-row upper-row';
+                
+                letters.forEach(letter => {
+                    const upperLetter = document.createElement('div');
+                    upperLetter.className = 'letter-target';
+                    upperLetter.setAttribute('data-letter', letter);
+                    upperLetter.textContent = letter;
+                    upperRow.appendChild(upperLetter);
+                });
+                
+                gameBoard.appendChild(upperRow);
+                
+                // Create lowercase letters (draggables)
+                const lowerRow = document.createElement('div');
+                lowerRow.className = 'letter-row lower-row';
+                
+                // Shuffle lowercase letters
+                const shuffledLetters = [...letters].sort(() => Math.random() - 0.5);
+                
+                shuffledLetters.forEach(letter => {
+                    const lowerLetter = document.createElement('div');
+                    lowerLetter.className = 'letter-draggable';
+                    lowerLetter.setAttribute('data-letter', letter);
+                    lowerLetter.setAttribute('draggable', 'true');
+                    lowerLetter.textContent = letter.toLowerCase();
+                    lowerRow.appendChild(lowerLetter);
+                    
+                    // Add drag functionality
+                    lowerLetter.addEventListener('dragstart', function(e) {
+                        e.dataTransfer.setData('text/plain', letter);
+                    });
+                });
+                
+                gameBoard.appendChild(lowerRow);
+                gameArea.appendChild(gameBoard);
+                
+                // Add drop functionality to targets
+                const targets = upperRow.querySelectorAll('.letter-target');
+                targets.forEach(target => {
+                    target.addEventListener('dragover', function(e) {
+                        e.preventDefault();
+                    });
+                    
+                    target.addEventListener('drop', function(e) {
+                        e.preventDefault();
+                        const letterDragged = e.dataTransfer.getData('text/plain');
+                        const targetLetter = this.getAttribute('data-letter');
+                        
+                        if (letterDragged === targetLetter) {
+                            // Correct match
+                            this.classList.add('matched');
+                            
+                            // Find and hide the draggable letter
+                            const draggedLetter = document.querySelector(`.letter-draggable[data-letter="${letterDragged}"]`);
+                            if (draggedLetter) {
+                                draggedLetter.style.visibility = 'hidden';
+                            }
+                            
+                            // Play success sound
+                            playSuccessSound();
+                            
+                            // Check if game is complete
+                            const allMatched = document.querySelectorAll('.letter-target.matched').length === letters.length;
+                            if (allMatched) {
+                                setTimeout(() => {
+                                    alert('Great job! You matched all the letters!');
+                                    completeGame('letter_match');
+                                }, 500);
+                            }
+                        }
+                    });
+                });
+                
+                container.appendChild(gameArea);
+            }
+            
+            function loadNumberGame(container) {
+                const gameArea = document.createElement('div');
+                gameArea.className = 'number-game';
+                
+                // Create game instructions
+                const instructions = document.createElement('p');
+                instructions.textContent = 'Count the objects and select the correct number!';
+                gameArea.appendChild(instructions);
+                
+                // Create game content
+                const gameContent = document.createElement('div');
+                gameContent.className = 'number-game-content';
+                
+                // Generate random number of objects (1-5)
+                const objectCount = Math.floor(Math.random() * 5) + 1;
+                
+                // Create objects container
+                const objectsContainer = document.createElement('div');
+                objectsContainer.className = 'objects-container';
+                
+                // Add objects
+                for (let i = 0; i < objectCount; i++) {
+                    const object = document.createElement('div');
+                    object.className = 'counting-object';
+                    objectsContainer.appendChild(object);
+                }
+                
+                gameContent.appendChild(objectsContainer);
+                
+                // Create number options
+                const numbersContainer = document.createElement('div');
+                numbersContainer.className = 'numbers-container';
+                
+                // Generate 3 options (including the correct answer)
+                const options = [objectCount];
+                
+                // Add 2 more unique options
+                while (options.length < 3) {
+                    const option = Math.floor(Math.random() * 5) + 1;
+                    if (!options.includes(option)) {
+                        options.push(option);
+                    }
+                }
+                
+                // Shuffle options
+                options.sort(() => Math.random() - 0.5);
+                
+                // Create number buttons
+                options.forEach(number => {
+                    const numberButton = document.createElement('button');
+                    numberButton.className = 'number-option';
+                    numberButton.textContent = number;
+                    
+                    numberButton.addEventListener('click', function() {
+                        if (parseInt(this.textContent) === objectCount) {
+                            // Correct answer
+                            this.classList.add('correct');
+                            playSuccessSound();
+                            
+                            setTimeout(() => {
+                                alert('Great job! You counted correctly!');
+                                
+                                // Reset and create new problem
+                                gameContent.innerHTML = '';
+                                loadNumberGame(container);
+                                
+                                // After a few successful counts, complete the game
+                                setTimeout(() => {
+                                    completeGame('number_game');
+                                }, 1000);
+                            }, 500);
+                        } else {
+                            // Incorrect answer
+                            this.classList.add('incorrect');
+                            setTimeout(() => {
+                                this.classList.remove('incorrect');
+                            }, 500);
+                        }
+                    });
+                    
+                    numbersContainer.appendChild(numberButton);
+                });
+                
+                gameContent.appendChild(numbersContainer);
+                gameArea.appendChild(gameContent);
+                
+                container.appendChild(gameArea);
+            }
+            
+            function loadMemoryGame(container) {
+                const gameArea = document.createElement('div');
+                gameArea.className = 'memory-game';
+                
+                // Create game instructions
+                const instructions = document.createElement('p');
+                instructions.textContent = 'Find matching pairs of cards!';
+                gameArea.appendChild(instructions);
+                
+                // Create game grid
+                const gameGrid = document.createElement('div');
+                gameGrid.className = 'memory-game-grid';
+                
+                // Define card types (pairs)
+                const cardTypes = ['🐶', '🐱', '🐭', '🐰', '🦊', '🐻', '🐼', '🐨'];
+                
+                // Create pairs of cards
+                const cardsArray = [...cardTypes, ...cardTypes];
+                
+                // Shuffle cards
+                cardsArray.sort(() => Math.random() - 0.5);
+                
+                // Game variables
+                let hasFlippedCard = false;
+                let lockBoard = false;
+                let firstCard, secondCard;
+                let matchedPairs = 0;
+                
+                // Create cards
+                cardsArray.forEach((type, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'memory-card';
+                    card.setAttribute('data-card', type);
+                    
+                    const cardFront = document.createElement('div');
+                    cardFront.className = 'card-front';
+                    cardFront.textContent = '?';
+                    
+                    const cardBack = document.createElement('div');
+                    cardBack.className = 'card-back';
+                    cardBack.textContent = type;
+                    
+                    card.appendChild(cardFront);
+                    card.appendChild(cardBack);
+                    
+                    // Add click event
+                    card.addEventListener('click', flipCard);
+                    
+                    gameGrid.appendChild(card);
+                });
+                
+                gameArea.appendChild(gameGrid);
+                container.appendChild(gameArea);
+                
+                function flipCard() {
+                    if (lockBoard) return;
+                    if (this === firstCard) return;
+                    
+                    this.classList.add('flipped');
+                    
+                    if (!hasFlippedCard) {
+                        // First card flipped
+                        hasFlippedCard = true;
+                        firstCard = this;
+                        return;
+                    }
+                    
+                    // Second card flipped
+                    secondCard = this;
+                    checkForMatch();
+                }
+                
+                function checkForMatch() {
+                    const isMatch = firstCard.getAttribute('data-card') === secondCard.getAttribute('data-card');
+                    isMatch ? disableCards() : unflipCards();
+                }
+                
+                function disableCards() {
+                    firstCard.removeEventListener('click', flipCard);
+                    secondCard.removeEventListener('click', flipCard);
+                    
+                    firstCard.classList.add('matched');
+                    secondCard.classList.add('matched');
+                    
+                    playSuccessSound();
+                    matchedPairs++;
+                    
+                    if (matchedPairs === cardTypes.length) {
+                        setTimeout(() => {
+                            alert('Great job! You found all the matches!');
+                            completeGame('memory_game');
+                        }, 500);
+                    }
+                    
+                    resetBoard();
+                }
+                
+                function unflipCards() {
+                    lockBoard = true;
+                    
+                    setTimeout(() => {
+                        firstCard.classList.remove('flipped');
+                        secondCard.classList.remove('flipped');
+                        resetBoard();
+                    }, 1000);
+                }
+                
+                function resetBoard() {
+                    [hasFlippedCard, lockBoard] = [false, false];
+                    [firstCard, secondCard] = [null, null];
+                }
+            }
+            
+            // Function to mark a game as complete
+            function completeGame(gameId) {
+                // Show confetti animation
+                createConfetti();
+                
+                // Play success sound
+                playSuccessSound();
+                
+                // Track progress in the database
+                trackProgress(gameId, true);
+                
+                // Award a badge
+                awardBadge(`game_${gameId}`);
+            }
+            
+            // Function to create confetti animation
+            function createConfetti() {
+                const confettiContainer = document.createElement('div');
+                confettiContainer.className = 'confetti-container';
+                document.body.appendChild(confettiContainer);
+                
+                // Create confetti pieces
+                for (let i = 0; i < 50; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = `${Math.random() * 100}%`;
+                    confetti.style.animationDelay = `${Math.random() * 2}s`;
+                    confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                    confettiContainer.appendChild(confetti);
+                }
+                
+                // Remove confetti after animation
+                setTimeout(() => {
+                    confettiContainer.remove();
+                }, 4000);
+            }
+            
+            // Function to play success sound
+            function playSuccessSound() {
+                const audio = document.getElementById('game-audio');
+                audio.src = "{{ url_for('static', filename='audio/success.mp3') }}";
+                audio.play();
+            }
+        });
+    </script>
+</body>
+</html>

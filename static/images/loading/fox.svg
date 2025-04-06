@@ -1,34 +1,41 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <!-- Fox Body -->
-  <ellipse cx="50" cy="55" rx="30" ry="25" fill="#FF8C42"/>
-  
-  <!-- Fox Head -->
-  <circle cx="50" cy="35" r="20" fill="#FF8C42"/>
-  
-  <!-- Fox Ears -->
-  <polygon points="35,25 30,5 45,20" fill="#FF8C42"/>
-  <polygon points="65,25 70,5 55,20" fill="#FF8C42"/>
-  <polygon points="37,25 33,10 45,22" fill="#FFFFFF"/>
-  <polygon points="63,25 67,10 55,22" fill="#FFFFFF"/>
-  
-  <!-- Fox Face -->
-  <ellipse cx="42" cy="32" rx="3" ry="4" fill="#FFFFFF"/>
-  <ellipse cx="58" cy="32" rx="3" ry="4" fill="#FFFFFF"/>
-  <ellipse cx="42" cy="32" rx="1.5" ry="2" fill="#000000"/>
-  <ellipse cx="58" cy="32" rx="1.5" ry="2" fill="#000000"/>
-  
-  <!-- Fox Nose -->
-  <ellipse cx="50" cy="40" rx="5" ry="3" fill="#000000"/>
-  
-  <!-- Fox Mouth -->
-  <path d="M45,44 Q50,48 55,44" stroke="#000000" stroke-width="1" fill="none"/>
-  
-  <!-- Fox Tail -->
-  <path d="M78,55 Q95,40 85,25" stroke="#FF8C42" stroke-width="10" fill="none"/>
-  <path d="M85,25 L90,20" stroke="#FF8C42" stroke-width="5" fill="none"/>
-  
-  <!-- Fox Paws -->
-  <ellipse cx="35" cy="75" rx="7" ry="5" fill="#FF8C42"/>
-  <ellipse cx="65" cy="75" rx="7" ry="5" fill="#FF8C42"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">
+  <!-- Fox character for loading animation -->
+  <g id="fox-character">
+    <!-- Body -->
+    <ellipse cx="75" cy="90" rx="40" ry="30" fill="#ff8c00" />
+    
+    <!-- Head -->
+    <circle cx="75" cy="60" r="30" fill="#ff8c00" />
+    
+    <!-- Ears -->
+    <polygon points="50,40 60,55 40,55" fill="#ff8c00" />
+    <polygon points="100,40 110,55 90,55" fill="#ff8c00" />
+    <polygon points="53,42 60,52 46,52" fill="#ffffff" />
+    <polygon points="97,42 104,52 90,52" fill="#ffffff" />
+    
+    <!-- Eyes -->
+    <g id="eyes">
+      <circle cx="60" cy="60" r="7" fill="#ffffff" />
+      <circle cx="90" cy="60" r="7" fill="#ffffff" />
+      <circle cx="60" cy="60" r="3" fill="#000000" />
+      <circle cx="90" cy="60" r="3" fill="#000000" />
+    </g>
+    
+    <!-- Nose -->
+    <circle cx="75" cy="70" r="5" fill="#000000" />
+    
+    <!-- Mouth -->
+    <path d="M65,80 Q75,90 85,80" fill="none" stroke="#000000" stroke-width="2" />
+    
+    <!-- Tail -->
+    <path d="M35,90 Q15,70 25,50" fill="none" stroke="#ff8c00" stroke-width="12" stroke-linecap="round" />
+    
+    <!-- Legs -->
+    <rect x="50" y="110" width="10" height="20" rx="5" fill="#ff8c00" />
+    <rect x="90" y="110" width="10" height="20" rx="5" fill="#ff8c00" />
+    
+    <!-- Arms -->
+    <rect x="40" y="80" width="10" height="25" rx="5" fill="#ff8c00" transform="rotate(30, 40, 80)" />
+    <rect x="100" y="80" width="10" height="25" rx="5" fill="#ff8c00" transform="rotate(-30, 100, 80)" />
+  </g>
 </svg>

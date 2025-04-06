@@ -1,32 +1,43 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <!-- Pig Body -->
-  <ellipse cx="50" cy="55" rx="30" ry="25" fill="#FFB6C1"/>
-  
-  <!-- Pig Head -->
-  <circle cx="50" cy="35" r="20" fill="#FFB6C1"/>
-  
-  <!-- Pig Ears -->
-  <ellipse cx="35" cy="20" rx="8" ry="10" fill="#FF9999"/>
-  <ellipse cx="65" cy="20" rx="8" ry="10" fill="#FF9999"/>
-  
-  <!-- Pig Eyes -->
-  <ellipse cx="42" cy="30" rx="3" ry="4" fill="#FFFFFF"/>
-  <ellipse cx="58" cy="30" rx="3" ry="4" fill="#FFFFFF"/>
-  <ellipse cx="42" cy="30" rx="1.5" ry="2" fill="#000000"/>
-  <ellipse cx="58" cy="30" rx="1.5" ry="2" fill="#000000"/>
-  
-  <!-- Pig Nose -->
-  <ellipse cx="50" cy="40" rx="10" ry="7" fill="#FF7F7F"/>
-  <circle cx="45" cy="40" r="2" fill="#000000"/>
-  <circle cx="55" cy="40" r="2" fill="#000000"/>
-  
-  <!-- Pig Tail -->
-  <path d="M75,55 Q85,60 85,50 Q85,40 80,45" stroke="#FFB6C1" stroke-width="4" fill="none"/>
-  
-  <!-- Pig Legs -->
-  <rect x="35" y="75" width="5" height="10" fill="#FFB6C1"/>
-  <rect x="45" y="75" width="5" height="10" fill="#FFB6C1"/>
-  <rect x="55" y="75" width="5" height="10" fill="#FFB6C1"/>
-  <rect x="65" y="75" width="5" height="10" fill="#FFB6C1"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">
+  <!-- Pig character for loading animation -->
+  <g id="pig-character">
+    <!-- Body -->
+    <ellipse cx="75" cy="90" rx="40" ry="30" fill="#ffb6c1" />
+    
+    <!-- Head -->
+    <circle cx="75" cy="60" r="30" fill="#ffb6c1" />
+    
+    <!-- Ears -->
+    <ellipse cx="55" cy="40" rx="10" ry="15" fill="#ffb6c1" transform="rotate(-20, 55, 40)" />
+    <ellipse cx="95" cy="40" rx="10" ry="15" fill="#ffb6c1" transform="rotate(20, 95, 40)" />
+    <ellipse cx="55" cy="40" rx="7" ry="12" fill="#ff9eb1" transform="rotate(-20, 55, 40)" />
+    <ellipse cx="95" cy="40" rx="7" ry="12" fill="#ff9eb1" transform="rotate(20, 95, 40)" />
+    
+    <!-- Eyes -->
+    <g id="eyes">
+      <circle cx="60" cy="60" r="7" fill="#ffffff" />
+      <circle cx="90" cy="60" r="7" fill="#ffffff" />
+      <circle cx="60" cy="60" r="3" fill="#000000" />
+      <circle cx="90" cy="60" r="3" fill="#000000" />
+    </g>
+    
+    <!-- Nose -->
+    <ellipse cx="75" cy="70" rx="15" ry="10" fill="#ff9eb1" />
+    <circle cx="70" cy="70" r="3" fill="#000000" />
+    <circle cx="80" cy="70" r="3" fill="#000000" />
+    
+    <!-- Mouth -->
+    <path d="M65,80 Q75,85 85,80" fill="none" stroke="#000000" stroke-width="2" />
+    
+    <!-- Tail -->
+    <path d="M35,90 Q25,80 35,70" fill="none" stroke="#ffb6c1" stroke-width="5" stroke-linecap="round" />
+    
+    <!-- Legs -->
+    <rect x="50" y="110" width="10" height="20" rx="5" fill="#ffb6c1" />
+    <rect x="90" y="110" width="10" height="20" rx="5" fill="#ffb6c1" />
+    
+    <!-- Arms -->
+    <rect x="40" y="80" width="10" height="25" rx="5" fill="#ffb6c1" transform="rotate(30, 40, 80)" />
+    <rect x="100" y="80" width="10" height="25" rx="5" fill="#ffb6c1" transform="rotate(-30, 100, 80)" />
+  </g>
 </svg>

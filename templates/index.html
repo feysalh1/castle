@@ -3,167 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Children's Castle - Interactive Storytime</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Children's Castle - Interactive Stories and Games</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/loading-animations.css') }}">
 </head>
-</head>
 <body>
-    <div class="container">
-        <header>
-            <h1 class="app-title">Children's Castle</h1>
-            <div class="rewards-display">
-                <div class="total-stars"><i class="fas fa-star"></i><span id="star-count">0</span></div>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>Children's Castle</h1>
+                <small>Developed for Menira</small>
             </div>
-            <div class="app-subtitle">Interactive Storytime</div>
-        </header>
-        
-        <main>
-            <!-- Mode Selection Screen (Initial View) -->
-            <div id="mode-selection" class="section active">
-                <h2>Choose Your Mode</h2>
-                <div class="mode-buttons">
-                    <button id="story-mode-btn" class="mode-btn">
-                        <div class="mode-icon">📖</div>
-                        <div class="mode-label">Story Mode</div>
-                    </button>
-                    <button id="game-mode-btn" class="mode-btn">
-                        <div class="mode-icon">🎮</div>
-                        <div class="mode-label">Game Mode</div>
-                    </button>
-                    <button id="rewards-btn" class="mode-btn">
-                        <div class="mode-icon">🏆</div>
-                        <div class="mode-label">My Rewards</div>
-                    </button>
-                </div>
+            <nav>
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('parent_login') }}">Parent Login</a>
+                <a href="{{ url_for('child_login') }}">Child Login</a>
+            </nav>
+        </div>
+    </header>
+    
+    <main>
+        <div class="container">
+            <!-- Flash Messages -->
+            <div class="flash-messages">
+                {% for message in get_flashed_messages(with_categories=true) %}
+                    <div class="flash {{ message[0] }}">
+                        {{ message[1] }}
+                    </div>
+                {% endfor %}
             </div>
-
-            <!-- Badges Collection Screen -->
-            <div id="badges-section" class="section">
-                <div class="navigation-bar">
-                    <button id="back-to-modes-from-badges-btn" class="back-btn">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                    <h2>My Rewards</h2>
+            
+            <section class="welcome">
+                <h2>Welcome to Children's Castle!</h2>
+                <p>An enchanting world of interactive stories and games designed especially for young children. Embark on magical adventures, learn new skills, and have fun in a safe, engaging environment.</p>
+            </section>
+            
+            <section class="mode-selection">
+                <div class="mode-card">
+                    <img src="{{ url_for('static', filename='images/icons/book.svg') }}" alt="Story Mode" class="mode-icon">
+                    <h3>Story Mode</h3>
+                    <p>Dive into captivating stories with colorful illustrations and engaging narration.</p>
+                    <a href="{{ url_for('child_login') }}" class="btn">Start Reading</a>
                 </div>
                 
-                <h3 class="badges-title">Story Badges Collection</h3>
-                <div class="badges-container" id="story-badges">
-                    <!-- Badges will be added here dynamically -->
+                <div class="mode-card">
+                    <img src="{{ url_for('static', filename='images/icons/game.svg') }}" alt="Game Mode" class="mode-icon">
+                    <h3>Game Mode</h3>
+                    <p>Play fun, educational games designed to develop important skills while having a blast!</p>
+                    <a href="{{ url_for('child_login') }}" class="btn">Start Playing</a>
                 </div>
-                
-                <div class="reward-message" id="reward-message">
-                    Complete stories to earn badges and stars!
-                </div>
-            </div>
-
-            <!-- Story Mode Section -->
-            <div id="story-mode" class="section">
-                <div class="navigation-bar">
-                    <button id="back-to-modes-btn" class="back-btn">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                    <h2>Story Mode</h2>
-                </div>
-                
-                <div class="story-selection">
-                    <label for="story-select">Choose a Story:</label>
-                    <select id="story-select" class="form-select">
-                        <option value="little_fox">The Little Fox</option>
-                        <option value="three_little_pigs">Three Little Pigs</option>
-                        <option value="brown_bear">Brown Bear</option>
-                        <option value="wild_things">Where the Wild Things Are</option>
-                        <option value="black_sheep">Baa Baa Black Sheep</option>
-                        <option value="hickory_dickory">Hickory Dickory Dock</option>
-                        <option value="bo_peep">Little Bo-Peep</option>
-                        <option value="jack_jill">Jack and Jill</option>
-                        <option value="goldilocks">Goldilocks and the Three Bears</option>
-                        <option value="hungry_caterpillar">The Hungry Caterpillar</option>
-                        <option value="five_monkeys">Five Little Monkeys</option>
-                        <option value="rainbow_fish">The Rainbow Fish</option>
-                    </select>
-                </div>
-
-                <div class="story-content">
-                    <div class="story-image-container">
-                        <img id="story-image" src="{{ url_for('static', filename='images/little_fox.svg') }}" alt="Story Illustration">
+            </section>
+            
+            <section class="features">
+                <h2 class="text-center">Special Features</h2>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <h3>Personalized Learning</h3>
+                        <p>Content adapted to your child's age and interests</p>
                     </div>
-                    <h3 id="story-title">The Little Fox</h3>
-                    <div id="story-text" class="story-text">
-                        <!-- Story text will be dynamically updated via JavaScript -->
+                    <div class="feature-item">
+                        <h3>Rewards System</h3>
+                        <p>Earn stars and badges for completing stories and games</p>
                     </div>
-                    <div class="story-controls">
-                        <button id="play-story-btn" class="play-btn">
-                            <i class="fas fa-play"></i> Play Story
-                        </button>
-                        <button id="done-reading-btn" class="done-btn">
-                            <i class="fas fa-check"></i> Done Reading
-                        </button>
+                    <div class="feature-item">
+                        <h3>Progress Tracking</h3>
+                        <p>Monitor your child's learning journey</p>
                     </div>
-                    <audio id="story-audio" controls style="display: none;">
-                        <source id="audio-source" src="" type="audio/mpeg">
-                        Your browser does not support the audio element.
-                    </audio>
-                </div>
-            </div>
-
-            <!-- Game Mode Section -->
-            <div id="game-mode" class="section">
-                <div class="navigation-bar">
-                    <button id="back-to-modes-from-game-btn" class="back-btn">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                    <h2>Game Mode</h2>
-                    <button id="parental-controls-btn" class="settings-btn" title="Parental Controls">
-                        <i class="fas fa-cog"></i>
-                    </button>
-                </div>
-                
-                <div class="game-container">
-                    <!-- Age Filter Buttons -->
-                    <div class="age-filter">
-                        <p class="filter-label">Choose games for:</p>
-                        <div class="filter-buttons">
-                            <button id="age-4-btn" class="age-filter-btn active">Age 4</button>
-                            <button id="age-5-btn" class="age-filter-btn">Age 5+</button>
-                        </div>
-                        
-                        <div class="source-buttons">
-                            <button id="internal-games-btn" class="source-btn active">Our Games</button>
-                            <button id="external-games-btn" class="source-btn">More Games</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Games List -->
-                    <div id="games-list-container">
-                        <div id="games-list" class="games-list">
-                            <!-- Games will be added here dynamically -->
-                        </div>
-                    </div>
-                    
-                    <!-- Individual Game Content -->
-                    <div id="game-content-container" style="display: none;">
-                        <!-- Game content will be loaded here -->
+                    <div class="feature-item">
+                        <h3>Parental Controls</h3>
+                        <p>Customize content access and time limits</p>
                     </div>
                 </div>
-            </div>
-        </main>
-
-        <footer>
-            <p>Children's Castle Interactive Storytime App</p>
-            <p class="developer-signature">Developed for Menira</p>
-        </footer>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.26/Tone.js"></script>
+            </section>
+            
+            <section class="cta-section">
+                <h2>Ready to Start the Adventure?</h2>
+                <div class="cta-buttons">
+                    <a href="{{ url_for('parent_register') }}" class="btn large-btn">Register Now</a>
+                    <a href="{{ url_for('parent_login') }}" class="btn outline-btn large-btn">Parent Login</a>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Children's Castle. All rights reserved.</p>
+        </div>
+    </footer>
+    
     <script src="{{ url_for('static', filename='js/loading-animations.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/rewards.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/games.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/loadGameWithAnimations.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/fix-storage-keys.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

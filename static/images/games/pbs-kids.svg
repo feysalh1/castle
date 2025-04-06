@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">
+  <rect width="150" height="150" fill="#f8f8f8" rx="10" ry="10"/>
+  
+  <!-- PBS Kids-inspired logo -->
+  <circle cx="75" cy="75" r="50" fill="#fff" stroke="#009BBF" stroke-width="3"/>
+  
+  <!-- Stylized face -->
+  <circle cx="55" cy="65" r="10" fill="#009BBF"/>
+  <circle cx="95" cy="65" r="10" fill="#009BBF"/>
+  <path d="M60,95 Q75,110 90,95" fill="none" stroke="#009BBF" stroke-width="5" stroke-linecap="round"/>
+  
+  <!-- PBS text -->
+  <text x="75" y="40" font-family="Arial" font-size="16" font-weight="bold" fill="#009BBF" text-anchor="middle">PBS KIDS</text>
+</svg>

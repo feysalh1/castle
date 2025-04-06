@@ -1,4 +1,5 @@
-/* Loading Animation Styles */
+/* Loading Animations CSS */
+
 .loading-overlay {
     position: fixed;
     top: 0;
@@ -11,268 +12,127 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    transition: opacity 0.5s ease-in-out;
     opacity: 0;
-    pointer-events: none;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
 }
 
-.loading-overlay.active {
+.loading-overlay.visible {
     opacity: 1;
-    pointer-events: all;
-}
-
-.loading-container {
-    position: relative;
-    width: 200px;
-    height: 200px;
+    visibility: visible;
 }
 
 .loading-character {
-    position: absolute;
-    width: 100px;
-    height: 100px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    transition: all 0.5s ease;
+    width: 150px;
+    height: 150px;
+    margin-bottom: 20px;
+    animation: bounce 1s infinite alternate;
 }
 
-.loading-text {
-    margin-top: 20px;
-    font-size: 1.2rem;
-    color: #333;
-    font-family: 'Comic Sans MS', cursive, sans-serif;
+.loading-message {
+    font-size: 1.5rem;
+    color: #6a3093;
+    font-weight: bold;
+    margin-bottom: 20px;
     text-align: center;
 }
 
-/* Character animations */
-.character-fox {
-    animation: bounce 1.5s infinite alternate;
+.loading-spinner {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(106, 48, 147, 0.3);
+    border-radius: 50%;
+    border-top-color: #6a3093;
+    animation: spin 1s ease-in-out infinite;
 }
 
-.character-bear {
-    animation: wiggle 2s infinite;
-}
-
-.character-pig {
-    animation: spin 3s infinite linear;
-}
-
-.character-monkey {
-    animation: jump 1.5s infinite;
-}
-
-.progress-bar {
-    width: 200px;
-    height: 20px;
-    background-color: #e0e0e0;
-    border-radius: 10px;
-    margin-top: 15px;
-    overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #FF9AA2, #FFB7B2, #FFDAC1, #E2F0CB, #B5EAD7, #C7CEEA);
-    width: 0%;
-    transition: width 0.3s ease-in-out;
-    border-radius: 10px;
-    background-size: 200% 100%;
-    animation: gradientShift 2s infinite linear;
-}
-
-/* Animation keyframes */
-@keyframes bounce {
-    0% {
-        transform: translate(-50%, -50%) scale(1);
-    }
-    100% {
-        transform: translate(-50%, -40%) scale(1.1);
-    }
-}
-
-@keyframes wiggle {
-    0% {
-        transform: translate(-50%, -50%) rotate(0deg);
-    }
-    25% {
-        transform: translate(-50%, -50%) rotate(5deg);
-    }
-    50% {
-        transform: translate(-50%, -50%) rotate(0deg);
-    }
-    75% {
-        transform: translate(-50%, -50%) rotate(-5deg);
-    }
-    100% {
-        transform: translate(-50%, -50%) rotate(0deg);
-    }
-}
-
-@keyframes spin {
-    0% {
-        transform: translate(-50%, -50%) rotate(0deg);
-    }
-    100% {
-        transform: translate(-50%, -50%) rotate(360deg);
-    }
-}
-
-@keyframes jump {
-    0%, 100% {
-        transform: translate(-50%, -50%);
-    }
-    50% {
-        transform: translate(-50%, -80%);
-    }
-}
-
-@keyframes gradientShift {
-    0% {
-        background-position: 0% 50%;
-    }
-    100% {
-        background-position: 200% 50%;
-    }
-}
-
-/* Character transition animations */
 .transition-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(255, 255, 255, 0);
-    z-index: 999;
-    pointer-events: none;
+    background-color: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: background-color 0.5s ease;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
 }
 
-.transition-overlay.active {
-    background-color: rgba(255, 255, 255, 0.9);
+.transition-overlay.visible {
+    opacity: 1;
+    visibility: visible;
 }
 
 .transition-character {
-    position: absolute;
-    opacity: 0;
-    transform: scale(0.5);
-    transition: all 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    width: 200px;
+    height: 200px;
+    transform: scale(0);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.transition-character.active {
-    opacity: 1;
-    transform: scale(1.2);
+.transition-overlay.visible .transition-character {
+    transform: scale(1);
 }
 
-.transition-character.exit {
-    opacity: 0;
-    transform: scale(3);
+#story-transition {
+    background-color: #e6e6ff;
 }
 
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-    .loading-container {
-        width: 150px;
-        height: 150px;
-    }
-    
-    .loading-character {
-        width: 80px;
-        height: 80px;
-    }
-    
-    .progress-bar {
-        width: 150px;
-    }
-    
-    .loading-text {
-        font-size: 1rem;
-    }
-}
-/* Game-specific animations */
-.jump-higher {
-    animation: jumpHigher 1s infinite;
+#story-transition .transition-character {
+    fill: #8a5fff;
 }
 
-@keyframes jumpHigher {
+#game-transition {
+    background-color: #fff2e6;
+}
+
+#game-transition .transition-character {
+    fill: #ff8c00;
+}
+
+/* Animations */
+@keyframes bounce {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes wiggle {
     0%, 100% {
-        transform: translate(-50%, -50%);
+        transform: rotate(-5deg);
     }
     50% {
-        transform: translate(-50%, -100%) rotate(5deg);
+        transform: rotate(5deg);
     }
 }
 
-/* Success/celebration animations */
-.celebrate {
-    animation: celebrate 1.2s ease-in-out;
+/* Character animations for eyes */
+.loading-character #eyes {
+    animation: blink 3s infinite;
 }
 
-@keyframes celebrate {
-    0% {
-        transform: translate(-50%, -50%) scale(1);
+@keyframes blink {
+    0%, 96%, 100% {
+        transform: scaleY(1);
     }
-    20% {
-        transform: translate(-50%, -70%) scale(1.2) rotate(10deg);
-    }
-    40% {
-        transform: translate(-50%, -50%) scale(1.3) rotate(-5deg);
-    }
-    60% {
-        transform: translate(-50%, -70%) scale(1.2) rotate(5deg);
-    }
-    80% {
-        transform: translate(-50%, -50%) scale(1.1) rotate(-3deg);
-    }
-    100% {
-        transform: translate(-50%, -50%) scale(1.4);
-    }
-}
-
-/* Success effects */
-.confetti {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: #f00;
-    top: -10px;
-    opacity: 1;
-}
-
-.success-message {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #ff6b6b;
-    text-align: center;
-    margin-top: 15px;
-    animation: successPulse 1s infinite alternate;
-    text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
-}
-
-@keyframes successPulse {
-    0% {
-        transform: scale(1);
-        opacity: 0.9;
-    }
-    100% {
-        transform: scale(1.05);
-        opacity: 1;
-    }
-}
-
-/* Confetti animation */
-@keyframes fall {
-    0% {
-        transform: translateY(-10px) rotate(0deg);
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(100vh) rotate(360deg);
-        opacity: 0;
+    98% {
+        transform: scaleY(0.1);
     }
 }

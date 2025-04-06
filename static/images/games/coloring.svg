@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">
+  <rect width="150" height="150" fill="#f8f8f8" rx="10" ry="10"/>
+  
+  <!-- Coloring book outline -->
+  <rect x="20" y="20" width="110" height="80" fill="#fff" stroke="#333" stroke-width="2" rx="5" ry="5"/>
+  
+  <!-- Simple house outline -->
+  <polyline points="40,80 40,50 65,30 90,50 90,80" fill="none" stroke="#333" stroke-width="2"/>
+  <rect x="55" y="60" width="20" height="20" fill="none" stroke="#333" stroke-width="2"/>
+  
+  <!-- Sun outline -->
+  <circle cx="105" cy="35" r="15" fill="none" stroke="#333" stroke-width="2"/>
+  <line x1="105" y1="15" x2="105" y2="10" stroke="#333" stroke-width="2"/>
+  <line x1="105" y1="55" x2="105" y2="60" stroke="#333" stroke-width="2"/>
+  <line x1="85" y1="35" x2="80" y2="35" stroke="#333" stroke-width="2"/>
+  <line x1="125" y1="35" x2="130" y2="35" stroke="#333" stroke-width="2"/>
+  
+  <!-- Colored pencils -->
+  <rect x="30" y="110" width="90" height="10" fill="#ff6b6b" rx="2" ry="2"/>
+  <rect x="30" y="120" width="90" height="10" fill="#FFD700" rx="2" ry="2"/>
+  <rect x="30" y="130" width="90" height="10" fill="#4CAF50" rx="2" ry="2"/>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">
+  <rect width="150" height="150" fill="#f8f8f8" rx="10" ry="10"/>
+  
+  <!-- Circle -->
+  <circle cx="40" cy="40" r="25" fill="#8a5fff" stroke="#6a3093" stroke-width="2"/>
+  
+  <!-- Square -->
+  <rect x="90" y="15" width="50" height="50" fill="#ff6b6b" stroke="#e74c3c" stroke-width="2"/>
+  
+  <!-- Triangle -->
+  <polygon points="40,115 15,140 65,140" fill="#4CAF50" stroke="#2E7D32" stroke-width="2"/>
+  
+  <!-- Star -->
+  <polygon points="115,90 125,115 150,115 130,130 140,155 115,140 90,155 100,130 80,115 105,115" fill="#FFD700" stroke="#FFA000" stroke-width="2"/>
+</svg>

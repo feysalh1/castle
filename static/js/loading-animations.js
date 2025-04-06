@@ -1,328 +1,185 @@
 /**
- * Loading and transition animations for Children's Castle app
- * Provides playful character transitions between different app states
+ * Loading animations system for Children's Castle
+ * This script handles the loading screens and transitions
  */
 
-// Characters for animations
-const characters = [
-    { id: 'fox', animation: 'bounce', loadingText: "The little fox is preparing your stories..." },
-    { id: 'bear', animation: 'wiggle', loadingText: "Brown bear is gathering your stories..." },
-    { id: 'pig', animation: 'spin', loadingText: "The little pig is building your stories..." },
-    { id: 'monkey', animation: 'jump', loadingText: "Five little monkeys are jumping for your stories..." }
-];
+let loadingOverlay;
+let transitionOverlay;
+let transitionTimeouts = [];
 
-// Placeholder messages for loading screen
-const loadingMessages = [
-    "Getting your stories ready...",
-    "Preparing fun adventures...",
-    "Finding the perfect tale...",
-    "Gathering magical characters...",
-    "Building a castle of stories...",
-    "Creating a world of imagination..."
-];
-
-// Initialize the loading system
+/**
+ * Initialize the loading animation system
+ */
 function initLoadingSystem() {
-    // Create the loading overlay
     createLoadingOverlay();
-    
-    // Create the transition overlay
     createTransitionOverlay();
-    
-    // Set up event listeners
     setupLoadingEventListeners();
+    console.log('Loading system initialized');
 }
 
-// Create the loading overlay elements
+/**
+ * Create the loading overlay
+ */
 function createLoadingOverlay() {
-    // If the loading overlay already exists, don't create it again
-    if (document.querySelector('.loading-overlay')) {
-        return;
+    // Remove any existing overlay
+    if (document.getElementById('loading-overlay')) {
+        document.getElementById('loading-overlay').remove();
     }
 
-    const loadingOverlay = document.createElement('div');
+    // Create the overlay
+    loadingOverlay = document.createElement('div');
+    loadingOverlay.id = 'loading-overlay';
     loadingOverlay.className = 'loading-overlay';
-    
-    const loadingContainer = document.createElement('div');
-    loadingContainer.className = 'loading-container';
-    
-    // Add a loading text element
-    const loadingText = document.createElement('div');
-    loadingText.className = 'loading-text';
-    loadingText.innerText = getRandomMessage();
-    
-    // Add progress bar
-    const progressBar = document.createElement('div');
-    progressBar.className = 'progress-bar';
-    
-    const progressFill = document.createElement('div');
-    progressFill.className = 'progress-fill';
-    progressBar.appendChild(progressFill);
-    
-    // Add elements to the overlay
-    loadingOverlay.appendChild(loadingContainer);
-    loadingOverlay.appendChild(loadingText);
-    loadingOverlay.appendChild(progressBar);
-    
+
+    // Create the loading character (randomly selected)
+    const characters = ['fox', 'bear', 'pig', 'monkey'];
+    const randomCharacter = characters[Math.floor(Math.random() * characters.length)];
+    const loadingCharacter = document.createElement('object');
+    loadingCharacter.className = 'loading-character';
+    loadingCharacter.type = 'image/svg+xml';
+    loadingCharacter.data = `/static/images/loading/${randomCharacter}.svg`;
+
+    // Create the loading message
+    const loadingMessage = document.createElement('div');
+    loadingMessage.className = 'loading-message';
+    loadingMessage.textContent = getRandomMessage();
+
+    // Create the spinner
+    const loadingSpinner = document.createElement('div');
+    loadingSpinner.className = 'loading-spinner';
+
+    // Add all elements to the overlay
+    loadingOverlay.appendChild(loadingCharacter);
+    loadingOverlay.appendChild(loadingMessage);
+    loadingOverlay.appendChild(loadingSpinner);
+
     // Add the overlay to the body
     document.body.appendChild(loadingOverlay);
 }
 
-// Create the transition overlay elements
+/**
+ * Create the transition overlay for story and game mode transitions
+ */
 function createTransitionOverlay() {
-    // If the transition overlay already exists, don't create it again
-    if (document.querySelector('.transition-overlay')) {
-        return;
-    }
-
-    const transitionOverlay = document.createElement('div');
-    transitionOverlay.className = 'transition-overlay';
+    // Story Transition
+    const storyTransition = document.createElement('div');
+    storyTransition.id = 'story-transition';
+    storyTransition.className = 'transition-overlay';
     
-    // Add transition characters (will be shown/hidden as needed)
-    characters.forEach(char => {
-        const transitionChar = document.createElement('img');
-        transitionChar.className = 'transition-character';
-        transitionChar.src = `static/images/loading/${char.id}.svg`;
-        transitionChar.alt = char.id;
-        transitionChar.dataset.character = char.id;
-        transitionOverlay.appendChild(transitionChar);
-    });
+    const storyCharacter = document.createElement('object');
+    storyCharacter.className = 'transition-character';
+    storyCharacter.type = 'image/svg+xml';
+    storyCharacter.data = '/static/images/icons/book.svg';
     
-    // Add the overlay to the body
-    document.body.appendChild(transitionOverlay);
+    storyTransition.appendChild(storyCharacter);
+    document.body.appendChild(storyTransition);
+    
+    // Game Transition
+    const gameTransition = document.createElement('div');
+    gameTransition.id = 'game-transition';
+    gameTransition.className = 'transition-overlay';
+    
+    const gameCharacter = document.createElement('object');
+    gameCharacter.className = 'transition-character';
+    gameCharacter.type = 'image/svg+xml';
+    gameCharacter.data = '/static/images/icons/game.svg';
+    
+    gameTransition.appendChild(gameCharacter);
+    document.body.appendChild(gameTransition);
 }
 
-// Set up event listeners for loading and transitions
+/**
+ * Set up event listeners for the loading system
+ */
 function setupLoadingEventListeners() {
-    // Listen for mode changes to trigger transitions
-    document.querySelectorAll('.mode-button').forEach(button => {
-        button.addEventListener('click', function() {
-            const modeType = this.dataset.mode;
-            showTransition(modeType);
-        });
+    // Page load
+    window.addEventListener('load', function() {
+        hideLoading();
     });
     
-    // Listen for story selection changes
-    const storySelect = document.getElementById('story-select');
-    if (storySelect) {
-        storySelect.addEventListener('change', function() {
+    // Link clicks (optional - if you want to show loading on navigation)
+    document.addEventListener('click', function(e) {
+        if (e.target.tagName === 'A' && !e.target.getAttribute('target') && e.target.getAttribute('href') !== '#') {
             showQuickLoading();
-        });
-    }
+        }
+    });
 }
 
-// Show the loading screen with a random character
+/**
+ * Show the loading overlay
+ */
 function showLoading(duration = 2000) {
-    const loadingOverlay = document.querySelector('.loading-overlay');
-    const loadingContainer = loadingOverlay.querySelector('.loading-container');
-    const loadingText = loadingOverlay.querySelector('.loading-text');
-    const progressFill = loadingOverlay.querySelector('.progress-fill');
+    createLoadingOverlay(); // Recreate to get a new random character
+    loadingOverlay.classList.add('visible');
     
-    // Clear any existing characters
-    loadingContainer.innerHTML = '';
-    
-    // Pick a random character
-    const character = characters[Math.floor(Math.random() * characters.length)];
-    
-    // Create character element
-    const characterElement = document.createElement('img');
-    characterElement.className = `loading-character character-${character.id}`;
-    characterElement.src = `static/images/loading/${character.id}.svg`;
-    characterElement.alt = character.id;
-    
-    // Add the character to the container
-    loadingContainer.appendChild(characterElement);
-    
-    // Update loading text
-    loadingText.innerText = character.loadingText;
-    
-    // Show the loading overlay
-    loadingOverlay.classList.add('active');
-    
-    // Animate the progress bar
-    progressFill.style.width = '0%';
-    
-    // Simulate loading progress
-    let progress = 0;
-    const progressInterval = setInterval(() => {
-        progress += Math.random() * 10;
-        if (progress > 100) progress = 100;
-        progressFill.style.width = `${progress}%`;
-        
-        if (progress >= 100) {
-            clearInterval(progressInterval);
-            // Hide loading after the specified duration
-            setTimeout(() => {
-                hideLoading();
-            }, 500);
-        }
-    }, duration / 10);
-    
-    // Hide loading after the duration anyway (failsafe)
+    // Automatically hide after the duration (unless manually hidden)
     setTimeout(() => {
         hideLoading();
-        clearInterval(progressInterval);
     }, duration);
 }
 
-// Show a quick version of the loading screen for transitions like story changes
+/**
+ * Show a quick loading screen (shorter duration)
+ */
 function showQuickLoading() {
-    showLoading(1000); // Shorter duration
+    showLoading(1000);
 }
 
-// Hide the loading screen
+/**
+ * Hide the loading overlay
+ */
 function hideLoading() {
-    const loadingOverlay = document.querySelector('.loading-overlay');
-    loadingOverlay.classList.remove('active');
+    if (loadingOverlay) {
+        loadingOverlay.classList.remove('visible');
+    }
 }
 
-// Show a character transition between modes
+/**
+ * Show a transition animation
+ */
 function showTransition(modeType) {
-    const transitionOverlay = document.querySelector('.transition-overlay');
-    transitionOverlay.classList.add('active');
+    // Clear any existing timeouts
+    transitionTimeouts.forEach(timeout => clearTimeout(timeout));
+    transitionTimeouts = [];
     
-    // Pick an appropriate character based on mode or random
-    let characterId;
-    if (modeType === 'story') {
-        characterId = 'fox';
-    } else if (modeType === 'game') {
-        characterId = 'monkey';
-    } else {
-        // Random character if mode not specified
-        const randomChar = characters[Math.floor(Math.random() * characters.length)];
-        characterId = randomChar.id;
-    }
+    // Hide any existing overlay
+    document.querySelectorAll('.transition-overlay').forEach(overlay => {
+        overlay.classList.remove('visible');
+    });
     
-    // Get the character element
-    const characterElement = transitionOverlay.querySelector(`[data-character="${characterId}"]`);
-    
-    // Show the character with animation
-    characterElement.classList.add('active');
-    
-    // After animation, hide the character and overlay
-    setTimeout(() => {
-        characterElement.classList.add('exit');
+    // Show the appropriate transition
+    const transitionOverlay = document.getElementById(`${modeType}-transition`);
+    if (transitionOverlay) {
+        transitionOverlay.classList.add('visible');
         
-        setTimeout(() => {
-            transitionOverlay.classList.remove('active');
-            
-            setTimeout(() => {
-                characterElement.classList.remove('active', 'exit');
-            }, 500);
-            
-            // Show a loading screen after the transition
-            showLoading();
-        }, 600);
-    }, 1000);
+        // Hide after a delay
+        const timeout = setTimeout(() => {
+            transitionOverlay.classList.remove('visible');
+        }, 2000);
+        transitionTimeouts.push(timeout);
+    }
 }
 
-// Get a random loading message
+/**
+ * Get a random loading message
+ */
 function getRandomMessage() {
-    return loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+    const messages = [
+        'Loading magic...',
+        'Getting things ready...',
+        'Gathering stars...',
+        'Preparing your adventure...',
+        'Almost there...',
+        'Warming up...',
+        'Just a moment...',
+        'Loading fun times...'
+    ];
+    return messages[Math.floor(Math.random() * messages.length)];
 }
 
-// Initialize the loading system when the DOM is ready
-document.addEventListener('DOMContentLoaded', initLoadingSystem);
-
-// Show a loading screen on initial page load
-window.addEventListener('load', () => {
-    // Short delay to ensure everything is ready
-    setTimeout(() => {
-        showLoading(2000);
-    }, 300);
-});
-
-// Export functions for use in other modules
-window.loadingAnimations = {
-    showLoading,
-    hideLoading,
-    showTransition,
-    showQuickLoading
-};
-// Game loading messages
-const gameLoadingMessages = [
-    "Loading your fun game...",
-    "Getting your game ready to play...",
-    "Preparing a fun challenge...",
-    "Setting up your playtime...",
-    "Creating a fun activity for you..."
-];
-
-// Success messages for game completion
-const successMessages = [
-    "Great job! You did it!",
-    "Awesome work! You finished!",
-    "Congratulations! You completed it!",
-    "Fantastic! You're amazing!",
-    "Wonderful! You're a superstar!"
-];
-
-// Update the showTransition function to handle new types
-const originalShowTransition = window.loadingAnimations.showTransition;
-
-// Override the showTransition function to handle more transition types
-window.loadingAnimations.showTransition = function(modeType) {
-    const transitionOverlay = document.querySelector('.transition-overlay');
-    transitionOverlay.classList.add('active');
-    
-    // Pick an appropriate character based on mode
-    let characterId;
-    let message;
-    let animationClass = '';
-    
-    if (modeType === 'story') {
-        characterId = 'fox';
-        message = getRandomMessage();
-    } else if (modeType === 'game') {
-        characterId = 'monkey';
-        message = gameLoadingMessages[Math.floor(Math.random() * gameLoadingMessages.length)];
-        animationClass = 'jump-higher';
-    } else if (modeType === 'success') {
-        characterId = 'bear';
-        message = successMessages[Math.floor(Math.random() * successMessages.length)];
-        animationClass = 'celebrate';
-    } else {
-        // Random character if mode not specified
-        const randomChar = characters[Math.floor(Math.random() * characters.length)];
-        characterId = randomChar.id;
-        message = getRandomMessage();
-    }
-    
-    // Update loading message if visible
-    const loadingText = document.querySelector('.loading-text');
-    if (loadingText) {
-        loadingText.innerText = message;
-    }
-    
-    // Get the character element
-    const characterElement = transitionOverlay.querySelector(`[data-character="${characterId}"]`);
-    
-    // Remove any existing animation classes
-    characterElement.classList.remove('jump-higher', 'celebrate');
-    
-    // Add the specific animation class if needed
-    if (animationClass) {
-        characterElement.classList.add(animationClass);
-    }
-    
-    // Show the character with animation
-    characterElement.classList.add('active');
-    
-    // After animation, hide the character and overlay
-    setTimeout(() => {
-        characterElement.classList.add('exit');
-        
-        setTimeout(() => {
-            transitionOverlay.classList.remove('active');
-            
-            setTimeout(() => {
-                characterElement.classList.remove('active', 'exit', 'jump-higher', 'celebrate');
-            }, 500);
-            
-            // Show a loading screen after the transition
-            if (modeType !== 'success') {
-                showLoading();
-            }
-        }, 600);
-    }, 1000);
-};
+// Initialize on page load if document is already loaded
+if (document.readyState === 'complete') {
+    initLoadingSystem();
+} else {
+    window.addEventListener('DOMContentLoaded', initLoadingSystem);
+}

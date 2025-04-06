@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Child Login - Children's Castle</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading-animations.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>Children's Castle</h1>
+                <small>Developed for Menira</small>
+            </div>
+            <nav>
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('parent_login') }}">Parent Login</a>
+                <a href="{{ url_for('child_login') }}" class="active">Child Login</a>
+            </nav>
+        </div>
+    </header>
+    
+    <main>
+        <div class="container">
+            <!-- Flash Messages -->
+            <div class="flash-messages">
+                {% for message in get_flashed_messages(with_categories=true) %}
+                    <div class="flash {{ message[0] }}">
+                        {{ message[1] }}
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="auth-container">
+                <div class="auth-header">
+                    <h2>Child Login</h2>
+                    <p>Let's start your adventure!</p>
+                </div>
+                
+                <form class="auth-form" method="POST" action="{{ url_for('child_login') }}">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pin">PIN Code</label>
+                        <div class="pin-input-container">
+                            <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" required>
+                            <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" required>
+                            <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" required>
+                            <input type="password" class="pin-digit" maxlength="1" pattern="[0-9]" required>
+                        </div>
+                        <input type="hidden" id="pin" name="pin">
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn">Enter Castle</button>
+                    </div>
+                </form>
+                
+                <div class="auth-links">
+                    <p>Are you a parent? <a href="{{ url_for('parent_login') }}">Parent login</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Children's Castle. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script src="{{ url_for('static', filename='js/loading-animations.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // PIN input functionality
+            const pinDigits = document.querySelectorAll('.pin-digit');
+            const pinInput = document.getElementById('pin');
+            
+            // Focus first digit on load
+            pinDigits[0].focus();
+            
+            // Auto-focus next input
+            pinDigits.forEach((digit, index) => {
+                digit.addEventListener('input', function() {
+                    if (this.value.length === 1) {
+                        if (index < pinDigits.length - 1) {
+                            pinDigits[index + 1].focus();
+                        }
+                    }
+                });
+                
+                // Allow backspace to go to previous input
+                digit.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && this.value.length === 0) {
+                        if (index > 0) {
+                            pinDigits[index - 1].focus();
+                        }
+                    }
+                });
+            });
+            
+            // Combine PIN digits on form submit
+            document.querySelector('.auth-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                let pin = '';
+                pinDigits.forEach(digit => {
+                    pin += digit.value;
+                });
+                
+                pinInput.value = pin;
+                this.submit();
+            });
+        });
+    </script>
+</body>
+</html>

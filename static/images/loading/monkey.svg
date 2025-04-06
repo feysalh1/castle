@@ -1,38 +1,44 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <!-- Monkey Body -->
-  <ellipse cx="50" cy="60" rx="25" ry="20" fill="#8B4513"/>
-  
-  <!-- Monkey Head -->
-  <circle cx="50" cy="30" r="20" fill="#8B4513"/>
-  
-  <!-- Monkey Face -->
-  <ellipse cx="50" cy="30" rx="15" ry="15" fill="#E0B880"/>
-  
-  <!-- Monkey Ears -->
-  <circle cx="30" cy="20" r="10" fill="#8B4513"/>
-  <circle cx="70" cy="20" r="10" fill="#8B4513"/>
-  
-  <!-- Monkey Eyes -->
-  <ellipse cx="42" cy="25" rx="3" ry="4" fill="#FFFFFF"/>
-  <ellipse cx="58" cy="25" rx="3" ry="4" fill="#FFFFFF"/>
-  <ellipse cx="42" cy="25" rx="1.5" ry="2" fill="#000000"/>
-  <ellipse cx="58" cy="25" rx="1.5" ry="2" fill="#000000"/>
-  
-  <!-- Monkey Nose -->
-  <ellipse cx="50" cy="35" rx="5" ry="3" fill="#000000"/>
-  
-  <!-- Monkey Mouth -->
-  <path d="M45,40 Q50,45 55,40" stroke="#000000" stroke-width="1" fill="none"/>
-  
-  <!-- Monkey Arms -->
-  <path d="M25,60 Q15,50 20,40" stroke="#8B4513" stroke-width="5" fill="none"/>
-  <path d="M75,60 Q85,50 80,40" stroke="#8B4513" stroke-width="5" fill="none"/>
-  
-  <!-- Monkey Legs -->
-  <path d="M40,80 Q35,90 30,95" stroke="#8B4513" stroke-width="5" fill="none"/>
-  <path d="M60,80 Q65,90 70,95" stroke="#8B4513" stroke-width="5" fill="none"/>
-  
-  <!-- Monkey Tail -->
-  <path d="M50,80 Q60,90 70,85 Q80,80 75,70" stroke="#8B4513" stroke-width="5" fill="none"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">
+  <!-- Monkey character for loading animation -->
+  <g id="monkey-character">
+    <!-- Body -->
+    <ellipse cx="75" cy="90" rx="40" ry="30" fill="#9e6b4a" />
+    
+    <!-- Head -->
+    <circle cx="75" cy="60" r="30" fill="#9e6b4a" />
+    
+    <!-- Ears -->
+    <circle cx="45" cy="50" r="10" fill="#9e6b4a" />
+    <circle cx="105" cy="50" r="10" fill="#9e6b4a" />
+    <circle cx="45" cy="50" r="5" fill="#ffb366" />
+    <circle cx="105" cy="50" r="5" fill="#ffb366" />
+    
+    <!-- Eyes -->
+    <g id="eyes">
+      <circle cx="60" cy="55" r="8" fill="#ffffff" />
+      <circle cx="90" cy="55" r="8" fill="#ffffff" />
+      <circle cx="60" cy="55" r="4" fill="#000000" />
+      <circle cx="90" cy="55" r="4" fill="#000000" />
+    </g>
+    
+    <!-- Muzzle -->
+    <circle cx="75" cy="70" r="15" fill="#ffb366" />
+    
+    <!-- Nose -->
+    <ellipse cx="75" cy="65" rx="7" ry="5" fill="#000000" />
+    
+    <!-- Mouth -->
+    <path d="M65,75 Q75,85 85,75" fill="none" stroke="#000000" stroke-width="2" />
+    
+    <!-- Tail -->
+    <path d="M35,90 Q15,110 25,130" fill="none" stroke="#9e6b4a" stroke-width="8" stroke-linecap="round" />
+    
+    <!-- Legs -->
+    <rect x="55" y="110" width="10" height="20" rx="5" fill="#9e6b4a" />
+    <rect x="85" y="110" width="10" height="20" rx="5" fill="#9e6b4a" />
+    
+    <!-- Arms -->
+    <rect x="40" y="80" width="10" height="30" rx="5" fill="#9e6b4a" transform="rotate(30, 40, 80)" />
+    <rect x="100" y="80" width="10" height="30" rx="5" fill="#9e6b4a" transform="rotate(-30, 100, 80)" />
+  </g>
 </svg>

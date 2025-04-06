@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">
+  <rect width="150" height="150" fill="#f8f8f8" rx="10" ry="10"/>
+  
+  <!-- Apples to count -->
+  <circle cx="40" cy="40" r="15" fill="#ff6b6b"/>
+  <path d="M40,25 Q45,15 50,25" fill="none" stroke="#4CAF50" stroke-width="2"/>
+  
+  <circle cx="80" cy="40" r="15" fill="#ff6b6b"/>
+  <path d="M80,25 Q85,15 90,25" fill="none" stroke="#4CAF50" stroke-width="2"/>
+  
+  <circle cx="120" cy="40" r="15" fill="#ff6b6b"/>
+  <path d="M120,25 Q125,15 130,25" fill="none" stroke="#4CAF50" stroke-width="2"/>
+  
+  <!-- Number options -->
+  <circle cx="40" cy="100" r="20" fill="#fff" stroke="#8a5fff" stroke-width="3"/>
+  <text x="40" y="107" font-family="Arial" font-size="24" font-weight="bold" fill="#8a5fff" text-anchor="middle">2</text>
+  
+  <circle cx="80" cy="100" r="20" fill="#fff" stroke="#8a5fff" stroke-width="3"/>
+  <text x="80" y="107" font-family="Arial" font-size="24" font-weight="bold" fill="#8a5fff" text-anchor="middle">3</text>
+  
+  <circle cx="120" cy="100" r="20" fill="#fff" stroke="#8a5fff" stroke-width="3"/>
+  <text x="120" y="107" font-family="Arial" font-size="24" font-weight="bold" fill="#8a5fff" text-anchor="middle">4</text>
+</svg>

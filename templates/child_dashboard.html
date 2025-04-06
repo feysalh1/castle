@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Child Dashboard - Children's Castle</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/child-dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading-animations.css') }}">
+</head>
+<body class="child-dashboard">
+    <!-- Decorative clouds -->
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    <div class="cloud cloud-3"></div>
+    
+    <header class="child-header">
+        <div class="logo">
+            <h1>Children's Castle</h1>
+            <small>Developed for Menira</small>
+        </div>
+        <div class="nav-buttons">
+            <a href="{{ url_for('rewards') }}" class="btn">My Rewards</a>
+            <a href="{{ url_for('logout') }}" class="btn">Sign Out</a>
+        </div>
+    </header>
+    
+    <main class="dashboard-main">
+        <h2 class="greeting">Hello, {{ current_user.display_name }}!</h2>
+        
+        <div class="mode-selection">
+            <div class="mode-card">
+                <div class="mode-card-bg" style="background-image: url('{{ url_for('static', filename='images/icons/book.svg') }}')"></div>
+                <div class="mode-card-content">
+                    <img src="{{ url_for('static', filename='images/icons/book.svg') }}" alt="Story Mode" class="mode-icon">
+                    <h3>Story Mode</h3>
+                    <p>Read fun stories!</p>
+                    <a href="{{ url_for('story_mode') }}" class="btn">Start Reading</a>
+                </div>
+            </div>
+            
+            <div class="mode-card">
+                <div class="mode-card-bg" style="background-image: url('{{ url_for('static', filename='images/icons/game.svg') }}')"></div>
+                <div class="mode-card-content">
+                    <img src="{{ url_for('static', filename='images/icons/game.svg') }}" alt="Game Mode" class="mode-icon">
+                    <h3>Game Mode</h3>
+                    <p>Play fun games!</p>
+                    <a href="{{ url_for('game_mode') }}" class="btn">Start Playing</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="progress-section">
+            <h3>My Progress</h3>
+            
+            <div class="progress-cards">
+                <div class="progress-card">
+                    <h4>Stories Read</h4>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" style="width: 30%"></div>
+                    </div>
+                    <div class="progress-stat">
+                        <span>Completed: 3</span>
+                        <span>Total: 10</span>
+                    </div>
+                </div>
+                
+                <div class="progress-card">
+                    <h4>Games Played</h4>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" style="width: 40%"></div>
+                    </div>
+                    <div class="progress-stat">
+                        <span>Completed: 4</span>
+                        <span>Total: 10</span>
+                    </div>
+                </div>
+                
+                <div class="progress-card">
+                    <h4>Badges Earned</h4>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" style="width: 20%"></div>
+                    </div>
+                    <div class="progress-stat">
+                        <span>Earned: 5</span>
+                        <span>Total: 25</span>
+                    </div>
+                </div>
+                
+                <div class="progress-card">
+                    <h4>Stars Collected</h4>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" style="width: 50%"></div>
+                    </div>
+                    <div class="progress-stat">
+                        <span class="star-count">50</span>
+                        <span>⭐</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="recent-section">
+            <h3>Recently Played</h3>
+            
+            <div class="recent-items">
+                <div class="recent-item">
+                    <div class="recent-item-image">
+                        <img src="{{ url_for('static', filename='images/stories/little_fox/page1.svg') }}" alt="The Little Fox">
+                    </div>
+                    <h4>The Little Fox</h4>
+                    <p>Story</p>
+                </div>
+                
+                <div class="recent-item">
+                    <div class="recent-item-image">
+                        <img src="{{ url_for('static', filename='images/games/shape-match.svg') }}" alt="Shape Matching">
+                    </div>
+                    <h4>Shape Matching</h4>
+                    <p>Game</p>
+                </div>
+                
+                <div class="recent-item">
+                    <div class="recent-item-image">
+                        <img src="{{ url_for('static', filename='images/stories/three_little_pigs/page1.svg') }}" alt="Three Little Pigs">
+                    </div>
+                    <h4>Three Little Pigs</h4>
+                    <p>Story</p>
+                </div>
+                
+                <div class="recent-item">
+                    <div class="recent-item-image">
+                        <img src="{{ url_for('static', filename='images/games/coloring.svg') }}" alt="Coloring Fun">
+                    </div>
+                    <h4>Coloring Fun</h4>
+                    <p>Game</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="dashboard-footer">
+        <p>&copy; 2025 Children's Castle. All rights reserved.</p>
+    </footer>
+    
+    <script src="{{ url_for('static', filename='js/loading-animations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/rewards.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the loading animations
+            initLoadingSystem();
+            
+            // Update progress bars based on actual data
+            fetch('/api/get-progress')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const progress = data.progress;
+                        
+                        // Count stories and games
+                        const stories = progress.filter(item => item.content_type === 'story');
+                        const games = progress.filter(item => item.content_type === 'game');
+                        
+                        // Count completed items
+                        const completedStories = stories.filter(item => item.completed).length;
+                        const completedGames = games.filter(item => item.completed).length;
+                        
+                        // Update progress bars
+                        updateProgressBar('Stories Read', completedStories, 12); // 12 total stories
+                        updateProgressBar('Games Played', completedGames, 8); // 8 total games
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching progress:', error);
+                });
+            
+            // Get rewards data
+            fetch('/api/get-rewards')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update badges count
+                        updateProgressBar('Badges Earned', data.rewards.length, 25); // Estimate total badges
+                        
+                        // Update stars (estimate based on badges)
+                        const stars = data.rewards.length * 5; // Each badge is worth ~5 stars
+                        document.querySelector('.star-count').textContent = stars;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching rewards:', error);
+                });
+            
+            // Function to update progress bars
+            function updateProgressBar(title, value, total) {
+                const progressCards = document.querySelectorAll('.progress-card');
+                
+                progressCards.forEach(card => {
+                    if (card.querySelector('h4').textContent === title) {
+                        const percentage = (value / total) * 100;
+                        card.querySelector('.progress-bar-fill').style.width = `${percentage}%`;
+                        
+                        const statSpans = card.querySelectorAll('.progress-stat span');
+                        if (statSpans.length >= 2) {
+                            if (title === 'Stars Collected') {
+                                statSpans[0].textContent = value;
+                            } else {
+                                statSpans[0].textContent = `Completed: ${value}`;
+                                statSpans[1].textContent = `Total: ${total}`;
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Get recent activity for the "Recently Played" section
+            // This would typically be populated from the server
+            // For now, we'll just use the placeholder data
+        });
+    </script>
+</body>
+</html>

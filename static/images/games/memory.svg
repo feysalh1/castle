@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">
+  <rect width="150" height="150" fill="#f8f8f8" rx="10" ry="10"/>
+  
+  <!-- Cards grid -->
+  <rect x="15" y="15" width="50" height="70" fill="#8a5fff" rx="5" ry="5" stroke="#6a3093" stroke-width="2"/>
+  <rect x="85" y="15" width="50" height="70" fill="#8a5fff" rx="5" ry="5" stroke="#6a3093" stroke-width="2"/>
+  <rect x="15" y="95" width="50" height="40" fill="#ff6b6b" rx="5" ry="5" stroke="#e74c3c" stroke-width="2"/>
+  <rect x="85" y="95" width="50" height="40" fill="#ff6b6b" rx="5" ry="5" stroke="#e74c3c" stroke-width="2"/>
+  
+  <!-- Question marks on unflipped cards -->
+  <text x="35" y="60" font-family="Arial" font-size="40" font-weight="bold" fill="#fff" text-anchor="middle">?</text>
+  <text x="105" y="60" font-family="Arial" font-size="40" font-weight="bold" fill="#fff" text-anchor="middle">?</text>
+  
+  <!-- Matching symbols on flipped cards -->
+  <text x="35" y="125" font-family="Arial" font-size="30" font-weight="bold" fill="#fff" text-anchor="middle">★</text>
+  <text x="105" y="125" font-family="Arial" font-size="30" font-weight="bold" fill="#fff" text-anchor="middle">★</text>
+</svg>
