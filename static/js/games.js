@@ -801,3 +801,54 @@ document.addEventListener('DOMContentLoaded', () => {
         initGames();
     }
 });
+
+// Function to adjust iframe height
+function adjustIframeHeight() {
+    // Make the iframe take up more space on the page
+    const externalContainers = document.querySelectorAll('.external-game-container');
+    
+    if (externalContainers.length > 0) {
+        // Adjust the height based on available viewport height
+        const viewportHeight = window.innerHeight;
+        const containerHeight = Math.max(450, viewportHeight * 0.7); // At least 450px or 70% of viewport
+        
+        externalContainers.forEach(container => {
+            container.style.height = `${containerHeight}px`;
+        });
+    }
+}
+
+// Modify loadExternalGame function to include height adjustment
+const originalLoadExternalGame = loadExternalGame;
+loadExternalGame = function(url, title) {
+    originalLoadExternalGame(url, title);
+    
+    // After loading the external game, adjust iframe height
+    setTimeout(adjustIframeHeight, 100);
+    
+    // Also listen for window resize to readjust
+    window.addEventListener('resize', adjustIframeHeight);
+};
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    // Original initialization
+    const gameSection = document.getElementById('game-mode');
+    if (gameSection) {
+        initGames();
+    }
+    
+    // Set up fullscreen button for external games
+    document.body.addEventListener('click', (e) => {
+        if (e.target && e.target.classList.contains('open-external-btn')) {
+            // Prevent default link behavior
+            e.preventDefault();
+            
+            // Get the URL from the href attribute
+            const url = e.target.getAttribute('href');
+            
+            // Open in a new tab that takes up the full screen
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+    });
+});
