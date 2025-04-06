@@ -602,6 +602,7 @@ def child_activity(child_id):
 
 @app.route('/api/save-learning-goal', methods=['POST'])
 @login_required
+@csrf.exempt
 def save_learning_goal():
     """API endpoint to save a new learning goal for a child"""
     if session.get('user_type') != 'parent':
@@ -647,6 +648,7 @@ def save_learning_goal():
 
 @app.route('/api/delete-learning-goal/<int:goal_id>', methods=['DELETE'])
 @login_required
+@csrf.exempt
 def delete_learning_goal(goal_id):
     """API endpoint to delete a learning goal"""
     if session.get('user_type') != 'parent':
@@ -670,6 +672,7 @@ def delete_learning_goal(goal_id):
 
 @app.route('/api/save-story-queue', methods=['POST'])
 @login_required
+@csrf.exempt
 def save_story_queue():
     """API endpoint to save a custom story queue for a child"""
     if session.get('user_type') != 'parent':
@@ -704,6 +707,7 @@ def save_story_queue():
 
 @app.route('/api/generate-pairing-code', methods=['POST'])
 @login_required
+@csrf.exempt
 def generate_pairing_code():
     """API endpoint to generate a device pairing code"""
     if session.get('user_type') != 'parent':
@@ -818,6 +822,7 @@ def link_to_parent():
 
 @app.route('/api/generate-voice', methods=['POST'])
 @login_required
+@csrf.exempt
 def generate_voice():
     """API endpoint to generate voice narration using ElevenLabs"""
     try:
@@ -877,6 +882,7 @@ def generate_voice():
 
 @app.route('/api/voices')
 @login_required
+@csrf.exempt
 def list_voices():
     """API endpoint to get available ElevenLabs voices with their IDs"""
     try:
@@ -963,6 +969,7 @@ def rewards():
 
 @app.route('/api/track-progress', methods=['POST'])
 @login_required
+@csrf.exempt
 def track_progress():
     """API endpoint to track child's progress"""
     if session.get('user_type') != 'child':
@@ -977,6 +984,8 @@ def track_progress():
     pages_read = data.get('pages_read', 0)  # for stories
     score = data.get('score')  # for games
     difficulty_level = data.get('difficulty_level')  # 'easy', 'medium', 'hard'
+    is_favorite = data.get('is_favorite', False)  # Track if user marked as favorite
+    engagement_rating = data.get('engagement_rating')  # 1-5 rating
     
     # Find existing progress or create new
     progress = Progress.query.filter_by(
@@ -986,9 +995,21 @@ def track_progress():
     ).first()
     
     if progress:
+        # Update basic fields
         progress.last_accessed = datetime.utcnow()
         progress.time_spent += time_spent
+        progress.access_count += 1
+        progress.last_session_duration = time_spent
         
+        # Update engagement rating if provided
+        if engagement_rating is not None:
+            progress.engagement_rating = engagement_rating
+        
+        # Update favorite status if explicitly set
+        if 'is_favorite' in data:
+            progress.is_favorite = is_favorite
+            
+        # Update content-specific metrics
         if pages_read > progress.pages_read:
             progress.pages_read = pages_read
             
@@ -1000,6 +1021,9 @@ def track_progress():
             
         if content_title and not progress.content_title:
             progress.content_title = content_title
+            
+        # Update streak information
+        progress.update_streak()
         
         if completed and not progress.completed:
             progress.completed = True
@@ -1057,8 +1081,15 @@ def track_progress():
             time_spent=time_spent,
             pages_read=pages_read,
             score=score,
-            difficulty_level=difficulty_level
+            difficulty_level=difficulty_level,
+            is_favorite=is_favorite,
+            engagement_rating=engagement_rating,
+            access_count=1,
+            last_session_duration=time_spent
         )
+        
+        # Initialize streak information
+        progress.update_streak()
         
         if completed:
             progress.add_completion_timestamp()
@@ -1104,6 +1135,7 @@ def track_progress():
 
 @app.route('/api/get-progress')
 @login_required
+@csrf.exempt
 def get_progress():
     """API endpoint to get child's progress"""
     if session.get('user_type') != 'child':
@@ -1133,7 +1165,15 @@ def get_progress():
         'time_spent': item.time_spent,
         'pages_read': item.pages_read,
         'score': item.score,
-        'difficulty_level': item.difficulty_level
+        'difficulty_level': item.difficulty_level,
+        'is_favorite': item.is_favorite,
+        'engagement_rating': item.engagement_rating,
+        'access_count': item.access_count,
+        'last_session_duration': item.last_session_duration,
+        'average_session_time': item.average_session_time,
+        'streak_count': item.streak_count,
+        'last_streak_date': item.last_streak_date.isoformat() if item.last_streak_date else None,
+        'error_count': item.error_count
     } for item in progress_items]
     
     # Calculate statistics
@@ -1160,6 +1200,7 @@ def get_progress():
 
 @app.route('/api/get-rewards')
 @login_required
+@csrf.exempt
 def get_rewards():
     """API endpoint to get child's rewards"""
     if session.get('user_type') != 'child':
@@ -1217,6 +1258,7 @@ def get_rewards():
 
 @app.route('/api/session-stats', methods=['GET'])
 @login_required
+@csrf.exempt
 def session_stats():
     """API endpoint to get session statistics"""
     if session.get('user_type') != 'parent':
@@ -1313,6 +1355,171 @@ def session_stats():
         'child_stats': child_stats
     })
 
+
+# Import tracking helpers
+import tracking
+from models import Milestone, Progress
+
+@app.route('/api/track-event', methods=['POST'])
+@login_required
+@csrf.exempt
+def track_event():
+    """API endpoint to track custom events"""
+    data = request.json
+    event_type = data.get('event_type')
+    event_name = data.get('event_name')
+    event_data = data.get('event_data')
+    
+    if not event_type or not event_name:
+        return jsonify({'success': False, 'message': 'Missing required fields'}), 400
+    
+    event = tracking.track_custom_event(event_type, event_name, event_data)
+    
+    return jsonify({'success': True, 'event_id': event.id})
+
+@app.route('/api/log-error', methods=['POST'])
+@login_required
+@csrf.exempt
+def log_error():
+    """API endpoint to log errors"""
+    data = request.json
+    error_type = data.get('error_type')
+    error_message = data.get('error_message')
+    error_context = data.get('error_context')
+    stack_trace = data.get('stack_trace')
+    
+    if not error_type or not error_message:
+        return jsonify({'success': False, 'message': 'Missing required fields'}), 400
+    
+    error_log = tracking.log_error(error_type, error_message, error_context, stack_trace)
+    
+    return jsonify({'success': True, 'error_id': error_log.id})
+
+@app.route('/api/get-milestones')
+@login_required
+@csrf.exempt
+def get_milestones():
+    """API endpoint to get child's milestones"""
+    if session.get('user_type') != 'child':
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    # Get milestones for the current child - using proper table name
+    from models import db
+    milestones = db.session.query(Milestone).filter_by(child_id=current_user.id).all()
+    
+    # Format milestone data
+    milestones_data = [{
+        'id': m.id,
+        'milestone_id': m.milestone_id,
+        'milestone_type': m.milestone_type,
+        'milestone_name': m.milestone_name,
+        'milestone_description': m.milestone_description,
+        'progress': m.progress,
+        'target_value': m.target_value,
+        'completed': m.completed,
+        'earned_at': m.earned_at.isoformat() if m.earned_at else None,
+        'created_at': m.created_at.isoformat()
+    } for m in milestones]
+    
+    # Check and create any new milestones
+    new_milestones = tracking.check_and_create_milestones(current_user.id)
+    
+    # Add new milestones to response if any were created
+    if new_milestones:
+        for m in new_milestones:
+            milestones_data.append({
+                'id': m.id,
+                'milestone_id': m.milestone_id,
+                'milestone_type': m.milestone_type,
+                'milestone_name': m.milestone_name,
+                'milestone_description': m.milestone_description,
+                'progress': m.progress,
+                'target_value': m.target_value,
+                'completed': m.completed,
+                'earned_at': m.earned_at.isoformat() if m.earned_at else None,
+                'created_at': m.created_at.isoformat()
+            })
+    
+    return jsonify({
+        'success': True,
+        'milestones': milestones_data,
+        'total_milestones': len(milestones_data),
+        'completed_milestones': sum(1 for m in milestones if m.completed)
+    })
+
+@app.route('/api/get-favorites')
+@login_required
+@csrf.exempt
+def get_favorites():
+    """API endpoint to get child's favorite content"""
+    if session.get('user_type') != 'child':
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    content_type = request.args.get('content_type')  # Optional filter for stories or games
+    limit = int(request.args.get('limit', 5))
+    
+    favorites = tracking.get_favorites(current_user.id, content_type, limit)
+    
+    # Format favorite data
+    favorite_data = [{
+        'content_type': item.content_type,
+        'content_id': item.content_id,
+        'content_title': item.content_title,
+        'is_explicit_favorite': item.is_favorite,
+        'completion_count': item.completion_count,
+        'time_spent': item.time_spent,
+        'last_accessed': item.last_accessed.isoformat()
+    } for item in favorites]
+    
+    return jsonify({
+        'success': True,
+        'favorites': favorite_data
+    })
+
+@app.route('/api/toggle-favorite', methods=['POST'])
+@login_required
+@csrf.exempt
+def toggle_favorite():
+    """API endpoint to toggle favorite status for content"""
+    if session.get('user_type') != 'child':
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    data = request.json
+    content_type = data.get('content_type')
+    content_id = data.get('content_id')
+    
+    if not content_type or not content_id:
+        return jsonify({'success': False, 'message': 'Missing content information'}), 400
+    
+    # Find the progress record
+    progress = Progress.query.filter_by(
+        child_id=current_user.id,
+        content_type=content_type,
+        content_id=content_id
+    ).first()
+    
+    if not progress:
+        return jsonify({'success': False, 'message': 'Content not found in progress'}), 404
+    
+    # Toggle favorite status
+    progress.is_favorite = not progress.is_favorite
+    db.session.commit()
+    
+    # Track this as an event
+    tracking.track_custom_event(
+        'favorite', 
+        f"{'add' if progress.is_favorite else 'remove'}_favorite",
+        {
+            'content_type': content_type,
+            'content_id': content_id,
+            'content_title': progress.content_title
+        }
+    )
+    
+    return jsonify({
+        'success': True,
+        'is_favorite': progress.is_favorite
+    })
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)

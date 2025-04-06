@@ -160,6 +160,19 @@ class Progress(db.Model):
     pages_read = db.Column(db.Integer, default=0)  # For stories: number of pages read
     score = db.Column(db.Integer)  # For games: highest score achieved
     difficulty_level = db.Column(db.String(32))  # 'easy', 'medium', 'hard'
+    is_favorite = db.Column(db.Boolean, default=False)  # If marked as favorite by the child
+    engagement_rating = db.Column(db.Integer)  # 1-5 star rating of how much child enjoyed it
+    access_count = db.Column(db.Integer, default=1)  # How many times content was accessed
+    last_session_duration = db.Column(db.Integer)  # Duration of last session in seconds
+    average_session_time = db.Column(db.Float)  # Average session time in seconds
+    
+    # For analytics and engagement tracking
+    streak_count = db.Column(db.Integer, default=0)  # Days in a row accessed
+    last_streak_date = db.Column(db.Date)  # Last date this was accessed for streak tracking
+    
+    # Error tracking
+    error_count = db.Column(db.Integer, default=0)  # Count of errors during content usage
+    last_error = db.Column(db.String(256))  # Description of last error encountered
     
     __table_args__ = (
         db.UniqueConstraint('child_id', 'content_type', 'content_id', name='unique_child_content'),
@@ -168,9 +181,51 @@ class Progress(db.Model):
     def add_completion_timestamp(self):
         """Add current timestamp to completion history"""
         import json
-        history = json.loads(self.completion_history)
+        try:
+            history = json.loads(self.completion_history)
+        except:
+            history = []
+        
         history.append(datetime.utcnow().isoformat())
         self.completion_history = json.dumps(history)
+    
+    def update_streak(self):
+        """Update the access streak for this content"""
+        today = datetime.now().date()
+        
+        # If no previous access or streak was broken (more than 1 day gap)
+        if not self.last_streak_date or (today - self.last_streak_date).days > 1:
+            self.streak_count = 1
+        # If accessed on consecutive days
+        elif (today - self.last_streak_date).days == 1:
+            self.streak_count += 1
+        # Otherwise it's the same day, streak doesn't change
+        
+        self.last_streak_date = today
+    
+    def record_access(self, session_duration=None):
+        """Record an access to this content and update relevant metrics"""
+        self.access_count += 1
+        self.last_accessed = datetime.utcnow()
+        
+        # Update streak information
+        self.update_streak()
+        
+        # Update session duration metrics if provided
+        if session_duration:
+            self.last_session_duration = session_duration
+            
+            # Update the average session time
+            if not self.average_session_time:
+                self.average_session_time = session_duration
+            else:
+                # Weighted average (90% old, 10% new) to smooth outliers
+                self.average_session_time = (self.average_session_time * 0.9) + (session_duration * 0.1)
+    
+    def record_error(self, error_description):
+        """Record an error that occurred during content usage"""
+        self.error_count += 1
+        self.last_error = error_description
     
     def __repr__(self):
         return f'<Progress {self.content_type}:{self.content_id} for child_id {self.child_id}>'
@@ -313,6 +368,10 @@ class Session(db.Model):
     device_type = db.Column(db.String(32))  # 'desktop', 'tablet', 'mobile'
     activities = db.Column(db.String(1024), default='[]')  # JSON array of activity logs
     
+    # Relationships
+    events = db.relationship('Event', backref='session', lazy=True, cascade="all, delete-orphan")
+    error_logs = db.relationship('ErrorLog', backref='session', lazy=True, cascade="all, delete-orphan")
+    
     def record_activity(self, activity_type, content_id=None, details=None):
         """Add activity to the session log"""
         import json
@@ -338,3 +397,117 @@ class Session(db.Model):
     
     def __repr__(self):
         return f'<Session {self.id} for {self.user_type} {self.user_id}>'
+
+
+class Milestone(db.Model):
+    """Milestone/Achievement tracking model"""
+    __tablename__ = 'milestones'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    child_id = db.Column(db.Integer, db.ForeignKey('children.id'), nullable=False)
+    milestone_type = db.Column(db.String(32), nullable=False)  # 'daily', 'weekly', 'streak', 'completion'
+    milestone_id = db.Column(db.String(64), nullable=False)  # Unique identifier
+    milestone_name = db.Column(db.String(128), nullable=False)
+    milestone_description = db.Column(db.String(256))
+    progress = db.Column(db.Integer, default=0)
+    target_value = db.Column(db.Integer, nullable=False)
+    completed = db.Column(db.Boolean, default=False)
+    earned_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    __table_args__ = (
+        db.UniqueConstraint('child_id', 'milestone_id', name='unique_child_milestone'),
+    )
+    
+    def update_progress(self, value=1):
+        """Increment milestone progress and check for completion"""
+        self.progress += value
+        
+        # Check if milestone is completed
+        if self.progress >= self.target_value and not self.completed:
+            self.completed = True
+            self.earned_at = datetime.utcnow()
+            
+            # Here you could add code to create a reward when a milestone is completed
+            return True
+        
+        return False
+    
+    def __repr__(self):
+        return f'<Milestone {self.milestone_id} for child_id {self.child_id}>'
+
+
+class Event(db.Model):
+    """Custom event tracking model"""
+    __tablename__ = 'events'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_type = db.Column(db.String(10), nullable=False)  # 'parent' or 'child'
+    user_id = db.Column(db.Integer, nullable=False)
+    event_type = db.Column(db.String(64), nullable=False)
+    event_name = db.Column(db.String(128), nullable=False)
+    event_data = db.Column(db.JSON)
+    occurred_at = db.Column(db.DateTime, default=datetime.utcnow)
+    session_id = db.Column(db.Integer, db.ForeignKey('sessions.id', ondelete='SET NULL'))
+    
+    @classmethod
+    def track_event(cls, user_type, user_id, event_type, event_name, event_data=None, session_id=None):
+        """Create and save a new event"""
+        event = cls(
+            user_type=user_type,
+            user_id=user_id,
+            event_type=event_type,
+            event_name=event_name,
+            event_data=event_data,
+            session_id=session_id
+        )
+        db.session.add(event)
+        db.session.commit()
+        return event
+    
+    def __repr__(self):
+        return f'<Event {self.event_type}:{self.event_name} for {self.user_type} {self.user_id}>'
+
+
+class ErrorLog(db.Model):
+    """Error logging model"""
+    __tablename__ = 'error_logs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_type = db.Column(db.String(10))  # 'parent', 'child', or None for system errors
+    user_id = db.Column(db.Integer)
+    error_type = db.Column(db.String(64), nullable=False)
+    error_message = db.Column(db.Text, nullable=False)
+    error_context = db.Column(db.JSON)
+    stack_trace = db.Column(db.Text)
+    occurred_at = db.Column(db.DateTime, default=datetime.utcnow)
+    session_id = db.Column(db.Integer, db.ForeignKey('sessions.id', ondelete='SET NULL'))
+    resolved = db.Column(db.Boolean, default=False)
+    resolution_notes = db.Column(db.Text)
+    
+    @classmethod
+    def log_error(cls, error_type, error_message, user_type=None, user_id=None, 
+                  error_context=None, stack_trace=None, session_id=None):
+        """Create and save a new error log"""
+        error_log = cls(
+            user_type=user_type,
+            user_id=user_id,
+            error_type=error_type,
+            error_message=error_message,
+            error_context=error_context,
+            stack_trace=stack_trace,
+            session_id=session_id
+        )
+        db.session.add(error_log)
+        db.session.commit()
+        return error_log
+    
+    def mark_resolved(self, resolution_notes=None):
+        """Mark an error as resolved"""
+        self.resolved = True
+        if resolution_notes:
+            self.resolution_notes = resolution_notes
+        db.session.commit()
+    
+    def __repr__(self):
+        return f'<ErrorLog {self.error_type} for {self.user_type or "system"} {self.user_id or ""}>'

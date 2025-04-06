@@ -19,4 +19,7 @@ dependencies = [
     "elevenlabs>=1.56.0",
     "python-dotenv>=1.1.0",
     "qrcode>=8.1",
+    "pillow>=11.1.0",
+    "click>=8.1.8",
+    "sqlalchemy>=2.0.40",
 ]
