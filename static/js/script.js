@@ -190,3 +190,42 @@ function completeStory() {
         }
     }
 }
+
+// Improve click responsiveness
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click sound effect
+    function playClickSound() {
+        // Create a quick click sound using Web Audio API
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 800;
+        gainNode.gain.value = 0.1;
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.05);
+    }
+    
+    // Add click sound to all buttons
+    const allButtons = document.querySelectorAll('button');
+    allButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            playClickSound();
+        });
+    });
+    
+    // Improve story selection responsiveness
+    const storySelect = document.getElementById('story-select');
+    if (storySelect) {
+        storySelect.addEventListener('change', function() {
+            playClickSound();
+            // Force immediate update instead of waiting
+            updateStory(this.value);
+        });
+    }
+});

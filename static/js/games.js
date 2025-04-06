@@ -852,3 +852,87 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// More click responsiveness improvements
+document.addEventListener('DOMContentLoaded', function() {
+    // Make all clickable game elements more responsive
+    function addClickFeedback(selector) {
+        document.querySelectorAll(selector).forEach(element => {
+            element.addEventListener('click', function() {
+                // Add a temporary class for visual feedback
+                this.classList.add('clicked');
+                
+                // Remove it after animation completes
+                setTimeout(() => {
+                    this.classList.remove('clicked');
+                }, 150);
+            });
+        });
+    }
+    
+    // For dynamically added elements, use event delegation
+    document.body.addEventListener('click', function(e) {
+        // Check if the clicked element is one we want to add feedback to
+        if (e.target.matches('.puzzle-piece, .match-card, .memory-card, .number-option')) {
+            e.target.classList.add('clicked');
+            
+            setTimeout(() => {
+                e.target.classList.remove('clicked');
+            }, 150);
+        }
+    });
+    
+    // Remove any delay in the loadExternalGame and loadGame functions
+    const originalLoadGame = window.loadGame;
+    if (originalLoadGame) {
+        window.loadGame = function(gameId) {
+            // Call original function
+            originalLoadGame(gameId);
+            
+            // Force layout recalculation to prevent delay
+            document.body.offsetHeight;
+        };
+    }
+    
+    // Optimize external game loading
+    if (typeof loadExternalGame === 'function') {
+        const origLoadExternal = loadExternalGame;
+        loadExternalGame = function(url, title) {
+            // Show loading indicator
+            const gameContentContainer = document.getElementById('game-content-container');
+            if (gameContentContainer) {
+                gameContentContainer.innerHTML = '<div class="loading-indicator">Loading game...</div>';
+                gameContentContainer.style.display = 'block';
+                
+                // Hide games list immediately
+                const gamesListContainer = document.getElementById('games-list-container');
+                if (gamesListContainer) {
+                    gamesListContainer.style.display = 'none';
+                }
+            }
+            
+            // Short timeout to allow UI to update before heavy iframe loading
+            setTimeout(() => {
+                origLoadExternal(url, title);
+            }, 10);
+        };
+    }
+});
+
+// Add clicked class styling
+document.head.insertAdjacentHTML('beforeend', `
+    <style>
+        .clicked {
+            transform: scale(0.9) !important;
+            opacity: 0.8 !important;
+            transition: transform 0.1s ease, opacity 0.1s ease !important;
+        }
+        
+        .loading-indicator {
+            padding: 20px;
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+    </style>
+`);

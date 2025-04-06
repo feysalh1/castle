@@ -1187,3 +1187,59 @@ main {
     max-width: 100%;
     overflow-x: hidden;
 }
+
+/* Improve clickable elements responsiveness */
+button, 
+.mode-btn, 
+.play-game-btn, 
+.play-external-btn, 
+.back-btn, 
+.age-filter-btn, 
+.source-btn,
+.puzzle-piece,
+.match-card,
+.memory-card,
+.number-option,
+.shape,
+.coloring-region,
+.color-swatch {
+    transition: transform 0.1s ease, background-color 0.1s ease;
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+}
+
+/* Add active state for all buttons */
+button:active, 
+.mode-btn:active, 
+.play-game-btn:active, 
+.play-external-btn:active, 
+.back-btn:active, 
+.age-filter-btn:active, 
+.source-btn:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+}
+
+/* Make puzzle pieces more responsive */
+.puzzle-piece:active,
+.match-card:active,
+.memory-card:active,
+.number-option:active,
+.shape:active,
+.color-swatch:active {
+    transform: scale(0.9);
+}
+
+/* Make coloring regions highlight on hover/touch */
+.coloring-region:hover {
+    border: 2px solid var(--accent-color);
+}
+
+/* Make game-related buttons more obvious */
+.play-game-btn, .play-external-btn, .game-complete-btn {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.play-game-btn:active, .play-external-btn:active, .game-complete-btn:active {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    transform: translateY(1px) scale(0.98);
+}
