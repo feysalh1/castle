@@ -310,3 +310,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+// Add new game badges
+const shape_master = { icon: '📐', title: 'Shape Master', description: 'Completed the shape matching game', age: 4 };
+const memory_master = { icon: '🧠', title: 'Memory Master', description: 'Completed the memory game', age: 5 };
+
+// Add these to gameBadges
+gameBadges['shape_master'] = shape_master;
+gameBadges['memory_master'] = memory_master;

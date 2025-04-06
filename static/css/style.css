@@ -985,3 +985,309 @@ footer {
     font-size: 0.85rem;
     margin-top: 15px;
 }
+
+/* External Game Styles */
+.external-game-content {
+    text-align: center;
+}
+
+.external-game-container {
+    margin: 20px auto;
+    max-width: 90%;
+    height: 450px;
+    background-color: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+    position: relative;
+}
+
+.external-game-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.open-external-btn {
+    display: inline-block;
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    text-decoration: none;
+    margin-top: 10px;
+}
+
+.open-external-btn:hover {
+    background-color: var(--accent-color);
+}
+
+.source-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 15px;
+    margin-bottom: 20px;
+}
+
+.source-btn {
+    background-color: var(--secondary-color);
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 15px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.source-btn:hover {
+    background-color: var(--accent-color);
+}
+
+.source-btn.active {
+    background-color: var(--primary-color);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Interactive Game Elements Styles */
+
+/* Puzzle Game */
+.puzzle-pieces {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.puzzle-piece {
+    font-size: 2.5rem;
+    cursor: grab;
+    user-select: none;
+    transition: transform 0.3s;
+}
+
+.puzzle-piece.rotated {
+    transform: rotate(90deg);
+}
+
+.puzzle-piece.selected {
+    transform: scale(1.2);
+}
+
+.puzzle-piece.dragging {
+    opacity: 0.5;
+}
+
+.puzzle-piece.matched {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.puzzle-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 10px;
+    margin: 0 auto;
+    max-width: 300px;
+}
+
+.puzzle-target {
+    width: 80px;
+    height: 80px;
+    border: 2px dashed var(--accent-color);
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.puzzle-target.drag-over {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 2px solid var(--primary-color);
+}
+
+/* Coloring Game */
+.coloring-area {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 5px;
+    width: 300px;
+    height: 200px;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: var(--border-radius);
+}
+
+.coloring-region {
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
+.color-swatch.selected {
+    transform: scale(1.2);
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+/* Shape Match Game */
+.shape-game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.shapes-to-match, .shape-targets {
+    display: flex;
+    gap: 20px;
+}
+
+.shape {
+    font-size: 2.5rem;
+    cursor: grab;
+    user-select: none;
+}
+
+.shape-target {
+    font-size: 2.5rem;
+    color: #ccc;
+    padding: 5px;
+    border: 2px dashed #ddd;
+    border-radius: 10px;
+}
+
+.shape-target.matched {
+    border-color: #4CAF50;
+    color: #4CAF50;
+}
+
+/* Letter Match Game */
+.match-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 10px;
+    margin: 20px auto;
+    max-width: 300px;
+}
+
+.match-card {
+    width: 80px;
+    height: 80px;
+    background-color: var(--tertiary-color);
+    color: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    cursor: pointer;
+    user-select: none;
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.match-card.flipped {
+    background-color: white;
+    color: var(--primary-color);
+    transform: rotateY(180deg);
+}
+
+.match-card.matched {
+    background-color: #DFF2BF;
+    color: #4F8A10;
+    cursor: default;
+}
+
+/* Number Game */
+.number-option {
+    transition: all 0.3s;
+}
+
+.number-option.selected {
+    transform: scale(1.1);
+}
+
+.number-option.correct {
+    background-color: #DFF2BF;
+    color: #4F8A10;
+}
+
+.number-option.incorrect {
+    background-color: #FFBABA;
+    color: #D8000C;
+}
+
+/* Memory Game */
+.memory-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 10px;
+    margin: 20px auto;
+    max-width: 300px;
+}
+
+.memory-card {
+    width: 80px;
+    height: 80px;
+    background-color: var(--tertiary-color);
+    color: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    cursor: pointer;
+    user-select: none;
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.memory-card.flipped {
+    background-color: white;
+    color: var(--primary-color);
+    transform: rotateY(180deg);
+}
+
+.memory-card.matched {
+    background-color: #DFF2BF;
+    color: #4F8A10;
+    cursor: default;
+}
+
+@media (max-width: 480px) {
+    .external-game-container {
+        height: 350px;
+    }
+    
+    .puzzle-board {
+        max-width: 250px;
+    }
+    
+    .puzzle-target {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .coloring-area {
+        width: 250px;
+        height: 170px;
+    }
+    
+    .shape, .shape-target {
+        font-size: 2rem;
+    }
+    
+    .match-container, .memory-board {
+        max-width: 250px;
+    }
+    
+    .match-card, .memory-card {
+        width: 70px;
+        height: 70px;
+        font-size: 1.7rem;
+    }
+}
