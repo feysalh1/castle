@@ -132,26 +132,51 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Functions
     window.showSection = function(sectionId) {
-        // Hide all sections
-        for (const key in sections) {
-            if (sections[key]) {
-                sections[key].classList.remove('active');
+        // Show transition animation based on section
+        if (window.loadingAnimations) {
+            // Determine which mode we're transitioning to
+            let mode = 'default';
+            if (sectionId === 'story-mode') {
+                mode = 'story';
+            } else if (sectionId === 'game-mode') {
+                mode = 'game';
             }
+            
+            // Show character transition
+            window.loadingAnimations.showTransition(mode);
         }
         
-        // Show selected section
-        const section = document.getElementById(sectionId);
-        if (section) {
-            section.classList.add('active');
-        }
-        
-        // Pause any playing audio when changing sections
-        if (storyElements.storyAudio) {
-            storyElements.storyAudio.pause();
-        }
+        // Delay section change slightly to allow for animations
+        setTimeout(() => {
+            // Hide all sections
+            for (const key in sections) {
+                if (sections[key]) {
+                    sections[key].classList.remove('active');
+                }
+            }
+            
+            // Show selected section
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.classList.add('active');
+            }
+            
+            // Pause any playing audio when changing sections
+            if (storyElements.storyAudio) {
+                storyElements.storyAudio.pause();
+            }
+            
+            // Play a sound effect for section change
+            playClickSound();
+        }, 300); // Short delay to allow transition animation to start
     };
     
     function updateStory(storyId) {
+        // Show quick loading animation when changing stories
+        if (window.loadingAnimations) {
+            window.loadingAnimations.showQuickLoading();
+        }
+        
         const story = stories[storyId];
         
         if (!story) {
@@ -172,6 +197,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const audioPath = `/static/audio/${story.audio}`;
         storyElements.audioSource.src = audioPath;
         storyElements.storyAudio.load(); // Reload the audio element with the new source
+        
+        // Fade in the story content
+        storyElements.storyText.style.opacity = 0;
+        storyElements.storyImage.style.opacity = 0;
+        
+        // After a short delay, fade the content back in
+        setTimeout(() => {
+            storyElements.storyText.style.opacity = 1;
+            storyElements.storyImage.style.opacity = 1;
+            
+            // Play a gentle sound effect for story change
+            playClickSound();
+        }, 500);
     }
     
     function playCurrentStory() {

@@ -224,7 +224,7 @@ function filterGamesByAge(ageFilter) {
             
             // Add event listener to play button
             const playButton = gameCard.querySelector('.play-game-btn');
-            playButton.addEventListener('click', () => loadGame(game.id));
+            playButton.addEventListener('click', () => loadGameWithAnimation(game.id));
         });
     } else {
         // Display only enabled external games
@@ -251,7 +251,7 @@ function filterGamesByAge(ageFilter) {
             // Add event listener to play button
             const playButton = gameCard.querySelector('.play-external-btn');
             playButton.addEventListener('click', () => {
-                loadExternalGame(game.url, game.title);
+                loadExternalGameWithAnimation(game.url, game.title);
             });
         });
     }
@@ -259,6 +259,11 @@ function filterGamesByAge(ageFilter) {
 
 // Load an external game
 function loadExternalGame(url, title) {
+    // Show loading animation before loading external game
+    if (window.loadingAnimations) {
+        window.loadingAnimations.showLoading(2500); // Longer loading time for external content
+    }
+    
     const gameContentContainer = document.getElementById('game-content-container');
     if (!gameContentContainer) return;
     
@@ -319,25 +324,36 @@ function loadExternalGame(url, title) {
 function loadGame(gameId) {
     currentGame = gameId;
     
+    // Show loading animation before loading the game
+    if (window.loadingAnimations) {
+        window.loadingAnimations.showLoading(1500);
+    }
+    
     // Hide games list, show game content
     const gamesListContainer = document.getElementById('games-list-container');
     const gameContentContainer = document.getElementById('game-content-container');
     
     if (!gamesListContainer || !gameContentContainer) return;
     
-    gamesListContainer.style.display = 'none';
-    gameContentContainer.style.display = 'block';
-    
-    // Clear previous game content
-    gameContentContainer.innerHTML = '';
-    
-    // Load game based on ID
-    switch(gameId) {
-        case 'animal_puzzle':
-            loadAnimalPuzzleGame(gameContentContainer);
-            break;
-        case 'coloring_fun':
-            loadColoringGame(gameContentContainer);
+    // Apply transition effect
+    gamesListContainer.style.opacity = '0';
+    setTimeout(() => {
+        gamesListContainer.style.display = 'none';
+        gameContentContainer.style.display = 'block';
+        
+        // Clear previous game content
+        gameContentContainer.innerHTML = '';
+        gameContentContainer.style.opacity = '0';
+        
+        // Short delay to allow loading animation to show
+        setTimeout(() => {
+            // Load game based on ID
+            switch(gameId) {
+                case 'animal_puzzle':
+                    loadAnimalPuzzleGame(gameContentContainer);
+                    break;
+                case 'coloring_fun':
+                    loadColoringGame(gameContentContainer);
             break;
         case 'shape_match':
             loadShapeMatchGame(gameContentContainer);
@@ -370,7 +386,7 @@ function loadGame(gameId) {
     const completeButton = document.createElement('button');
     completeButton.className = 'btn game-complete-btn';
     completeButton.textContent = 'I Finished This Game!';
-    completeButton.addEventListener('click', () => completeGame(gameId));
+    completeButton.addEventListener("click", () => completeGameWithAnimation(gameId));
     
     // Add buttons to container
     const buttonContainer = document.createElement('div');
