@@ -238,3 +238,51 @@ def generate_learning_tip(topic, child_age=4):
     except Exception as e:
         logging.error(f"Error generating learning tip: {e}")
         return f"Try incorporating {topic} into everyday activities through play. Children learn best when they're having fun and don't even realize they're learning!"
+        
+def generate_parent_advice(question, child_age=4):
+    """
+    Generate a helpful response to a parent's question about their child, the app, or parenting
+    
+    Args:
+        question (str): The parent's question
+        child_age (int): Age of the child
+        
+    Returns:
+        str: A helpful response for the parent
+    """
+    try:
+        # Build the system message for the parent assistant
+        system_message = f"""
+        You are a helpful assistant for parents using the Children's Castle app.
+        
+        Follow these guidelines:
+        - Provide helpful, supportive answers to parents' questions
+        - Be empathetic and understanding
+        - Focus on practical advice that's easy to implement
+        - Keep answers concise but thorough (3-5 sentences)
+        - Reference Children's Castle app features when relevant
+        - Offer evidence-based parenting advice
+        - Tailor advice to a parent with a {child_age}-year-old child
+        - Never judge parenting styles or choices
+        - Be encouraging and positive
+        """
+        
+        # Preprocess the question to add context and improve responses
+        enhanced_question = f"As a parent of a {child_age}-year-old using the Children's Castle app, I'd like advice about: {question}"
+        
+        # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
+        # do not change this unless explicitly requested by the user
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": enhanced_question}
+            ],
+            max_tokens=250,
+            temperature=0.7,
+        )
+        
+        return response.choices[0].message.content
+    except Exception as e:
+        logging.error(f"Error generating parent advice: {e}")
+        return "I recommend focusing on your child's interests and building learning opportunities around them. The Children's Castle app offers personalized recommendations based on your child's engagement patterns that you can find in the Activity Summaries section."

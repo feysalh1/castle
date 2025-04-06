@@ -3,11 +3,11 @@ ChatGPT integration routes for Children's Castle application.
 These routes handle API endpoints for the AI assistant features.
 """
 
+import logging
 from flask import Blueprint, jsonify, request, session, render_template, flash, redirect, url_for
 from flask_login import current_user, login_required
 import chatgpt_helper
 from app import csrf, db
-# Removed import, Session, Conversation, ConversationMessage
 
 # Create Blueprint for ChatGPT routes
 chatgpt_bp = Blueprint('chatgpt', __name__)
@@ -22,6 +22,7 @@ def ai_assistant():
         return redirect(url_for('index'))
     
     # Record AI assistant access in session activity log
+    from models import Session
     user_session = Session.query.filter_by(
         user_type='child',
         user_id=current_user.id,
@@ -32,7 +33,6 @@ def ai_assistant():
         user_session.record_activity('view_ai_assistant')
         db.session.commit()
     
-    # Removed import
     return render_template('ai_assistant.html')
 
 @chatgpt_bp.route('/api/ask-assistant', methods=['POST'])
@@ -41,7 +41,6 @@ def ai_assistant():
 def ask_assistant():
     """API endpoint to ask the AI assistant a question"""
     # Check if user is a child
-    # Removed import
     if session.get('user_type') != 'child':
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
@@ -55,7 +54,7 @@ def ask_assistant():
         return jsonify({'success': False, 'message': 'No question provided'}), 400
     
     # Get child's age from database
-    # Removed import
+    from models import Child
     child = Child.query.get(current_user.id)
     child_age = child.age if hasattr(child, 'age') and child.age else 4
     
@@ -72,7 +71,6 @@ def ask_assistant():
         topic = 'weather'
     
     # Track this interaction
-    # Removed import
     from app import tracking
     tracking.track_custom_event(
         event_type='ai_assistant',
@@ -95,7 +93,6 @@ def ask_assistant():
 def generate_story():
     """API endpoint to generate an interactive story"""
     # Check if user is a child
-    # Removed import
     if session.get('user_type') != 'child':
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
@@ -108,7 +105,7 @@ def generate_story():
     include_questions = data.get('include_questions', True)
     
     # Get child's age from database
-    # Removed import
+    from models import Child
     child = Child.query.get(current_user.id)
     child_age = child.age if hasattr(child, 'age') and child.age else 4
     
@@ -142,7 +139,6 @@ def generate_story():
 def answer_question():
     """API endpoint to respond to a child's answer to a story question"""
     # Check if user is a child
-    # Removed import
     if session.get('user_type') != 'child':
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
@@ -159,7 +155,7 @@ def answer_question():
         return jsonify({'success': False, 'message': 'Missing question or answer'}), 400
     
     # Get child's age from database
-    # Removed import
+    from models import Child
     child = Child.query.get(current_user.id)
     child_age = child.age if hasattr(child, 'age') and child.age else 4
     
@@ -190,9 +186,8 @@ def answer_question():
 @login_required
 @csrf.exempt
 def parent_tip():
-    """API endpoint to get learning tips for parents"""
+    """API endpoint to get learning tips and answer questions for parents"""
     # Check if user is a parent
-    # Removed import
     if session.get('user_type') != 'parent':
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
@@ -201,21 +196,71 @@ def parent_tip():
     if not data:
         return jsonify({'success': False, 'message': 'No data provided'}), 400
     
-    topic = data.get('topic', 'learning')
+    # We can handle both specific learning topics and general questions
+    topic = data.get('topic', None)
+    question = data.get('question', None)
     child_id = data.get('child_id')
     
     # If child_id is provided, get child's age
     child_age = 4
     if child_id:
-        # Removed import
+        from models import Child
         child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
         if child and hasattr(child, 'age') and child.age:
             child_age = child.age
     
-    # Generate learning tip
-    tip = chatgpt_helper.generate_learning_tip(topic, child_age)
-    
-    return jsonify({
-        'success': True,
-        'tip': tip
-    })
+    # Check if this is a question or a topic request
+    if question:        
+        # Add this interaction to the database for future reference
+        try:
+            # Track the parent's question
+            from app import tracking
+            tracking.track_custom_event(
+                event_type='parent_assistant',
+                event_name='question_asked',
+                event_data={
+                    'question': question,
+                    'user_id': current_user.id
+                }
+            )
+        except Exception as e:
+            logging.error(f"Error tracking parent question: {e}")
+        
+        # Process specific question types
+        if any(keyword in question.lower() for keyword in ['limit screen time', 'screen time', 'time limit']):
+            response = chatgpt_helper.generate_parent_advice(
+                "Here are some strategies for limiting screen time effectively: " +
+                "Set clear boundaries with specific time limits. " +
+                "Create screen-free zones in your home. " +
+                "Use the parental controls in Children's Castle to set daily usage limits. " +
+                "Offer engaging alternatives like reading physical books or outdoor play. " +
+                "Be consistent with the rules you establish."
+            )
+        elif any(keyword in question.lower() for keyword in ['stories', 'read today', 'reading history']):
+            response = "You can view your child's reading history in the Activity Summaries section of this dashboard. " + \
+                       "Look for the 'Recent Activity' card to see which stories they've engaged with recently."
+        elif any(keyword in question.lower() for keyword in ['bedtime', 'bedtime mode']):
+            response = "To enable bedtime mode, go to the Control Center section of this dashboard. " + \
+                       "In the 'Access Controls' card, you can set specific bedtime hours when the app will " + \
+                       "automatically show calming content and gradually reduce stimulation."
+        else:
+            # Generate a response for any other question
+            # It's a general question, so just generate advice
+            response = chatgpt_helper.generate_parent_advice(question, child_age)
+        
+        return jsonify({
+            'success': True,
+            'response': response
+        })
+    elif topic:
+        # It's a topic request, generate a learning tip
+        tip = chatgpt_helper.generate_learning_tip(topic, child_age)
+        return jsonify({
+            'success': True,
+            'response': tip
+        })
+    else:
+        return jsonify({
+            'success': False, 
+            'message': 'No question or topic provided'
+        }), 400

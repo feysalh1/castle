@@ -660,6 +660,82 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- AI Assistant Chat Section -->
+                <div class="dashboard-section" id="assistant-section">
+                    <h3 class="section-title">🤖 AI Assistant</h3>
+                    
+                    <div class="dashboard-card">
+                        <h4>Parent Assistant</h4>
+                        <p class="assistant-description">
+                            Get advice, answer questions, and manage your child's learning journey with our AI assistant. 
+                            Ask about screen time limits, content recommendations, or help understanding your child's progress.
+                        </p>
+                        
+                        <div class="chat-container">
+                            <div id="chat-box">
+                                <div class="chat-messages">
+                                    <div class="message system">
+                                        Hello! I'm your Children's Castle assistant. How can I help you with your child's learning journey today?
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="chat-input">
+                                <input type="text" id="parent-question" placeholder="Ask a question about your child's learning or the app...">
+                                <button id="send-question" class="btn">Send</button>
+                            </div>
+                        </div>
+                        
+                        <div class="example-questions">
+                            <h5>Example questions you can ask:</h5>
+                            <ul>
+                                <li><a href="#" class="example-question">How do I limit screen time?</a></li>
+                                <li><a href="#" class="example-question">Can I see what stories my child read today?</a></li>
+                                <li><a href="#" class="example-question">How do I enable bedtime mode?</a></li>
+                                <li><a href="#" class="example-question">What activities help with language development?</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI Assistant Chat Section -->
+                <div class="dashboard-section" id="assistant-section">
+                    <h3 class="section-title">🤖 AI Assistant</h3>
+                    
+                    <div class="dashboard-card">
+                        <h4>Parent Assistant</h4>
+                        <p class="assistant-description">
+                            Get advice, answer questions, and manage your child's learning journey with our AI assistant. 
+                            Ask about screen time limits, content recommendations, or help understanding your child's progress.
+                        </p>
+                        
+                        <div class="chat-container">
+                            <div id="chat-box">
+                                <div class="chat-messages">
+                                    <div class="message system">
+                                        Hello! I'm your Children's Castle assistant. How can I help you with your child's learning journey today?
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="chat-input">
+                                <input type="text" id="parent-question" placeholder="Ask a question about your child's learning or the app...">
+                                <button id="send-question" class="btn">Send</button>
+                            </div>
+                        </div>
+                        
+                        <div class="example-questions">
+                            <h5>Example questions you can ask:</h5>
+                            <ul>
+                                <li><a href="#" class="example-question">How do I limit screen time?</a></li>
+                                <li><a href="#" class="example-question">Can I see what stories my child read today?</a></li>
+                                <li><a href="#" class="example-question">How do I enable bedtime mode?</a></li>
+                                <li><a href="#" class="example-question">What activities help with language development?</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -673,5 +749,6 @@
     <!-- Scripts -->
     <script src="{{ url_for('static', filename='js/loading-animations.js') }}"></script>
     <script src="{{ url_for('static', filename='js/parent-dashboard.js') }}"></script>
+    <script src="/static/js/parent_assistant.js"></script>
 </body>
 </html>
