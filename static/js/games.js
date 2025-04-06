@@ -17,16 +17,47 @@ const GAMES_BY_AGE = {
 // External educational games that are safe for children
 const EXTERNAL_GAMES = {
     4: [
-        { id: 'abcya_shapes', title: 'Shape Matching', url: 'https://www.abcya.com/games/shapes_colors_bingo', description: 'Learn shapes and colors' },
-        { id: 'pbs_games', title: 'PBS Kids Games', url: 'https://pbskids.org/games/all-topics/', description: 'Educational games from PBS Kids' },
-        { id: 'sesame_street', title: 'Sesame Street Games', url: 'https://www.sesamestreet.org/games', description: 'Play with Sesame Street characters' }
+        { id: 'abcya_shapes', title: 'Shape Matching', url: 'https://www.abcya.com/games/shapes_colors_bingo', description: 'Learn shapes and colors', enabled: true },
+        { id: 'pbs_games', title: 'PBS Kids Games', url: 'https://pbskids.org/games/all-topics/', description: 'Educational games from PBS Kids', enabled: true },
+        { id: 'sesame_street', title: 'Sesame Street Games', url: 'https://www.sesamestreet.org/games', description: 'Play with Sesame Street characters', enabled: true }
     ],
     5: [
-        { id: 'starfall', title: 'Starfall', url: 'https://www.starfall.com/h/index-kindergarten.php', description: 'Learn to read games' },
-        { id: 'funbrain', title: 'Funbrain Jr', url: 'https://www.funbrain.com/pre-k-and-k-playground', description: 'Math and reading games' },
-        { id: 'national_geographic', title: 'National Geographic Kids', url: 'https://kids.nationalgeographic.com/games/', description: 'Science and nature games' }
+        { id: 'starfall', title: 'Starfall', url: 'https://www.starfall.com/h/index-kindergarten.php', description: 'Learn to read games', enabled: true },
+        { id: 'funbrain', title: 'Funbrain Jr', url: 'https://www.funbrain.com/pre-k-and-k-playground', description: 'Math and reading games', enabled: true },
+        { id: 'national_geographic', title: 'National Geographic Kids', url: 'https://kids.nationalgeographic.com/games/', description: 'Science and nature games', enabled: true }
     ]
 };
+
+// Load enabled status from localStorage if available
+function loadExternalGameSettings() {
+    const savedSettings = localStorage.getItem('babyGirlExternalGameSettings');
+    if (savedSettings) {
+        const settings = JSON.parse(savedSettings);
+        
+        // Update enabled status for each game
+        Object.keys(EXTERNAL_GAMES).forEach(ageGroup => {
+            EXTERNAL_GAMES[ageGroup].forEach(game => {
+                if (settings[game.id] !== undefined) {
+                    game.enabled = settings[game.id];
+                }
+            });
+        });
+    }
+}
+
+// Save enabled status to localStorage
+function saveExternalGameSettings() {
+    const settings = {};
+    
+    // Collect enabled status for each game
+    Object.keys(EXTERNAL_GAMES).forEach(ageGroup => {
+        EXTERNAL_GAMES[ageGroup].forEach(game => {
+            settings[game.id] = game.enabled;
+        });
+    });
+    
+    localStorage.setItem('babyGirlExternalGameSettings', JSON.stringify(settings));
+}
 
 // Current game state
 let currentGame = null;
@@ -35,6 +66,9 @@ let gameSource = 'internal'; // 'internal' or 'external'
 
 // Initialize game section
 function initGames() {
+    // Load external game settings
+    loadExternalGameSettings();
+    
     // Set up age filter buttons
     document.getElementById('age-4-btn')?.addEventListener('click', () => filterGamesByAge(4));
     document.getElementById('age-5-btn')?.addEventListener('click', () => filterGamesByAge(5));
@@ -42,6 +76,9 @@ function initGames() {
     // Set up game source buttons
     document.getElementById('internal-games-btn')?.addEventListener('click', () => switchGameSource('internal'));
     document.getElementById('external-games-btn')?.addEventListener('click', () => switchGameSource('external'));
+    
+    // Set up parental controls button
+    document.getElementById('parental-controls-btn')?.addEventListener('click', showParentalControls);
     
     // Init with age 4 internal games
     filterGamesByAge(4);
@@ -55,10 +92,92 @@ function switchGameSource(source) {
     document.querySelectorAll('.source-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    document.getElementById(`${source}-games-btn`).classList.add('active');
+    
+    const activeBtn = document.getElementById(`${source}-games-btn`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
     
     // Re-filter games with current age
     filterGamesByAge(currentAgeFilter);
+}
+
+// Show parental controls modal
+function showParentalControls() {
+    // Create modal background
+    const modalBackground = document.createElement('div');
+    modalBackground.className = 'modal-background';
+    
+    // Create modal container
+    const modalContainer = document.createElement('div');
+    modalContainer.className = 'modal-container';
+    modalContainer.innerHTML = `
+        <h3>Parental Controls</h3>
+        <p>Enable or disable external websites. Disabled sites won't be shown to your child.</p>
+        <div class="parental-controls-content">
+            <h4>Age 4 Games</h4>
+            <div id="age-4-controls" class="controls-list"></div>
+            
+            <h4>Age 5+ Games</h4>
+            <div id="age-5-controls" class="controls-list"></div>
+        </div>
+        <div class="modal-buttons">
+            <button id="save-controls-btn" class="btn btn-primary">Save Settings</button>
+            <button id="close-controls-btn" class="btn btn-secondary">Close</button>
+        </div>
+    `;
+    
+    // Add to body
+    modalBackground.appendChild(modalContainer);
+    document.body.appendChild(modalBackground);
+    
+    // Populate controls for each age group
+    [4, 5].forEach(age => {
+        const controlsList = document.getElementById(`age-${age}-controls`);
+        if (!controlsList) return;
+        
+        EXTERNAL_GAMES[age].forEach(game => {
+            const controlItem = document.createElement('div');
+            controlItem.className = 'control-item';
+            controlItem.innerHTML = `
+                <label>
+                    <input type="checkbox" data-game-id="${game.id}" ${game.enabled ? 'checked' : ''}>
+                    ${game.title} - ${game.description}
+                </label>
+            `;
+            controlsList.appendChild(controlItem);
+        });
+    });
+    
+    // Set up event listeners
+    document.getElementById('save-controls-btn')?.addEventListener('click', () => {
+        // Save all checkbox states
+        document.querySelectorAll('.control-item input[type="checkbox"]').forEach(checkbox => {
+            const gameId = checkbox.getAttribute('data-game-id');
+            
+            // Find and update the game
+            Object.keys(EXTERNAL_GAMES).forEach(ageGroup => {
+                EXTERNAL_GAMES[ageGroup].forEach(game => {
+                    if (game.id === gameId) {
+                        game.enabled = checkbox.checked;
+                    }
+                });
+            });
+        });
+        
+        // Save settings
+        saveExternalGameSettings();
+        
+        // Refresh games list
+        filterGamesByAge(currentAgeFilter);
+        
+        // Close modal
+        document.body.removeChild(modalBackground);
+    });
+    
+    document.getElementById('close-controls-btn')?.addEventListener('click', () => {
+        document.body.removeChild(modalBackground);
+    });
 }
 
 // Filter games by age
@@ -69,7 +188,11 @@ function filterGamesByAge(ageFilter) {
     document.querySelectorAll('.age-filter-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    document.getElementById(`age-${ageFilter}-btn`).classList.add('active');
+    
+    const ageBtn = document.getElementById(`age-${ageFilter}-btn`);
+    if (ageBtn) {
+        ageBtn.classList.add('active');
+    }
     
     // Get games list container
     const gamesListContainer = document.getElementById('games-list');
@@ -104,11 +227,11 @@ function filterGamesByAge(ageFilter) {
             playButton.addEventListener('click', () => loadGame(game.id));
         });
     } else {
-        // Display external games
-        const externalGames = EXTERNAL_GAMES[ageFilter] || [];
+        // Display only enabled external games
+        const externalGames = (EXTERNAL_GAMES[ageFilter] || []).filter(game => game.enabled);
         
         if (externalGames.length === 0) {
-            gamesListContainer.innerHTML = '<p>No external games available for this age.</p>';
+            gamesListContainer.innerHTML = '<p>No external games available for this age. Parents can enable games in Parental Controls.</p>';
             return;
         }
         
@@ -140,17 +263,24 @@ function loadExternalGame(url, title) {
     if (!gameContentContainer) return;
     
     // Hide games list, show game content
-    document.getElementById('games-list-container').style.display = 'none';
+    const gamesListContainer = document.getElementById('games-list-container');
+    if (gamesListContainer) {
+        gamesListContainer.style.display = 'none';
+    }
+    
     gameContentContainer.style.display = 'block';
     
     // Clear previous game content
     gameContentContainer.innerHTML = '';
     
-    // Create iframe for external game
+    // Create iframe for external game with parent message
     const gameContent = document.createElement('div');
     gameContent.className = 'game-content external-game-content';
     gameContent.innerHTML = `
         <h3>${title}</h3>
+        <div class="parent-message">
+            <p><strong>Parents:</strong> This is an external educational website. You can manage which sites are available in the Parental Controls.</p>
+        </div>
         <div class="external-game-container">
             <iframe 
                 src="${url}"
@@ -160,7 +290,7 @@ function loadExternalGame(url, title) {
                 sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
             ></iframe>
         </div>
-        <p class="game-instructions">If you can't see the game, your parent can click the "Open in New Tab" button below.</p>
+        <p class="game-instructions">If you can't see the game, you can use the button below to open it in a new tab.</p>
         <a href="${url}" target="_blank" class="open-external-btn">Open in New Tab</a>
     `;
     
@@ -171,7 +301,10 @@ function loadExternalGame(url, title) {
     backButton.className = 'btn back-to-games-btn';
     backButton.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Games';
     backButton.addEventListener('click', () => {
-        document.getElementById('games-list-container').style.display = 'block';
+        const gamesListContainer = document.getElementById('games-list-container');
+        if (gamesListContainer) {
+            gamesListContainer.style.display = 'block';
+        }
         gameContentContainer.style.display = 'none';
     });
     
@@ -256,12 +389,12 @@ function loadAnimalPuzzleGame(container) {
         <p>Help put the animal puzzle together! Tap or click the pieces to rotate them.</p>
         <div class="puzzle-container">
             <div class="puzzle-pieces">
-                <div class="puzzle-piece" onclick="this.classList.toggle('rotated')">🦁</div>
-                <div class="puzzle-piece" onclick="this.classList.toggle('rotated')">🐯</div>
-                <div class="puzzle-piece" onclick="this.classList.toggle('rotated')">🐘</div>
-                <div class="puzzle-piece" onclick="this.classList.toggle('rotated')">🦒</div>
-                <div class="puzzle-piece" onclick="this.classList.toggle('rotated')">🦓</div>
-                <div class="puzzle-piece" onclick="this.classList.toggle('rotated')">🐒</div>
+                <div class="puzzle-piece" data-emoji="🦁" onclick="this.classList.toggle('rotated')">🦁</div>
+                <div class="puzzle-piece" data-emoji="🐯" onclick="this.classList.toggle('rotated')">🐯</div>
+                <div class="puzzle-piece" data-emoji="🐘" onclick="this.classList.toggle('rotated')">🐘</div>
+                <div class="puzzle-piece" data-emoji="🦒" onclick="this.classList.toggle('rotated')">🦒</div>
+                <div class="puzzle-piece" data-emoji="🦓" onclick="this.classList.toggle('rotated')">🦓</div>
+                <div class="puzzle-piece" data-emoji="🐒" onclick="this.classList.toggle('rotated')">🐒</div>
             </div>
             <div class="puzzle-board">
                 <div class="puzzle-target"></div>
@@ -287,7 +420,7 @@ function loadAnimalPuzzleGame(container) {
             });
             
             piece.addEventListener('dragstart', e => {
-                e.dataTransfer.setData('text/plain', e.target.textContent);
+                e.dataTransfer.setData('text/plain', piece.getAttribute('data-emoji'));
                 piece.classList.add('dragging');
             });
             
@@ -313,8 +446,9 @@ function loadAnimalPuzzleGame(container) {
                 e.preventDefault();
                 target.classList.remove('drag-over');
                 if (!target.hasChildNodes()) {
-                    const data = e.dataTransfer.getData('text/plain');
-                    const draggedPiece = document.querySelector(`.puzzle-piece:contains('${data}')`);
+                    const emoji = e.dataTransfer.getData('text/plain');
+                    // Find the piece by data attribute
+                    const draggedPiece = document.querySelector(`.puzzle-piece[data-emoji="${emoji}"]`);
                     if (draggedPiece) {
                         const clone = draggedPiece.cloneNode(true);
                         target.appendChild(clone);
@@ -413,7 +547,11 @@ function loadShapeMatchGame(container) {
         
         shapes.forEach(shape => {
             shape.addEventListener('dragstart', e => {
-                e.dataTransfer.setData('text/plain', shape.className);
+                // Get shape type from class name (circle, square, etc.)
+                const className = Array.from(shape.classList).find(cls => 
+                    ['circle', 'square', 'triangle', 'star'].includes(cls));
+                    
+                e.dataTransfer.setData('text/plain', className);
                 shape.classList.add('dragging');
             });
             
@@ -439,12 +577,9 @@ function loadShapeMatchGame(container) {
                 const data = e.dataTransfer.getData('text/plain');
                 const shapeType = target.getAttribute('data-shape');
                 
-                if (data.includes(shapeType)) {
+                if (data === shapeType) {
                     target.classList.add('matched');
-                    const matchedShape = document.querySelector(`.${shapeType}`);
-                    if (matchedShape) {
-                        matchedShape.classList.add('matched');
-                    }
+                    document.querySelector(`.shape.${shapeType}`)?.classList.add('matched');
                 }
             });
         });
