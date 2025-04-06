@@ -28,53 +28,44 @@
         }
         
         .avatar-selection {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 10px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 5px;
         }
         
         .avatar-option {
-            text-align: center;
-        }
-        
-        .avatar-option input[type="radio"] {
-            display: none;
-        }
-        
-        .avatar-option label {
             cursor: pointer;
-            display: block;
-            padding: 5px;
+            border: 2px solid transparent;
             border-radius: 50%;
-            border: 3px solid transparent;
-            transition: all 0.3s;
+            padding: 3px;
+            transition: all 0.2s;
+        }
+        
+        .avatar-option:hover {
+            border-color: #4a6da7;
+        }
+        
+        .avatar-option.selected {
+            border-color: #4a6da7;
+            background-color: rgba(74, 109, 167, 0.1);
         }
         
         .avatar-option img {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        /* PIN styles */
+        .pin-container {
+            margin: 15px 0;
+            display: none; /* Initially hidden */
+        }
+        
+        .pin-container.active {
             display: block;
-        }
-        
-        .avatar-option input[type="radio"]:checked + label {
-            border-color: var(--primary-color);
-            background-color: rgba(106, 48, 147, 0.1);
-        }
-        
-        .pin-toggle {
-            margin-top: 10px;
-            text-align: center;
-        }
-        
-        .pin-toggle label {
-            cursor: pointer;
-            color: #4a6da7;
-        }
-        
-        .pin-toggle label:hover {
-            text-decoration: underline;
         }
         
         .pin-number-display {
@@ -91,10 +82,6 @@
         
         .pin-number-display.visible {
             visibility: visible;
-        }
-        
-        .pin-container {
-            margin: 15px 0;
         }
         
         .pin-display {
@@ -156,10 +143,86 @@
         .pin-clear:hover {
             text-decoration: underline;
         }
+        
+        .pin-toggle {
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .pin-toggle label {
+            cursor: pointer;
+            color: #4a6da7;
+        }
+        
+        .pin-toggle label:hover {
+            text-decoration: underline;
+        }
+        
+        /* Continue button */
+        .continue-button {
+            background-color: #4a6da7;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .continue-button:hover {
+            background-color: #3a5d97;
+        }
+        
+        .form-step {
+            display: none;
+        }
+        
+        .form-step.active {
+            display: block;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .step {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ddd;
+            margin: 0 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .step.active {
+            background-color: #4a6da7;
+        }
+        
+        .back-button {
+            background: none;
+            border: none;
+            color: #4a6da7;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .back-button:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
-    <header class="dashboard-header">
+    <header>
         <div class="container">
             <div class="logo">
                 <h1>Children's Castle</h1>
@@ -167,7 +230,6 @@
             </div>
             <nav>
                 <a href="{{ url_for('parent_dashboard') }}">Dashboard</a>
-                <a href="{{ url_for('parent_settings') }}">Settings</a>
                 <a href="{{ url_for('logout') }}">Sign Out</a>
             </nav>
         </div>
@@ -192,7 +254,11 @@
                 
                 <form class="auth-form" method="POST" action="{{ url_for('add_child') }}" id="addChildForm">
                     <!-- CSRF Token -->
-                    {{ form.hidden_tag() if form else '<input type="hidden" name="csrf_token" value="' + csrf_token() + '"/>' }}
+                    {% if form %}
+                        {{ form.hidden_tag() }}
+                    {% else %}
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    {% endif %}
                     
                     <div class="form-group">
                         <label for="username">Username</label>
@@ -203,12 +269,12 @@
                     <div class="form-group">
                         <label for="display_name">Display Name</label>
                         <input type="text" id="display_name" name="display_name" required>
-                        <div class="help-text">This is how your child will be greeted in the app</div>
+                        <div class="help-text">This is what your child will see</div>
                     </div>
                     
                     <div class="form-group">
                         <label for="age">Age</label>
-                        <input type="number" id="age" name="age" min="3" max="12" required>
+                        <input type="number" id="age" name="age" min="2" max="12" required>
                     </div>
                     
                     <div class="form-group">
@@ -217,96 +283,107 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="pin">PIN Code (4 digits)</label>
-                        <input type="hidden" id="pin" name="pin" required>
-                        <div class="help-text">A simple 4-digit PIN for your child to login with</div>
-                        
-                        <div class="pin-container">
-                            <div class="pin-number-display" id="pinNumberDisplay"></div>
-                            <div class="pin-display">
-                                <div class="pin-dot" id="dot1"></div>
-                                <div class="pin-dot" id="dot2"></div>
-                                <div class="pin-dot" id="dot3"></div>
-                                <div class="pin-dot" id="dot4"></div>
+                        <label for="avatar">Select an Avatar</label>
+                        <input type="hidden" id="avatar" name="avatar" value="fox.png">
+                        <div class="avatar-selection">
+                            <div class="avatar-option selected" data-avatar="fox.png">
+                                <img src="{{ url_for('static', filename='images/avatars/fox.png') }}" alt="Fox Avatar">
                             </div>
-                            
-                            <div class="pin-toggle">
-                                <label><input type="checkbox" id="showPin" onchange="togglePinVisibility()"> Show PIN</label>
+                            <div class="avatar-option" data-avatar="bear.png">
+                                <img src="{{ url_for('static', filename='images/avatars/bear.png') }}" alt="Bear Avatar">
                             </div>
-                            
-                            <div class="pin-pad">
-                                <button type="button" class="pin-button" onclick="addPin(1)">1</button>
-                                <button type="button" class="pin-button" onclick="addPin(2)">2</button>
-                                <button type="button" class="pin-button" onclick="addPin(3)">3</button>
-                                <button type="button" class="pin-button" onclick="addPin(4)">4</button>
-                                <button type="button" class="pin-button" onclick="addPin(5)">5</button>
-                                <button type="button" class="pin-button" onclick="addPin(6)">6</button>
-                                <button type="button" class="pin-button" onclick="addPin(7)">7</button>
-                                <button type="button" class="pin-button" onclick="addPin(8)">8</button>
-                                <button type="button" class="pin-button" onclick="addPin(9)">9</button>
-                                <button type="button" class="pin-button" style="visibility: hidden;"></button>
-                                <button type="button" class="pin-button" onclick="addPin(0)">0</button>
-                                <button type="button" class="pin-button" style="visibility: hidden;"></button>
+                            <div class="avatar-option" data-avatar="pig.png">
+                                <img src="{{ url_for('static', filename='images/avatars/pig.png') }}" alt="Pig Avatar">
                             </div>
-                            
-                            <div class="pin-actions">
-                                <span class="pin-clear" onclick="clearPin()">Clear PIN</span>
+                            <div class="avatar-option" data-avatar="monkey.png">
+                                <img src="{{ url_for('static', filename='images/avatars/monkey.png') }}" alt="Monkey Avatar">
+                            </div>
+                            <div class="avatar-option" data-avatar="rabbit.png">
+                                <img src="{{ url_for('static', filename='images/avatars/rabbit.png') }}" alt="Rabbit Avatar">
+                            </div>
+                            <div class="avatar-option" data-avatar="elephant.png">
+                                <img src="{{ url_for('static', filename='images/avatars/elephant.png') }}" alt="Elephant Avatar">
+                            </div>
+                            <div class="avatar-option" data-avatar="lion.png">
+                                <img src="{{ url_for('static', filename='images/avatars/lion.png') }}" alt="Lion Avatar">
+                            </div>
+                            <div class="avatar-option" data-avatar="turtle.png">
+                                <img src="{{ url_for('static', filename='images/avatars/turtle.png') }}" alt="Turtle Avatar">
                             </div>
                         </div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="avatar">Choose Avatar</label>
-                        <div class="avatar-selection">
-                            <div class="avatar-option">
-                                <input type="radio" id="avatar1" name="avatar" value="fox.svg" checked>
-                                <label for="avatar1">
-                                    <img src="{{ url_for('static', filename='images/avatars/fox.svg') }}" alt="Fox Avatar">
-                                </label>
-                            </div>
-                            
-                            <div class="avatar-option">
-                                <input type="radio" id="avatar2" name="avatar" value="bear.svg">
-                                <label for="avatar2">
-                                    <img src="{{ url_for('static', filename='images/avatars/bear.svg') }}" alt="Bear Avatar">
-                                </label>
-                            </div>
-                            
-                            <div class="avatar-option">
-                                <input type="radio" id="avatar3" name="avatar" value="rabbit.svg">
-                                <label for="avatar3">
-                                    <img src="{{ url_for('static', filename='images/avatars/rabbit.svg') }}" alt="Rabbit Avatar">
-                                </label>
-                            </div>
-                            
-                            <div class="avatar-option">
-                                <input type="radio" id="avatar4" name="avatar" value="monkey.svg">
-                                <label for="avatar4">
-                                    <img src="{{ url_for('static', filename='images/avatars/monkey.svg') }}" alt="Monkey Avatar">
-                                </label>
-                            </div>
+                        <label for="pin">Create a 4-digit PIN Code</label>
+                        <input type="password" id="pin" name="pin" maxlength="4" pattern="[0-9]{4}" required>
+                        <div class="help-text">This PIN will be used for your child to log in</div>
+                    </div>
+                    
+                    <div class="pin-container">
+                        <div class="pin-number-display" id="pinNumberDisplay"></div>
+                        <div class="pin-display">
+                            <div class="pin-dot" id="dot1"></div>
+                            <div class="pin-dot" id="dot2"></div>
+                            <div class="pin-dot" id="dot3"></div>
+                            <div class="pin-dot" id="dot4"></div>
+                        </div>
+                        
+                        <div class="pin-toggle">
+                            <label><input type="checkbox" id="showPin" onchange="togglePinVisibility()"> Show PIN</label>
+                        </div>
+                        
+                        <div class="pin-pad">
+                            <button type="button" class="pin-button" onclick="addPin(1)">1</button>
+                            <button type="button" class="pin-button" onclick="addPin(2)">2</button>
+                            <button type="button" class="pin-button" onclick="addPin(3)">3</button>
+                            <button type="button" class="pin-button" onclick="addPin(4)">4</button>
+                            <button type="button" class="pin-button" onclick="addPin(5)">5</button>
+                            <button type="button" class="pin-button" onclick="addPin(6)">6</button>
+                            <button type="button" class="pin-button" onclick="addPin(7)">7</button>
+                            <button type="button" class="pin-button" onclick="addPin(8)">8</button>
+                            <button type="button" class="pin-button" onclick="addPin(9)">9</button>
+                            <button type="button" class="pin-button" style="visibility: hidden;"></button>
+                            <button type="button" class="pin-button" onclick="addPin(0)">0</button>
+                            <button type="button" class="pin-button" style="visibility: hidden;"></button>
+                        </div>
+                        
+                        <div class="pin-actions">
+                            <span class="pin-clear" onclick="clearPin()">Clear PIN</span>
                         </div>
                     </div>
                     
-                    <div class="form-actions">
-                        <button type="submit" class="btn" onclick="validateForm(event)">Create Child Account</button>
-                    </div>
+                    <button type="submit" class="btn">Create Child Account</button>
+                    <a href="{{ url_for('parent_dashboard') }}" class="btn outline-btn">Cancel</a>
                 </form>
-                
-                <div class="auth-links">
-                    <a href="{{ url_for('parent_dashboard') }}">&larr; Back to Dashboard</a>
-                </div>
             </div>
         </div>
     </main>
     
-    <footer class="dashboard-footer">
+    <footer>
         <div class="container">
             <p>&copy; 2025 Children's Castle. All rights reserved.</p>
         </div>
     </footer>
     
     <script>
+        // Avatar selection
+        const avatarOptions = document.querySelectorAll('.avatar-option');
+        const avatarInput = document.getElementById('avatar');
+        
+        avatarOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected class from all options
+                avatarOptions.forEach(opt => opt.classList.remove('selected'));
+                
+                // Add selected class to clicked option
+                this.classList.add('selected');
+                
+                // Update hidden input value
+                avatarInput.value = this.getAttribute('data-avatar');
+            });
+        });
+        
+        // PIN functionality
         let currentPin = '';
         let showingPin = false;
         
@@ -314,6 +391,10 @@
             if (currentPin.length < 4) {
                 currentPin += number;
                 updatePinDisplay();
+                
+                if (currentPin.length === 4) {
+                    // Auto submit is disabled for add child
+                }
             }
         }
         
@@ -347,15 +428,14 @@
             }
         }
         
-        function validateForm(event) {
-            if (currentPin.length !== 4) {
-                event.preventDefault();
-                alert('Please enter a 4-digit PIN for the child account.');
-                return false;
-            }
-            
-            return true;
-        }
+        // Toggle PIN pad
+        document.getElementById('pin').addEventListener('focus', function() {
+            document.querySelector('.pin-container').classList.add('active');
+            this.blur(); // Remove focus from the input
+        });
+        
+        // Initialize PIN display
+        updatePinDisplay();
     </script>
     
     <script src="{{ url_for('static', filename='js/loading-animations.js') }}"></script>
