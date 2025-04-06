@@ -309,6 +309,47 @@ class LearningGoal(db.Model):
         return f'<LearningGoal "{self.goal_text}" for child_id {self.child_id}>'
 
 
+class AgeGroup(db.Model):
+    """Age group model for categorizing books"""
+    __tablename__ = 'age_groups'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), nullable=False, unique=True)
+    min_age = db.Column(db.Integer, nullable=False)
+    max_age = db.Column(db.Integer, nullable=False)
+    description = db.Column(db.String(256))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    books = db.relationship('Book', backref='age_group', lazy=True)
+    
+    def __repr__(self):
+        return f'<AgeGroup {self.name} ({self.min_age}-{self.max_age})>'
+
+
+class Book(db.Model):
+    """Book model for children's books"""
+    __tablename__ = 'books'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(128), nullable=False)
+    file_name = db.Column(db.String(128), nullable=False, unique=True)  # Name of the text file
+    author = db.Column(db.String(128))
+    description = db.Column(db.String(512))
+    age_group_id = db.Column(db.Integer, db.ForeignKey('age_groups.id'), nullable=False)
+    difficulty_level = db.Column(db.String(32), default='easy')  # 'easy', 'medium', 'hard'
+    themes = db.Column(db.String(256), default='[]')  # JSON array of themes
+    is_interactive = db.Column(db.Boolean, default=False)
+    has_illustrations = db.Column(db.Boolean, default=True)
+    has_audio = db.Column(db.Boolean, default=False)
+    reading_time_minutes = db.Column(db.Integer, default=5)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<Book {self.title}>'
+
+
 class StoryQueue(db.Model):
     """Custom story queue for children"""
     __tablename__ = 'story_queues'
@@ -607,9 +648,6 @@ class ErrorLog(db.Model):
         if resolution_notes:
             self.resolution_notes = resolution_notes
         db.session.commit()
-    
-    def __repr__(self):
-        return f'<ErrorLog {self.error_type} for {self.user_type or "system"} {self.user_id or ""}>'
 
 
 class Conversation(db.Model):

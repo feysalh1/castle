@@ -29,7 +29,7 @@ AUDIO_DIR = "static/audio"
 from models import (
     db, Parent, Child, ParentSettings, Progress, Reward, Session,
     LearningGoal, StoryQueue, SkillProgress, WeeklyReport, DevicePairing,
-    DailyReport, Milestone, Event, ErrorLog
+    DailyReport, Milestone, Event, ErrorLog, AgeGroup, Book
 )
 from reports import generate_daily_report, generate_weekly_report, get_report_data_for_period, generate_chart_data
 
@@ -1142,10 +1142,33 @@ def story_mode():
         flash('Access denied. This page is for children only.', 'error')
         return redirect(url_for('index'))
     
-    # Fetch stories that are appropriate for this child's age
-    # In a full implementation, this would filter stories by age appropriateness
+    # Get all age groups and books
+    age_groups = AgeGroup.query.order_by(AgeGroup.min_age).all()
+    books = Book.query.all()
     
-    # Check for enhanced stories with diverse audio narration
+    # Get child's age for age-appropriate filtering
+    child = Child.query.get(current_user.id)
+    child_age = child.age if child else 4  # Default to 4 if not set
+    
+    # Get parent settings for age filter
+    parent_settings = None
+    if child:
+        parent = Parent.query.get(child.parent_id)
+        if parent:
+            parent_settings = ParentSettings.query.filter_by(parent_id=parent.id).first()
+    
+    # Apply content age filter if set in parent settings
+    max_age_filter = None
+    if parent_settings and parent_settings.content_age_filter:
+        max_age_filter = parent_settings.content_age_filter
+    
+    # Filter age groups and books if needed
+    if max_age_filter:
+        age_groups = [group for group in age_groups if group.max_age <= max_age_filter]
+        filtered_book_ids = [book.id for book in books if book.age_group_id in [g.id for g in age_groups]]
+        books = [book for book in books if book.id in filtered_book_ids]
+    
+    # Check for enhanced stories with diverse audio narration (legacy support)
     enhanced_stories = []
     if os.path.exists(STORIES_DIR):
         for file in os.listdir(STORIES_DIR):
@@ -1177,7 +1200,8 @@ def story_mode():
         user_session.record_activity('view_story_mode')
         db.session.commit()
     
-    return render_template('story_mode.html', enhanced_stories=enhanced_stories)
+    return render_template('story_mode.html', age_groups=age_groups, books=books, 
+                          enhanced_stories=enhanced_stories, child_age=child_age)
 
 
 @app.route('/game-mode')
@@ -1460,6 +1484,148 @@ def get_progress():
             'games_played': games_played
         }
     })
+
+
+@app.route('/api/story/<story_id>')
+@login_required
+def get_story_content(story_id):
+    """API endpoint to get a story's content"""
+    if session.get('user_type') != 'child':
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    # First try to find the book in the database
+    book = Book.query.filter_by(file_name=f"{story_id}.txt").first()
+    
+    if book:
+        try:
+            with open(book.file_name, 'r') as f:
+                content = f.read()
+            
+            # Track this story view
+            progress = Progress.query.filter_by(
+                child_id=current_user.id,
+                content_type='story',
+                content_id=story_id
+            ).first()
+            
+            if not progress:
+                progress = Progress(
+                    child_id=current_user.id,
+                    content_type='story',
+                    content_id=story_id,
+                    content_title=book.title,
+                    completed=False,
+                    access_count=1,
+                    last_session_duration=0
+                )
+                db.session.add(progress)
+            else:
+                progress.last_accessed = datetime.utcnow()
+                progress.access_count += 1
+            
+            progress.update_streak()
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'content': content,
+                'title': book.title,
+                'author': book.author,
+                'description': book.description,
+                'age_group': book.age_group.name,
+                'difficulty_level': book.difficulty_level,
+                'reading_time_minutes': book.reading_time_minutes
+            })
+        except Exception as e:
+            return jsonify({'success': False, 'message': f'Error reading story: {str(e)}'}), 500
+    
+    # If not found in the database, try the legacy story files
+    try:
+        # Check for .txt file
+        if os.path.exists(f"{story_id}.txt"):
+            with open(f"{story_id}.txt", 'r') as f:
+                content = f.read()
+                
+            # Also track this view
+            progress = Progress.query.filter_by(
+                child_id=current_user.id,
+                content_type='story',
+                content_id=story_id
+            ).first()
+            
+            if not progress:
+                progress = Progress(
+                    child_id=current_user.id,
+                    content_type='story',
+                    content_id=story_id,
+                    content_title=story_id.replace('_', ' ').title(),
+                    completed=False,
+                    access_count=1,
+                    last_session_duration=0
+                )
+                db.session.add(progress)
+            else:
+                progress.last_accessed = datetime.utcnow()
+                progress.access_count += 1
+            
+            progress.update_streak()
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'content': content,
+                'title': story_id.replace('_', ' ').title()
+            })
+        
+        # Check for enhanced JSON-based story
+        if os.path.exists(os.path.join(STORIES_DIR, f"{story_id}.json")):
+            with open(os.path.join(STORIES_DIR, f"{story_id}.json"), 'r') as f:
+                story_data = json.load(f)
+            
+            # For enhanced stories, we combine all page content
+            content = story_data.get('title', '')
+            for i, page in enumerate(story_data.get('pages', [])):
+                content += f"\n\n--- Page {i+1} ---\n\n"
+                content += page.get('text', '')
+            
+            # Track this view
+            progress = Progress.query.filter_by(
+                child_id=current_user.id,
+                content_type='story',
+                content_id=story_id
+            ).first()
+            
+            if not progress:
+                progress = Progress(
+                    child_id=current_user.id,
+                    content_type='story',
+                    content_id=story_id,
+                    content_title=story_data.get('title', story_id.replace('_', ' ').title()),
+                    completed=False,
+                    access_count=1,
+                    last_session_duration=0
+                )
+                db.session.add(progress)
+            else:
+                progress.last_accessed = datetime.utcnow()
+                progress.access_count += 1
+            
+            progress.update_streak()
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'content': content,
+                'title': story_data.get('title', story_id.replace('_', ' ').title()),
+                'enhanced': True,
+                'pages': story_data.get('pages', [])
+            })
+        
+        # Story not found
+        return jsonify({'success': False, 'message': 'Story not found'}), 404
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error loading story: {str(e)}'}), 500
 
 
 @app.route('/api/get-rewards')
