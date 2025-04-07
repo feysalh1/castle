@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dog SVG -->
+  <circle cx="100" cy="100" r="80" fill="#F9FAFB"/>
+  <circle cx="100" cy="100" r="70" fill="#FBBF24"/>
+  
+  <!-- Dog ears -->
+  <ellipse cx="60" cy="65" rx="25" ry="20" fill="#92400E"/>
+  <ellipse cx="140" cy="65" rx="25" ry="20" fill="#92400E"/>
+  
+  <!-- Dog face -->
+  <circle cx="75" cy="90" r="8" fill="#1F2937"/>
+  <circle cx="125" cy="90" r="8" fill="#1F2937"/>
+  
+  <!-- Dog nose and mouth -->
+  <ellipse cx="100" cy="110" rx="15" ry="10" fill="#1F2937"/>
+  <path d="M100,120 L100,130 M85,130 C90,140 110,140 115,130" fill="none" stroke="#1F2937" stroke-width="2"/>
+  
+  <!-- Dog tongue -->
+  <ellipse cx="100" cy="135" rx="8" ry="5" fill="#F87171"/>
+</svg>

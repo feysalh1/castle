@@ -253,13 +253,6 @@ function loadExternalGame(url, title) {
 /**
  * Load a game into the game container
  */
-function loadGame(gameId) {
-    const gameContent = document.getElementById('game-content');
-    if (!gameContent) return;
-    
-    // Clear the container
-    gameContent.innerHTML = '';
-    
     // Load different games based on ID
     switch (gameId) {
         case 'matching_shapes':
@@ -274,6 +267,12 @@ function loadGame(gameId) {
         case 'memory_game':
             loadMemoryGame(gameContent);
             break;
+        case 'spelling_game':
+            loadSpellingGame(gameContent);
+            break;
+        case 'addition_game':
+            loadAdditionGame(gameContent);
+            break;
         case 'coloring':
             // Placeholder for coloring game
             gameContent.innerHTML = '<div class="game-placeholder"><p>The coloring game is under construction. Check back soon!</p></div>';
@@ -285,6 +284,14 @@ function loadGame(gameId) {
         case 'counting':
             // Simplified counting game (similar to number game but simpler)
             loadNumberGame(gameContent, true); // Simple version
+            break;
+        case 'puzzle':
+            // Placeholder for puzzle game
+            gameContent.innerHTML = '<div class="game-placeholder"><p>The puzzle game is under construction. Check back soon!</p></div>';
+            break;
+        default:
+            gameContent.innerHTML = '<div class="game-placeholder"><p>This game is under construction. Check back soon!</p></div>';
+    }
             break;
         case 'puzzle':
             // Placeholder for puzzle game
@@ -940,4 +947,340 @@ function addClickFeedback(selector) {
             }, 150);
         });
     });
+}
+
+/**
+ * Load the spelling game
+ */
+function loadSpellingGame(container) {
+    const gameArea = document.createElement('div');
+    gameArea.className = 'spelling-game';
+    
+    // Create game instructions
+    const instructions = document.createElement('p');
+    instructions.textContent = 'Choose the correct letter to complete the word!';
+    instructions.className = 'game-instructions';
+    gameArea.appendChild(instructions);
+    
+    // Simple word list with one missing letter (always the last letter)
+    const wordList = [
+        { incomplete: 'CA', complete: 'CAT', options: ['T', 'P', 'R'] },
+        { incomplete: 'DO', complete: 'DOG', options: ['G', 'T', 'M'] },
+        { incomplete: 'BE', complete: 'BED', options: ['D', 'E', 'A'] },
+        { incomplete: 'SU', complete: 'SUN', options: ['N', 'M', 'P'] },
+        { incomplete: 'BA', complete: 'BAT', options: ['T', 'G', 'D'] },
+        { incomplete: 'PI', complete: 'PIG', options: ['G', 'N', 'T'] },
+        { incomplete: 'HA', complete: 'HAT', options: ['T', 'M', 'P'] },
+        { incomplete: 'PE', complete: 'PEN', options: ['N', 'T', 'D'] }
+    ];
+    
+    // Randomly select a word
+    const randomIndex = Math.floor(Math.random() * wordList.length);
+    const currentWord = wordList[randomIndex];
+    
+    // Create word display
+    const wordDisplay = document.createElement('div');
+    wordDisplay.className = 'word-display';
+    
+    // Create the word with the missing letter
+    const wordElement = document.createElement('div');
+    wordElement.className = 'word-with-blank';
+    
+    // Add the incomplete word
+    const incompleteSpan = document.createElement('span');
+    incompleteSpan.textContent = currentWord.incomplete;
+    wordElement.appendChild(incompleteSpan);
+    
+    // Add blank for missing letter
+    const blankSpan = document.createElement('span');
+    blankSpan.className = 'letter-blank';
+    blankSpan.textContent = '?';
+    wordElement.appendChild(blankSpan);
+    
+    wordDisplay.appendChild(wordElement);
+    
+    // Add a hint image if available
+    const image = document.createElement('img');
+    image.className = 'word-image';
+    image.src = `/static/images/spelling/${currentWord.complete.toLowerCase()}.svg`;
+    // Fallback if image doesn't exist
+    image.onerror = function() {
+        this.src = '/static/images/games/spelling.svg';
+    };
+    image.alt = currentWord.complete;
+    wordDisplay.appendChild(image);
+    
+    gameArea.appendChild(wordDisplay);
+    
+    // Create letter options
+    const optionsContainer = document.createElement('div');
+    optionsContainer.className = 'letter-options';
+    
+    // Shuffle the options
+    const shuffledOptions = [...currentWord.options].sort(() => Math.random() - 0.5);
+    
+    shuffledOptions.forEach(letter => {
+        const option = document.createElement('button');
+        option.className = 'letter-option';
+        option.textContent = letter;
+        
+        option.addEventListener('click', function() {
+            // Check if correct
+            if (letter === currentWord.complete.charAt(currentWord.complete.length - 1)) {
+                // Correct answer
+                this.classList.add('correct');
+                blankSpan.textContent = letter;
+                blankSpan.classList.add('correct');
+                
+                // Disable all options
+                document.querySelectorAll('.letter-option').forEach(btn => {
+                    btn.disabled = true;
+                });
+                
+                // Play success sound
+                playSuccessSound();
+                
+                // Show completion message and confetti
+                setTimeout(() => {
+                    createConfetti();
+                    
+                    // Show the full word
+                    wordElement.innerHTML = '';
+                    const completeSpan = document.createElement('span');
+                    completeSpan.textContent = currentWord.complete;
+                    completeSpan.className = 'completed-word';
+                    wordElement.appendChild(completeSpan);
+                    
+                    // Add "Try Another" button
+                    const tryAnotherBtn = document.createElement('button');
+                    tryAnotherBtn.className = 'try-another-btn';
+                    tryAnotherBtn.textContent = 'Try Another Word';
+                    tryAnotherBtn.addEventListener('click', function() {
+                        loadSpellingGame(container);
+                    });
+                    
+                    gameArea.appendChild(tryAnotherBtn);
+                    
+                    // Track completion
+                    completeGame('spelling_game');
+                }, 500);
+            } else {
+                // Wrong answer
+                this.classList.add('wrong');
+                this.disabled = true;
+                
+                // Shake the blank space
+                blankSpan.classList.add('shake');
+                setTimeout(() => {
+                    blankSpan.classList.remove('shake');
+                }, 500);
+            }
+        });
+        
+        optionsContainer.appendChild(option);
+    });
+    
+    gameArea.appendChild(optionsContainer);
+    
+    // Add the game area to the container
+    container.appendChild(gameArea);
+}
+
+/**
+ * Load the addition game
+ */
+function loadAdditionGame(container) {
+    const gameArea = document.createElement('div');
+    gameArea.className = 'addition-game';
+    
+    // Create game instructions
+    const instructions = document.createElement('p');
+    instructions.textContent = 'Solve the addition problem with counting help!';
+    instructions.className = 'game-instructions';
+    gameArea.appendChild(instructions);
+    
+    // Generate random addition problem (1-5 for each number)
+    const num1 = Math.floor(Math.random() * 5) + 1;
+    const num2 = Math.floor(Math.random() * 5) + 1;
+    const sum = num1 + num2;
+    
+    // Create the problem display
+    const problemDisplay = document.createElement('div');
+    problemDisplay.className = 'addition-problem';
+    
+    const equation = document.createElement('div');
+    equation.className = 'equation';
+    equation.innerHTML = `<span>${num1}</span> + <span>${num2}</span> = <span class="answer-box">?</span>`;
+    problemDisplay.appendChild(equation);
+    
+    gameArea.appendChild(problemDisplay);
+    
+    // Create visual counting aids - first row for first number
+    const visualAid = document.createElement('div');
+    visualAid.className = 'visual-counting-aid';
+    
+    // First number row
+    const firstNumberRow = document.createElement('div');
+    firstNumberRow.className = 'number-row';
+    
+    for (let i = 0; i < num1; i++) {
+        const item = document.createElement('div');
+        item.className = 'count-item';
+        const apple = document.createElement('div');
+        apple.className = 'apple';
+        item.appendChild(apple);
+        firstNumberRow.appendChild(item);
+    }
+    
+    // Plus sign row
+    const plusRow = document.createElement('div');
+    plusRow.className = 'plus-row';
+    const plus = document.createElement('div');
+    plus.className = 'plus-sign';
+    plus.textContent = '+';
+    plusRow.appendChild(plus);
+    
+    // Second number row
+    const secondNumberRow = document.createElement('div');
+    secondNumberRow.className = 'number-row';
+    
+    for (let i = 0; i < num2; i++) {
+        const item = document.createElement('div');
+        item.className = 'count-item';
+        const apple = document.createElement('div');
+        apple.className = 'apple';
+        item.appendChild(apple);
+        secondNumberRow.appendChild(item);
+    }
+    
+    visualAid.appendChild(firstNumberRow);
+    visualAid.appendChild(plusRow);
+    visualAid.appendChild(secondNumberRow);
+    
+    gameArea.appendChild(visualAid);
+    
+    // Create number options
+    const optionsContainer = document.createElement('div');
+    optionsContainer.className = 'number-options';
+    
+    // Create options (correct answer and 2 distractors)
+    const options = [sum];
+    
+    // Add two distinct wrong options
+    while (options.length < 3) {
+        const wrongOption = Math.floor(Math.random() * 10) + 1;
+        if (wrongOption !== sum && !options.includes(wrongOption)) {
+            options.push(wrongOption);
+        }
+    }
+    
+    // Shuffle options
+    const shuffledOptions = [...options].sort(() => Math.random() - 0.5);
+    
+    shuffledOptions.forEach(option => {
+        const optionBtn = document.createElement('button');
+        optionBtn.className = 'number-option';
+        optionBtn.textContent = option;
+        
+        optionBtn.addEventListener('click', function() {
+            // Check if correct
+            if (option === sum) {
+                // Correct answer
+                this.classList.add('correct');
+                document.querySelector('.answer-box').textContent = sum;
+                document.querySelector('.answer-box').classList.add('correct');
+                
+                // Disable all options
+                document.querySelectorAll('.number-option').forEach(btn => {
+                    btn.disabled = true;
+                });
+                
+                // Play success sound
+                playSuccessSound();
+                
+                // Show completion message
+                setTimeout(() => {
+                    createConfetti();
+                    
+                    // Add "Try Another" button
+                    const tryAnotherBtn = document.createElement('button');
+                    tryAnotherBtn.className = 'try-another-btn';
+                    tryAnotherBtn.textContent = 'Try Another Problem';
+                    tryAnotherBtn.addEventListener('click', function() {
+                        loadAdditionGame(container);
+                    });
+                    
+                    gameArea.appendChild(tryAnotherBtn);
+                    
+                    // Track completion
+                    completeGame('addition_game');
+                }, 500);
+            } else {
+                // Wrong answer
+                this.classList.add('wrong');
+                this.disabled = true;
+                
+                // Shake the answer box
+                const answerBox = document.querySelector('.answer-box');
+                answerBox.classList.add('shake');
+                setTimeout(() => {
+                    answerBox.classList.remove('shake');
+                }, 500);
+            }
+        });
+        
+        optionsContainer.appendChild(optionBtn);
+    });
+    
+    gameArea.appendChild(optionsContainer);
+    
+    // Add the game area to the container
+    container.appendChild(gameArea);
+}
+
+/**
+ * Record a game as completed
+ */
+function completeGame(gameId) {
+    // Track this in the database as completed
+    trackProgress(gameId, 'game', true);
+}
+
+/**
+ * Play a success sound
+ */
+function playSuccessSound() {
+    const audio = document.getElementById('game-audio');
+    if (audio) {
+        audio.src = '/static/audio/success.mp3';
+        audio.play().catch(e => console.warn('Could not play success sound:', e));
+    }
+}
+
+/**
+ * Create a confetti effect
+ */
+function createConfetti() {
+    // Create container for confetti
+    const confettiContainer = document.createElement('div');
+    confettiContainer.className = 'confetti-container';
+    document.body.appendChild(confettiContainer);
+    
+    // Create confetti pieces
+    const colors = ['#FCD34D', '#34D399', '#60A5FA', '#F472B6', '#A78BFA'];
+    
+    for (let i = 0; i < 50; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        piece.style.animationDelay = Math.random() * 2 + 's';
+        confettiContainer.appendChild(piece);
+    }
+    
+    // Remove confetti after animation completes
+    setTimeout(() => {
+        confettiContainer.remove();
+    }, 5000);
 }

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Hat SVG -->
+  <circle cx="100" cy="100" r="80" fill="#F9FAFB"/>
+  
+  <!-- Hat brim -->
+  <ellipse cx="100" cy="130" rx="70" ry="15" fill="#7C3AED"/>
+  
+  <!-- Hat top -->
+  <path d="M60,130 C60,90 140,90 140,130" fill="#8B5CF6"/>
+  
+  <!-- Hat band -->
+  <path d="M60,120 C60,110 140,110 140,120" fill="#C4B5FD" stroke="#7C3AED" stroke-width="2"/>
+  
+  <!-- Hat decoration -->
+  <circle cx="70" cy="115" r="5" fill="#F87171"/>
+  <circle cx="100" cy="110" r="5" fill="#34D399"/>
+  <circle cx="130" cy="115" r="5" fill="#3B82F6"/>
+</svg>
