@@ -409,9 +409,8 @@ def child_login():
     form = EmptyForm()
     
     if request.method == 'POST':
-        # Check for valid CSRF token
-        csrf_token = request.form.get('csrf_token')
-        if not csrf_token or not csrf.validate_csrf(csrf_token):
+        # Using form validation for CSRF protection
+        if not form.validate_on_submit():
             flash('Invalid form submission. Please try again.', 'error')
             return redirect(url_for('child_login'))
             
@@ -510,9 +509,8 @@ def add_child():
     form = EmptyForm()
     
     if request.method == 'POST':
-        # Check for valid CSRF token
-        csrf_token = request.form.get('csrf_token')
-        if not csrf_token or not csrf.validate_csrf(csrf_token):
+        # Using form validation for CSRF protection
+        if not form.validate_on_submit():
             flash('Invalid form submission. Please try again.', 'error')
             return redirect(url_for('add_child'))
         
@@ -558,9 +556,8 @@ def reset_child_pin():
     form = EmptyForm()
     
     if request.method == 'POST':
-        # Check for valid CSRF token
-        csrf_token = request.form.get('csrf_token')
-        if not csrf_token or not csrf.validate_csrf(csrf_token):
+        # Using form validation for CSRF protection
+        if not form.validate_on_submit():
             flash('Invalid form submission. Please try again.', 'error')
             return redirect(url_for('parent_dashboard'))
             
@@ -597,9 +594,10 @@ def parent_edit_child():
         flash('Access denied. This page is for parents only.', 'error')
         return redirect(url_for('index'))
     
-    # Check for valid CSRF token
-    csrf_token = request.form.get('csrf_token')
-    if not csrf_token or not csrf.validate_csrf(csrf_token):
+    form = EmptyForm()
+    
+    # Using form validation for CSRF protection
+    if not form.validate_on_submit():
         flash('Invalid form submission. Please try again.', 'error')
         return redirect(url_for('parent_dashboard'))
     
@@ -680,9 +678,8 @@ def parent_settings():
     settings = ParentSettings.query.filter_by(parent_id=current_user.id).first()
     
     if request.method == 'POST':
-        # Check for valid CSRF token
-        csrf_token = request.form.get('csrf_token')
-        if not csrf_token or not csrf.validate_csrf(csrf_token):
+        # Using form validation for CSRF protection
+        if not form.validate_on_submit():
             flash('Invalid form submission. Please try again.', 'error')
             return redirect(url_for('parent_settings'))
             
