@@ -442,7 +442,10 @@ def child_login():
         
         return redirect(url_for('child_dashboard'))
     
-    return render_template('child_login.html', form=form)
+    # Get all children for visual selection
+    children = Child.query.all()
+    
+    return render_template('child_login.html', form=form, children=children)
 
 
 @app.route('/logout')

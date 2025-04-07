@@ -28,10 +28,50 @@
             font-weight: bold;
             color: #4a6da7;
             margin-bottom: 10px;
-            visibility: hidden;
+            visibility: visible;
         }
         .pin-number-display.visible {
             visibility: visible;
+        }
+        
+        /* Child selection styles */
+        .avatar-selection {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .avatar-option {
+            cursor: pointer;
+            text-align: center;
+            padding: 10px;
+            border-radius: 10px;
+            transition: all 0.2s;
+            border: 3px solid transparent;
+        }
+        
+        .avatar-option:hover {
+            background-color: rgba(74, 109, 167, 0.1);
+        }
+        
+        .avatar-option.selected {
+            border-color: #4a6da7;
+            background-color: rgba(74, 109, 167, 0.1);
+        }
+        
+        .avatar-option img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 8px;
+        }
+        
+        .avatar-option p {
+            font-weight: bold;
+            color: #4a6da7;
+            margin: 5px 0 0 0;
         }
     </style>
 </head>
@@ -63,7 +103,7 @@
             <div class="auth-container">
                 <div class="auth-header">
                     <h2>Child Login</h2>
-                    <p>Enter your username and PIN to start playing!</p>
+                    <p>Select your character and enter your PIN to start playing!</p>
                 </div>
                 
                 <form class="auth-form" method="POST" action="{{ url_for('child_login') }}" id="childLoginForm">
@@ -75,8 +115,17 @@
                     {% endif %}
                     
                     <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username" required>
+                        <label for="username">Select Your Character</label>
+                        <input type="hidden" id="username" name="username">
+                        
+                        <div class="avatar-selection" id="children-selection">
+                            {% for child in children %}
+                            <div class="avatar-option" data-username="{{ child.username }}">
+                                <img src="{{ url_for('static', filename='images/avatars/' + child.avatar) }}" alt="{{ child.display_name }}'s Avatar">
+                                <p>{{ child.display_name }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
                     
                     <div class="form-group">
@@ -94,7 +143,7 @@
                         </div>
                         
                         <div class="pin-toggle">
-                            <label><input type="checkbox" id="showPin" onchange="togglePinVisibility()"> Show PIN</label>
+                            <label><input type="checkbox" id="showPin" onchange="togglePinVisibility()" checked> Show PIN</label>
                         </div>
                         
                         <div class="pin-pad">
@@ -133,7 +182,24 @@
     
     <script>
         let currentPin = '';
-        let showingPin = false;
+        let showingPin = true;
+        
+        // Child selection
+        const avatarOptions = document.querySelectorAll('.avatar-option');
+        const usernameInput = document.getElementById('username');
+        
+        avatarOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected class from all options
+                avatarOptions.forEach(opt => opt.classList.remove('selected'));
+                
+                // Add selected class to clicked option
+                this.classList.add('selected');
+                
+                // Update hidden input value
+                usernameInput.value = this.getAttribute('data-username');
+            });
+        });
         
         function addPin(number) {
             if (currentPin.length < 4) {
@@ -166,6 +232,10 @@
             document.getElementById('pin').value = currentPin;
         }
         
+        // Set PIN visibility on by default
+        document.getElementById("showPin").checked = true;
+        document.getElementById("pinNumberDisplay").classList.add("visible");
+        
         function togglePinVisibility() {
             showingPin = document.getElementById('showPin').checked;
             const pinDisplay = document.getElementById('pinNumberDisplay');
@@ -178,10 +248,15 @@
         }
         
         function submitPin() {
-            if (currentPin.length === 4) {
+            if (currentPin.length === 4 && usernameInput.value) {
                 document.getElementById('childLoginForm').submit();
+            } else if (!usernameInput.value) {
+                alert('Please select your character first!');
             }
         }
+        
+        // Initialize
+        updatePinDisplay();
     </script>
     
     <script src="{{ url_for('static', filename='js/loading-animations.js') }}"></script>
