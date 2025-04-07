@@ -586,6 +586,59 @@ def reset_child_pin():
     return redirect(url_for('parent_dashboard'))
 
 
+@app.route('/parent/edit-child', methods=['POST'])
+@login_required
+def parent_edit_child():
+    """Edit a child account"""
+    if session.get('user_type') != 'parent':
+        flash('Access denied. This page is for parents only.', 'error')
+        return redirect(url_for('index'))
+    
+    # Check for valid CSRF token
+    csrf_token = request.form.get('csrf_token')
+    if not csrf_token or not csrf.validate_csrf(csrf_token):
+        flash('Invalid form submission. Please try again.', 'error')
+        return redirect(url_for('parent_dashboard'))
+    
+    # Get form data
+    child_id = request.form.get('child_id')
+    display_name = request.form.get('display_name')
+    age = request.form.get('age')
+    birthday = request.form.get('birthday')
+    avatar = request.form.get('avatar')
+    
+    # Validate input
+    if not child_id or not display_name or not age:
+        flash('Missing required fields.', 'error')
+        return redirect(url_for('parent_dashboard'))
+    
+    # Get the child and verify parent ownership
+    child = Child.query.filter_by(id=child_id, parent_id=current_user.id).first()
+    if not child:
+        flash('Child not found or access denied.', 'error')
+        return redirect(url_for('parent_dashboard'))
+    
+    # Update child information
+    child.display_name = display_name
+    child.age = int(age)
+    
+    if birthday:
+        try:
+            child.birthday = datetime.strptime(birthday, '%Y-%m-%d').date()
+        except ValueError:
+            # If date format is invalid, don't update this field
+            pass
+    
+    if avatar:
+        child.avatar = avatar
+    
+    # Save changes
+    db.session.commit()
+    
+    flash(f'Profile for {child.display_name} updated successfully!', 'success')
+    return redirect(url_for('parent_dashboard'))
+
+
 @app.route('/child/dashboard')
 @login_required
 def child_dashboard():
