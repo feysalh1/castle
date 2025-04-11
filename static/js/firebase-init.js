@@ -1,20 +1,20 @@
-// Firebase SDK
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+// Firebase SDK - Using the version you provided in your snippet
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import {
     getAuth,
     signInWithPopup,
     GoogleAuthProvider,
     getAdditionalUserInfo
-} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 
-// Your web app's Firebase configuration
-// The values are passed from the server in the HTML template
+// Your web app's Firebase configuration - Using direct values from your provided config
 const firebaseConfig = {
-    apiKey: window.FIREBASE_API_KEY,
-    authDomain: window.FIREBASE_PROJECT_ID + ".firebaseapp.com",
-    projectId: window.FIREBASE_PROJECT_ID,
-    storageBucket: window.FIREBASE_PROJECT_ID + ".appspot.com",
-    appId: window.FIREBASE_APP_ID
+    apiKey: "AIzaSyCso96A0WrM68-A0FqC8rM01InqRP2mlik",
+    authDomain: "letter-adventure.firebaseapp.com",
+    projectId: "letter-adventure",
+    storageBucket: "letter-adventure.appspot.com",
+    messagingSenderId: "953801566834",
+    appId: "1:953801566834:web:63f311476f3257f7a470eb"
 };
 
 // Initialize Firebase

@@ -7,7 +7,12 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
     <!-- Firebase Configuration -->
-    {{ firebase_config_script|safe }}
+    <script>
+        // Firebase configuration values
+        window.FIREBASE_API_KEY = "{{ firebase_api_key }}";
+        window.FIREBASE_PROJECT_ID = "{{ firebase_project_id }}";
+        window.FIREBASE_APP_ID = "{{ firebase_app_id }}";
+    </script>
     <style>
         .password-input-wrapper {
             position: relative;
