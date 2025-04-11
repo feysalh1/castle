@@ -339,8 +339,17 @@ def request_reset_password():
         # Generate reset token
         token = parent.get_reset_token()
         
-        # Create reset URL
-        reset_url = url_for('reset_password', token=token, _external=True)
+        # Create reset URL with the server's hostname
+        # Get the host from request or environment
+        host = request.host_url.rstrip('/')
+        if not host:
+            host = os.environ.get('REPLIT_DEV_DOMAIN') or os.environ.get('REPLIT_DOMAIN')
+            if host:
+                host = f"https://{host}"
+        
+        # Create the reset URL
+        reset_path = url_for('reset_password', token=token)
+        reset_url = f"{host}{reset_path}"
         
         # Import email service
         from email_service import send_password_reset_email
