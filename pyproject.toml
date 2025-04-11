@@ -27,4 +27,5 @@ dependencies = [
     "psutil>=7.0.0",
     "wtforms>=3.2.1",
     "oauthlib>=3.2.2",
+    "firebase-admin>=6.7.0",
 ]

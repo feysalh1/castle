@@ -163,10 +163,12 @@ def load_user(user_id):
 # Import and register ChatGPT routes
 from chatgpt_routes import chatgpt_bp
 from story_enhancement_routes import story_enhancement
+from firebase_auth import firebase_auth
 
 # Register blueprints
 app.register_blueprint(chatgpt_bp)
 app.register_blueprint(story_enhancement)
+app.register_blueprint(firebase_auth)
 
 # Create forms
 class EmptyForm(FlaskForm):
@@ -310,7 +312,22 @@ def parent_login():
             return redirect(next_page)
         return redirect(url_for('parent_dashboard'))
     
-    return render_template('parent_login.html', form=form)
+    # Get Firebase configuration from environment
+    firebase_api_key = os.environ.get('FIREBASE_API_KEY')
+    firebase_project_id = os.environ.get('FIREBASE_PROJECT_ID')
+    firebase_app_id = os.environ.get('FIREBASE_APP_ID')
+    
+    return render_template(
+        'parent_login.html', 
+        form=form,
+        firebase_config_script=f"""
+            <script>
+                window.FIREBASE_API_KEY = "{firebase_api_key}";
+                window.FIREBASE_PROJECT_ID = "{firebase_project_id}";
+                window.FIREBASE_APP_ID = "{firebase_app_id}";
+            </script>
+        """
+    )
 
 
 @app.route('/parent/reset-password', methods=['GET', 'POST'])
