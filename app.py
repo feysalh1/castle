@@ -129,12 +129,21 @@ csrf.exempt('/api/books/approve')
 csrf.exempt('/api/books/unapprove')
 
 # Configure database
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+# Default database URL for local development if not provided
+default_db_url = "sqlite:///children_castle.db"
+
+# Configure the database, prioritize DATABASE_URL environment variable
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", default_db_url)
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
 }
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Log the database URL (without credentials)
+db_url = app.config["SQLALCHEMY_DATABASE_URI"]
+if db_url:
+    print(f"Using database: {db_url.split('@')[-1] if '@' in db_url else 'SQLite'}")
 
 # Initialize database
 db.init_app(app)
