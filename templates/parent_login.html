@@ -184,7 +184,7 @@
             </div>
             
             <div class="guest-signin">
-                <form action="{{ url_for('guest_login') }}" method="POST">
+                <form action="/guest-login" method="POST">
                     {{ form.hidden_tag() }}
                     <button type="submit" class="guest-btn">
                         Continue as Guest
