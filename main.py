@@ -27,12 +27,20 @@ app.secret_key = os.environ.get("SESSION_SECRET", "childrens_castle_app_secret")
 default_db_url = "sqlite:///children_castle.db"
 
 # Configure the database, prioritize DATABASE_URL environment variable
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", default_db_url)
+database_url = os.environ.get("DATABASE_URL")
+if not database_url:
+    print("WARNING: DATABASE_URL not set, using SQLite for local development")
+    database_url = default_db_url
+
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
 }
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Log the database URL (without credentials)
+print(f"Using database URL: {database_url.split('@')[-1] if '@' in database_url else 'SQLite'}")
 
 # Log the database URL (without credentials)
 db_url = app.config["SQLALCHEMY_DATABASE_URI"]
