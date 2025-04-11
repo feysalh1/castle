@@ -1,0 +1,498 @@
+{% extends 'base.html' %}
+
+{% block title %}Children's Castle | Guest Dashboard{% endblock %}
+
+{% block styles %}
+<style>
+    .guest-dashboard {
+        padding: 20px;
+    }
+    
+    .dashboard-section {
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        margin-bottom: 24px;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .dashboard-section h2 {
+        color: #4a3c82;
+        margin-bottom: 16px;
+        font-size: 1.4rem;
+    }
+    
+    .dashboard-section-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: #ffd54f;
+        color: #4a3c82;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    
+    .parent-section {
+        border-left: 5px solid #8e6bbd;
+    }
+    
+    .child-section {
+        border-left: 5px solid #ff7043;
+    }
+    
+    .demo-info {
+        background-color: #e1f5fe;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-left: 4px solid #29b6f6;
+    }
+    
+    .quick-switch {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 100;
+    }
+    
+    .story-card, .game-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 15px;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+    
+    .story-card:hover, .game-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    .story-card img, .game-card img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-right: 15px;
+    }
+    
+    .story-info h3, .game-info h3 {
+        margin: 0 0 5px 0;
+        color: #4a3c82;
+        font-size: 1.1rem;
+    }
+    
+    .story-info p, .game-info p {
+        margin: 0;
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .story-progress, .game-progress {
+        margin-top: 8px;
+        background-color: #eee;
+        border-radius: 10px;
+        height: 8px;
+        width: 100%;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        height: 100%;
+        border-radius: 10px;
+    }
+    
+    .story-progress .progress-bar {
+        background-color: #8e6bbd;
+    }
+    
+    .game-progress .progress-bar {
+        background-color: #ff7043;
+    }
+    
+    .reward-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        padding: 10px;
+        background-color: #f5f5f5;
+        border-radius: 8px;
+    }
+    
+    .reward-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: white;
+        font-size: 1.2rem;
+    }
+    
+    .badge-reward {
+        background-color: #ffd54f;
+    }
+    
+    .stars-reward {
+        background-color: #ff7043;
+    }
+    
+    .reward-info h4 {
+        margin: 0 0 5px 0;
+        color: #4a3c82;
+    }
+    
+    .reward-info p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #666;
+    }
+    
+    .approved-books-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+    
+    .book-card {
+        padding: 10px;
+        border-radius: 8px;
+        background-color: #f5f5f5;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .book-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .book-card img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+    
+    .book-card h4 {
+        font-size: 0.9rem;
+        margin: 5px 0;
+        color: #4a3c82;
+    }
+    
+    .book-card p {
+        font-size: 0.8rem;
+        color: #666;
+        margin: 0;
+    }
+    
+    .demo-nav {
+        background-color: #b39ddb;
+        padding: 10px 20px;
+        border-radius: 50px;
+        display: flex;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        gap: 5px;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .demo-nav-item {
+        display: inline-flex;
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-weight: 500;
+        color: #4a3c82;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .demo-nav-item:hover {
+        background-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .demo-nav-item.active {
+        background-color: white;
+        color: #4a3c82;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .demo-tag {
+        background-color: #ffcc80;
+        color: #4a3c82;
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 10px;
+        margin-left: 5px;
+    }
+    
+    /* Responsive fixes */
+    @media (max-width: 768px) {
+        .dashboard-section-badge {
+            position: relative;
+            top: 0;
+            right: 0;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        
+        .approved-books-container {
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="guest-dashboard">
+    <!-- Demo Info Banner -->
+    <div class="demo-info">
+        <h3>👋 Welcome to the Guest Demo</h3>
+        <p>You're currently viewing both parent and child features in one combined dashboard. This is a special view just for guests to explore the app's functionality.</p>
+        <p><strong>Parent Account:</strong> {{ parent.username }} | <strong>Child Account:</strong> {{ child.display_name }}</p>
+    </div>
+    
+    <!-- Demo Navigation -->
+    <div class="demo-nav">
+        <a href="#parent-section" class="demo-nav-item active">Parent View</a>
+        <a href="#child-section" class="demo-nav-item">Child View</a>
+        <a href="{{ url_for('story_mode') }}" class="demo-nav-item">Story Mode <span class="demo-tag">Try it!</span></a>
+        <a href="{{ url_for('game_mode') }}" class="demo-nav-item">Game Mode <span class="demo-tag">Try it!</span></a>
+        <a href="{{ url_for('ai_assistant') }}" class="demo-nav-item">AI Assistant <span class="demo-tag">New</span></a>
+    </div>
+    
+    <!-- Parent Dashboard Section -->
+    <section id="parent-section" class="dashboard-section parent-section">
+        <div class="dashboard-section-badge">Parent View</div>
+        <h2>Parent Dashboard</h2>
+        
+        <!-- Child Management -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Child Profile</h5>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="child-avatar me-3">
+                                {% if child.avatar == 'bear' %}
+                                <img src="{{ url_for('static', filename='images/avatars/bear.svg') }}" alt="Bear Avatar" width="60">
+                                {% elif child.avatar == 'fox' %}
+                                <img src="{{ url_for('static', filename='images/avatars/fox.svg') }}" alt="Fox Avatar" width="60">
+                                {% elif child.avatar == 'monkey' %}
+                                <img src="{{ url_for('static', filename='images/avatars/monkey.svg') }}" alt="Monkey Avatar" width="60">
+                                {% elif child.avatar == 'pig' %}
+                                <img src="{{ url_for('static', filename='images/avatars/pig.svg') }}" alt="Pig Avatar" width="60">
+                                {% else %}
+                                <img src="{{ url_for('static', filename='images/avatars/default.svg') }}" alt="Default Avatar" width="60">
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h5 class="mb-0">{{ child.display_name }}</h5>
+                                <p class="text-muted mb-0">Age: {{ child.age }}</p>
+                                <p class="text-muted mb-0">Username: {{ child.username }}</p>
+                                <p class="text-muted mb-0">PIN: **** (Demo)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Learning Stats</h5>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Reading</span>
+                            <div class="progress w-75" style="height: 10px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 30%" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Counting</span>
+                            <div class="progress w-75" style="height: 10px;">
+                                <div class="progress-bar bg-info" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Problem Solving</span>
+                            <div class="progress w-75" style="height: 10px;">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 40%" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Book Approval Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Approved Books</h5>
+                <p class="card-text">Books you've approved for {{ child.display_name }}</p>
+                
+                <div class="approved-books-container">
+                    {% for book in child.approved_books %}
+                    <div class="book-card">
+                        <img src="{{ url_for('static', filename='images/book-covers/' + book.id|string + '.svg') }}" alt="{{ book.title }}">
+                        <h4>{{ book.title }}</h4>
+                        <p>Age: {{ book.age_group.name }}</p>
+                    </div>
+                    {% else %}
+                    <p>No books approved yet. Select books from the age groups below.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Demo-only buttons -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <a href="{{ url_for('parent_reports_dashboard') }}" class="btn btn-primary w-100">View Progress Reports</a>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ url_for('parent_settings') }}" class="btn btn-outline-primary w-100">App Settings</a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Child Dashboard Section -->
+    <section id="child-section" class="dashboard-section child-section">
+        <div class="dashboard-section-badge">Child View</div>
+        <h2>Hello, {{ child.display_name }}! 👋</h2>
+        
+        <!-- Quick Access Buttons -->
+        <div class="row mb-4">
+            <div class="col-6">
+                <a href="{{ url_for('story_mode') }}" class="btn btn-lg btn-block" style="background-color: #8e6bbd; color: white; border-radius: 12px; width: 100%; padding: 15px;">
+                    <i class="fas fa-book-open me-2"></i>
+                    Story Mode
+                </a>
+            </div>
+            <div class="col-6">
+                <a href="{{ url_for('game_mode') }}" class="btn btn-lg btn-block" style="background-color: #ff7043; color: white; border-radius: 12px; width: 100%; padding: 15px;">
+                    <i class="fas fa-gamepad me-2"></i>
+                    Game Mode
+                </a>
+            </div>
+        </div>
+        
+        <!-- Progress and Rewards Section -->
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">My Progress</h5>
+                        
+                        {% if progress %}
+                            {% for item in progress %}
+                                <div class="{% if item.content_type == 'story' %}story-card{% else %}game-card{% endif %}">
+                                    <img src="{{ url_for('static', filename='images/' + ('book-covers/' if item.content_type == 'story' else 'game-icons/') + item.content_id|string + '.svg') }}" alt="Content thumbnail">
+                                    <div class="{% if item.content_type == 'story' %}story-info{% else %}game-info{% endif %} w-100">
+                                        <h3>{{ item.content_name or 'Untitled Content' }}</h3>
+                                        <p>{{ 'Story' if item.content_type == 'story' else 'Game' }} • {{ 'Completed' if item.completed else 'In Progress' }}</p>
+                                        <div class="{% if item.content_type == 'story' %}story-progress{% else %}game-progress{% endif %}">
+                                            <div class="progress-bar" style="width: {{ item.progress_value }}%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-4">
+                                <img src="{{ url_for('static', filename='images/undraw_reading_time.svg') }}" alt="No progress yet" style="width: 150px; margin-bottom: 15px;">
+                                <p>You haven't started any stories or games yet.</p>
+                                <p>Try a story or game to see your progress here!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">My Rewards</h5>
+                        
+                        {% if rewards %}
+                            {% for reward in rewards %}
+                                <div class="reward-item">
+                                    <div class="reward-icon {{ reward.reward_type }}-reward">
+                                        <i class="fas fa-{{ reward.icon }}"></i>
+                                    </div>
+                                    <div class="reward-info">
+                                        <h4>{{ reward.title }}</h4>
+                                        <p>{{ reward.description }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-4">
+                                <img src="{{ url_for('static', filename='images/undraw_winners.svg') }}" alt="No rewards yet" style="width: 150px; margin-bottom: 15px;">
+                                <p>You haven't earned any rewards yet.</p>
+                                <p>Complete stories and games to earn stars and badges!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI Assistant Button -->
+        <div class="row">
+            <div class="col-12">
+                <a href="{{ url_for('ai_assistant') }}" class="btn btn-lg btn-block" style="background-color: #4a3c82; color: white; border-radius: 12px; width: 100%; padding: 15px;">
+                    <i class="fas fa-robot me-2"></i>
+                    Talk to AI Assistant
+                </a>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Navigation tabs
+        const navItems = document.querySelectorAll('.demo-nav-item');
+        
+        navItems.forEach(item => {
+            if (!item.getAttribute('href').startsWith('#')) return;
+            
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all items
+                navItems.forEach(navItem => {
+                    if (!navItem.getAttribute('href').startsWith('#')) return;
+                    navItem.classList.remove('active');
+                });
+                
+                // Add active class to clicked item
+                this.classList.add('active');
+                
+                // Scroll to the section
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 20,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

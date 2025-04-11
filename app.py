@@ -420,7 +420,7 @@ def reset_password(token):
 
 @app.route('/guest-login', methods=['POST'])
 def guest_login():
-    """Guest login functionality"""
+    """Guest login functionality with combined parent/child view"""
     form = EmptyForm()
     
     if form.validate_on_submit():
@@ -438,6 +438,12 @@ def guest_login():
             guest_parent.set_password(str(uuid.uuid4()))
             db.session.add(guest_parent)
             db.session.commit()
+            
+            # Create parent settings if needed
+            if not ParentSettings.query.filter_by(parent_id=guest_parent.id).first():
+                guest_settings = ParentSettings(parent_id=guest_parent.id)
+                db.session.add(guest_settings)
+                db.session.commit()
             
             # Create a demo child account for the guest parent
             demo_child = Child(
@@ -460,13 +466,45 @@ def guest_login():
                     approved_book = ApprovedBooks(child_id=demo_child.id, book_id=book.id, approved_by=guest_parent.id)
                     db.session.add(approved_book)
                 db.session.commit()
+                
+            # Add some rewards and progress for demo purposes
+            demo_reward = Reward(
+                child_id=demo_child.id,
+                reward_type='badge',
+                title='Welcome Badge',
+                description='Earned for trying the app as a guest',
+                points=10,
+                icon='stars'
+            )
+            db.session.add(demo_reward)
+            
+            if books:
+                demo_progress = Progress(
+                    child_id=demo_child.id,
+                    content_type='story',
+                    content_id=books[0].id,
+                    progress_value=50,
+                    completed=False
+                )
+                db.session.add(demo_progress)
+                db.session.commit()
+        else:
+            # Get the demo child for this parent
+            demo_child = Child.query.filter_by(parent_id=guest_parent.id).first()
         
         # Log in as the guest parent
         login_user(guest_parent)
         
+        # Store both parent and child info in session for combined access
+        session['user_type'] = 'guest'
+        
+        # Store the demo child ID in the session for easy access
+        if demo_child:
+            session['guest_child_id'] = demo_child.id
+        
         # Record login activity
         new_session = Session(
-            user_type='parent', 
+            user_type='guest', 
             user_id=guest_parent.id,
             ip_address=request.remote_addr,
             user_agent=request.user_agent.string,
@@ -476,8 +514,8 @@ def guest_login():
         db.session.add(new_session)
         db.session.commit()
         
-        flash('Welcome to Children\'s Castle! You are signed in as a guest.', 'success')
-        return redirect(url_for('parent_dashboard'))
+        flash('Welcome to Children\'s Castle! You are signed in as a guest with access to both parent and child features.', 'success')
+        return redirect(url_for('guest_dashboard'))
     
     # If form validation failed (CSRF)
     flash('Session expired. Please try again.', 'error')
@@ -554,11 +592,58 @@ def logout():
     return redirect(url_for('index'))
 
 
+@app.route('/guest/dashboard')
+@login_required
+def guest_dashboard():
+    """Combined guest dashboard with both parent and child views"""
+    if session.get('user_type') != 'guest':
+        flash('Access denied. This page is for guest accounts only.', 'error')
+        return redirect(url_for('index'))
+    
+    # Get the parent (current user) and associated demo child
+    guest_parent = current_user
+    demo_child_id = session.get('guest_child_id')
+    demo_child = Child.query.filter_by(id=demo_child_id).first() if demo_child_id else None
+    
+    if not demo_child:
+        # Something went wrong, fallback to parent dashboard
+        session['user_type'] = 'parent'
+        return redirect(url_for('parent_dashboard'))
+    
+    # Get all children for this parent (should be just the demo child)
+    children = Child.query.filter_by(parent_id=guest_parent.id).all()
+    
+    # Get all age groups for book approval section
+    age_groups = AgeGroup.query.order_by(AgeGroup.min_age).all()
+    
+    # Get child's progress and rewards for the child section
+    progress = Progress.query.filter_by(child_id=demo_child.id).all()
+    rewards = Reward.query.filter_by(child_id=demo_child.id).all()
+    
+    # Record dashboard access in session activity log
+    user_session = Session.query.filter_by(
+        user_type='guest',
+        user_id=guest_parent.id,
+        end_time=None
+    ).order_by(Session.start_time.desc()).first()
+    
+    if user_session:
+        user_session.record_activity('view_guest_dashboard')
+        db.session.commit()
+    
+    return render_template('guest_dashboard.html', 
+                          parent=guest_parent,
+                          child=demo_child,
+                          children=children, 
+                          age_groups=age_groups,
+                          progress=progress, 
+                          rewards=rewards)
+
 @app.route('/parent/dashboard')
 @login_required
 def parent_dashboard():
     """Parent dashboard"""
-    if session.get('user_type') != 'parent':
+    if session.get('user_type') not in ['parent', 'guest']:
         flash('Access denied. This page is for parents only.', 'error')
         return redirect(url_for('index'))
     
