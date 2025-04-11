@@ -1703,6 +1703,7 @@ def track_progress():
     engagement_rating = data.get('engagement_rating')  # 1-5 rating
     
     # Find existing progress or create new
+    from models import Progress
     progress = Progress.query.filter_by(
         child_id=current_user.id,
         content_type=content_type,
@@ -1859,6 +1860,7 @@ def get_progress():
     content_type = request.args.get('content_type')
     content_id = request.args.get('content_id')  # Optional filter for specific content
     
+    from models import Progress
     query = Progress.query.filter_by(child_id=current_user.id)
     
     if content_type:
@@ -1921,6 +1923,7 @@ def get_story_content(story_id):
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     # First try to find the book in the database
+    from models import Book
     book = Book.query.filter_by(file_name=f"{story_id}.txt").first()
     
     if book:
@@ -2122,6 +2125,7 @@ def session_stats():
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
         
     # For parent, get their own sessions and their children's sessions
+    from models import Child, Session
     parent_sessions = Session.query.filter_by(
         user_type='parent',
         user_id=current_user.id
