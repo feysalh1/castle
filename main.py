@@ -42,11 +42,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # Log the database URL (without credentials)
 print(f"Using database URL: {database_url.split('@')[-1] if '@' in database_url else 'SQLite'}")
 
-# Log the database URL (without credentials)
-db_url = app.config["SQLALCHEMY_DATABASE_URI"]
-if db_url:
-    print(f"Using database: {db_url.split('@')[-1] if '@' in db_url else 'SQLite'}")
-
 # Initialize database
 db.init_app(app)
 
