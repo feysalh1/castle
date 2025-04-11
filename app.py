@@ -417,6 +417,71 @@ def reset_password(token):
     return render_template('reset_password.html', form=form)
 
 
+@app.route('/guest-login', methods=['POST'])
+def guest_login():
+    """Guest login functionality"""
+    form = EmptyForm()
+    
+    if form.validate_on_submit():
+        # Create a guest parent account or find existing one
+        guest_parent = Parent.query.filter_by(username='guest').first()
+        
+        if not guest_parent:
+            # Create a new guest parent account if it doesn't exist
+            guest_parent = Parent(
+                username='guest',
+                email='guest@example.com',
+                is_guest=True
+            )
+            # Set a random password for security (even though it won't be used directly)
+            guest_parent.set_password(str(uuid.uuid4()))
+            db.session.add(guest_parent)
+            db.session.commit()
+            
+            # Create a demo child account for the guest parent
+            demo_child = Child(
+                parent_id=guest_parent.id,
+                name='Demo Child',
+                age=4,
+                pin='1234',
+                avatar='fox'
+            )
+            db.session.add(demo_child)
+            db.session.commit()
+            
+            # Approve some books for the demo child
+            # Get books suitable for age 4-5
+            age_group = AgeGroup.query.filter_by(name='4-5 years').first()
+            if age_group:
+                books = Book.query.filter_by(age_group_id=age_group.id).limit(5).all()
+                for book in books:
+                    approved_book = ApprovedBook(child_id=demo_child.id, book_id=book.id)
+                    db.session.add(approved_book)
+                db.session.commit()
+        
+        # Log in as the guest parent
+        login_user(guest_parent)
+        
+        # Record login activity
+        new_session = Session(
+            user_type='parent', 
+            user_id=guest_parent.id,
+            ip_address=request.remote_addr,
+            user_agent=request.user_agent.string,
+            device_type=detect_device_type(request.user_agent.string)
+        )
+        new_session.record_activity('guest_login')
+        db.session.add(new_session)
+        db.session.commit()
+        
+        flash('Welcome to Children\'s Castle! You are signed in as a guest.', 'success')
+        return redirect(url_for('parent_dashboard'))
+    
+    # If form validation failed (CSRF)
+    flash('Session expired. Please try again.', 'error')
+    return redirect(url_for('parent_login'))
+
+
 @app.route('/child/login', methods=['GET', 'POST'])
 def child_login():
     """Login for child accounts"""

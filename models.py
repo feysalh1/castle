@@ -23,6 +23,7 @@ class Parent(UserMixin, db.Model):
     reset_password_token = db.Column(db.String(256), nullable=True)
     reset_token_expires = db.Column(db.DateTime, nullable=True)
     firebase_uid = db.Column(db.String(128), unique=True, nullable=True)  # Firebase Auth User ID
+    is_guest = db.Column(db.Boolean, default=False)  # Flag for guest accounts
     
     # Relationships
     children = db.relationship('Child', backref='parent', lazy=True, cascade="all, delete-orphan")
