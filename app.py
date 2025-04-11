@@ -1832,7 +1832,7 @@ def track_progress():
 @csrf.exempt
 def get_progress():
     """API endpoint to get child's progress"""
-    if session.get('user_type') != 'child':
+    if session.get('user_type') not in ['child', 'guest']:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     content_type = request.args.get('content_type')
@@ -2039,7 +2039,7 @@ def get_story_content(story_id):
 @csrf.exempt
 def get_rewards():
     """API endpoint to get child's rewards"""
-    if session.get('user_type') != 'child':
+    if session.get('user_type') not in ['child', 'guest']:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     # Optional filters
@@ -2236,7 +2236,7 @@ def log_error():
 @csrf.exempt
 def get_milestones():
     """API endpoint to get child's milestones"""
-    if session.get('user_type') != 'child':
+    if session.get('user_type') not in ['child', 'guest']:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     # Get milestones for the current child - using proper table name
@@ -2288,7 +2288,7 @@ def get_milestones():
 @csrf.exempt
 def get_favorites():
     """API endpoint to get child's favorite content"""
-    if session.get('user_type') != 'child':
+    if session.get('user_type') not in ['child', 'guest']:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     content_type = request.args.get('content_type')  # Optional filter for stories or games
@@ -2317,7 +2317,7 @@ def get_favorites():
 @csrf.exempt
 def toggle_favorite():
     """API endpoint to toggle favorite status for content"""
-    if session.get('user_type') != 'child':
+    if session.get('user_type') not in ['child', 'guest']:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     data = request.json
