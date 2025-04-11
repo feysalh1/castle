@@ -2578,7 +2578,7 @@ def api_get_report_data(child_id):
 def api_record_emotional_feedback():
     """API endpoint to record emotional feedback for content"""
     # Check authentication
-    if session.get('user_type') != 'child':
+    if session.get('user_type') not in ['child', 'guest']:
         return jsonify({'success': False, 'error': 'Authentication required'}), 401
     
     data = request.get_json()
@@ -2650,6 +2650,9 @@ def api_get_child_approved_books():
     elif session.get('user_type') == 'child':
         if str(current_user.id) != str(child_id):
             return jsonify({'success': False, 'message': 'Not authorized'}), 403
+    # Guest users have access to all books
+    elif session.get('user_type') == 'guest':
+        pass
     else:
         return jsonify({'success': False, 'message': 'Not authorized'}), 403
     
