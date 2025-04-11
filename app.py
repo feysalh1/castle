@@ -470,11 +470,13 @@ def guest_login():
             # Add some rewards and progress for demo purposes
             demo_reward = Reward(
                 child_id=demo_child.id,
-                reward_type='badge',
-                title='Welcome Badge',
-                description='Earned for trying the app as a guest',
-                points=10,
-                icon='stars'
+                badge_id='welcome_badge',
+                badge_name='Welcome Badge',
+                badge_description='Earned for trying the app as a guest',
+                badge_image='stars.svg',
+                source_type='achievement',
+                points_value=10,
+                achievement_level='bronze'
             )
             db.session.add(demo_reward)
             

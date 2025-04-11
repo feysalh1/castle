@@ -271,7 +271,7 @@
         <a href="#child-section" class="demo-nav-item">Child View</a>
         <a href="{{ url_for('story_mode') }}" class="demo-nav-item">Story Mode <span class="demo-tag">Try it!</span></a>
         <a href="{{ url_for('game_mode') }}" class="demo-nav-item">Game Mode <span class="demo-tag">Try it!</span></a>
-        <a href="{{ url_for('ai_assistant') }}" class="demo-nav-item">AI Assistant <span class="demo-tag">New</span></a>
+        <a href="{{ url_for('chatgpt.ai_assistant') }}" class="demo-nav-item">AI Assistant <span class="demo-tag">New</span></a>
     </div>
     
     <!-- Parent Dashboard Section -->
@@ -428,12 +428,12 @@
                         {% if rewards %}
                             {% for reward in rewards %}
                                 <div class="reward-item">
-                                    <div class="reward-icon {{ reward.reward_type }}-reward">
-                                        <i class="fas fa-{{ reward.icon }}"></i>
+                                    <div class="reward-icon {{ reward.achievement_level }}-reward">
+                                        <i class="fas fa-{{ reward.badge_image|replace('.svg', '') }}"></i>
                                     </div>
                                     <div class="reward-info">
-                                        <h4>{{ reward.title }}</h4>
-                                        <p>{{ reward.description }}</p>
+                                        <h4>{{ reward.badge_name }}</h4>
+                                        <p>{{ reward.badge_description }}</p>
                                     </div>
                                 </div>
                             {% endfor %}
@@ -452,7 +452,7 @@
         <!-- AI Assistant Button -->
         <div class="row">
             <div class="col-12">
-                <a href="{{ url_for('ai_assistant') }}" class="btn btn-lg btn-block" style="background-color: #4a3c82; color: white; border-radius: 12px; width: 100%; padding: 15px;">
+                <a href="{{ url_for('chatgpt.ai_assistant') }}" class="btn btn-lg btn-block" style="background-color: #4a3c82; color: white; border-radius: 12px; width: 100%; padding: 15px;">
                     <i class="fas fa-robot me-2"></i>
                     Talk to AI Assistant
                 </a>
