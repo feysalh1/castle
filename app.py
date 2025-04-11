@@ -1527,7 +1527,7 @@ def list_voices():
 @login_required
 def story_mode():
     """Story mode page for children"""
-    if session.get('user_type') != 'child':
+    if session.get('user_type') not in ['child', 'guest']:
         flash('Access denied. This page is for children only.', 'error')
         return redirect(url_for('index'))
     
@@ -1614,7 +1614,7 @@ def story_mode():
 @login_required
 def game_mode():
     """Game mode page for children"""
-    if session.get('user_type') != 'child':
+    if session.get('user_type') not in ['child', 'guest']:
         flash('Access denied. This page is for children only.', 'error')
         return redirect(url_for('index'))
     
@@ -1666,7 +1666,7 @@ def rewards():
 @csrf.exempt
 def track_progress():
     """API endpoint to track child's progress"""
-    if session.get('user_type') != 'child':
+    if session.get('user_type') not in ['child', 'guest']:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     data = request.json
@@ -1896,7 +1896,7 @@ def get_progress():
 @login_required
 def get_story_content(story_id):
     """API endpoint to get a story's content"""
-    if session.get('user_type') != 'child':
+    if session.get('user_type') not in ['child', 'guest']:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     # First try to find the book in the database
