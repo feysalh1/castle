@@ -194,9 +194,7 @@ class ResetPasswordForm(FlaskForm):
     ])
     submit = SubmitField('Reset Password')
 
-# Create database tables
-with app.app_context():
-    db.create_all()
+# Database tables are created in main.py
 
 
 @app.route('/')
