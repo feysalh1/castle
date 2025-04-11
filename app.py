@@ -7,6 +7,7 @@ import io
 import psutil
 import platform
 import sys
+import uuid
 from datetime import datetime, timedelta, date
 from flask import Flask, render_template, redirect, url_for, flash, request, session, jsonify, send_file, abort
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -441,11 +442,12 @@ def guest_login():
             # Create a demo child account for the guest parent
             demo_child = Child(
                 parent_id=guest_parent.id,
-                name='Demo Child',
+                username='demo_child',
+                display_name='Demo Child',
                 age=4,
-                pin='1234',
                 avatar='fox'
             )
+            demo_child.set_pin('1234')
             db.session.add(demo_child)
             db.session.commit()
             
@@ -455,7 +457,7 @@ def guest_login():
             if age_group:
                 books = Book.query.filter_by(age_group_id=age_group.id).limit(5).all()
                 for book in books:
-                    approved_book = ApprovedBook(child_id=demo_child.id, book_id=book.id)
+                    approved_book = ApprovedBooks(child_id=demo_child.id, book_id=book.id, approved_by=guest_parent.id)
                     db.session.add(approved_book)
                 db.session.commit()
         
