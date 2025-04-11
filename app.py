@@ -27,8 +27,12 @@ STORIES_DIR = "static/stories"
 IMAGES_DIR = "static/images/stories"
 AUDIO_DIR = "static/audio"
 
+# Import the db object from main.py
+from main import db
+
+# Import models after db is defined
 from models import (
-    db, Parent, Child, ParentSettings, Progress, Reward, Session,
+    Parent, Child, ParentSettings, Progress, Reward, Session,
     LearningGoal, StoryQueue, SkillProgress, WeeklyReport, DevicePairing,
     DailyReport, Milestone, Event, ErrorLog, AgeGroup, Book, ApprovedBooks
 )
@@ -90,10 +94,8 @@ def get_database_size():
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
-# Create Flask app
-app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "childrens_castle_app_secret")
-app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # needed for url_for to generate with https
+# Import Flask app from main
+from main import app
 
 # Configure WTF-CSRF
 app.config['WTF_CSRF_ENABLED'] = True
@@ -128,25 +130,9 @@ csrf.exempt('/api/books/get-child-approved')
 csrf.exempt('/api/books/approve')
 csrf.exempt('/api/books/unapprove')
 
-# Configure database
-# Default database URL for local development if not provided
-default_db_url = "sqlite:///children_castle.db"
+# The database configuration is now handled in main.py
 
-# Configure the database, prioritize DATABASE_URL environment variable
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", default_db_url)
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_recycle": 300,
-    "pool_pre_ping": True,
-}
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-# Log the database URL (without credentials)
-db_url = app.config["SQLALCHEMY_DATABASE_URI"]
-if db_url:
-    print(f"Using database: {db_url.split('@')[-1] if '@' in db_url else 'SQLite'}")
-
-# Initialize database
-db.init_app(app)
+# Database is already initialized in main.py
 
 # Initialize Flask-Login
 login_manager = LoginManager()
