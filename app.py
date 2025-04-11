@@ -1618,9 +1618,24 @@ def game_mode():
         flash('Access denied. This page is for children only.', 'error')
         return redirect(url_for('index'))
     
-    # Get the parent's settings for this child to apply age filters
-    parent = Parent.query.get(current_user.parent_id)
-    settings = ParentSettings.query.filter_by(parent_id=parent.id).first()
+    # Initialize settings
+    settings = None
+    
+    # For regular child users, get parent settings
+    if session.get('user_type') == 'child' and hasattr(current_user, 'parent_id'):
+        parent = Parent.query.get(current_user.parent_id)
+        if parent:
+            settings = ParentSettings.query.filter_by(parent_id=parent.id).first()
+    
+    # For guest users, use default settings that allow everything
+    if session.get('user_type') == 'guest' or not settings:
+        # Create default settings for guest users or when parent settings are not available
+        settings = ParentSettings()
+        settings.allow_external_games = True
+        settings.allow_chat_assistant = True
+        settings.time_limit_minutes = 0  # No time limit
+        settings.age_filter_min = 0
+        settings.age_filter_max = 15
     
     # Record game mode access in session activity log
     user_session = Session.query.filter_by(
@@ -1640,7 +1655,7 @@ def game_mode():
 @login_required
 def rewards():
     """Child's rewards page"""
-    if session.get('user_type') != 'child':
+    if session.get('user_type') not in ['child', 'guest']:
         flash('Access denied. This page is for children only.', 'error')
         return redirect(url_for('index'))
     
