@@ -27,15 +27,8 @@ client = None
 if OPENAI_API_KEY:
     try:
         client = OpenAI(api_key=OPENAI_API_KEY)
-        logger.info("OpenAI client initialized, testing connection with a simple request...")
-        
-        # Test the client with a simple completion to verify credentials
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[{"role": "system", "content": "Hello"}],
-            max_tokens=5
-        )
-        logger.info(f"OpenAI test successful: {response.model}")
+        # Skip test request to avoid unnecessary API calls
+        logger.info("OpenAI client initialized successfully")
     except Exception as e:
         error_trace = traceback.format_exc()
         logger.error(f"Failed to initialize OpenAI client: {e}\n{error_trace}")
@@ -44,12 +37,12 @@ if OPENAI_API_KEY:
 def generate_kid_friendly_response(prompt, child_age=4, max_tokens=200):
     """
     Generate a kid-friendly response using GPT-4o
-    
+
     Args:
         prompt (str): The child's question or prompt
         child_age (int): Age of the child to tailor response appropriately
         max_tokens (int): Maximum length of the response
-        
+
     Returns:
         str: Kid-friendly response
     """
@@ -57,18 +50,18 @@ def generate_kid_friendly_response(prompt, child_age=4, max_tokens=200):
     if client is None:
         logger.error("OpenAI client not initialized. Cannot generate response.")
         return "I'm having a little nap right now. Please ask an adult to wake me up!"
-        
+
     # Check if API key is valid
     if not OPENAI_API_KEY or len(OPENAI_API_KEY) < 20:
         logger.error("Invalid OPENAI_API_KEY. Cannot generate response.")
         return "I'm having a little nap right now. Please ask an adult to wake me up!"
-        
+
     try:
         # Build the system message with age-appropriate instructions
         system_message = f"""
         You are a friendly assistant named Castle Buddy for a {child_age}-year-old child named Menira.
         The child is using an app called "Children's Castle" and can ask you questions about anything.
-        
+
         Follow these guidelines:
         - Use simple, clear language appropriate for a {child_age}-year-old
         - Keep responses brief (2-3 sentences) and engaging
@@ -87,7 +80,7 @@ def generate_kid_friendly_response(prompt, child_age=4, max_tokens=200):
         - If the child seems confused or frustrated, offer reassurance
         - Remember to keep math simple and use visual examples when possible
         """
-        
+
         # Handle common question types with special responses
         if prompt.lower().startswith("what is") or prompt.lower().startswith("who is") or prompt.lower().startswith("how does"):
             instruction = f"""
@@ -98,7 +91,7 @@ def generate_kid_friendly_response(prompt, child_age=4, max_tokens=200):
             Keep everything at a {child_age}-year-old's understanding level.
             """
             system_message += instruction
-        
+
         elif "why" in prompt.lower():
             instruction = f"""
             This is a 'why' question. Children love to understand causes and connections.
@@ -109,7 +102,7 @@ def generate_kid_friendly_response(prompt, child_age=4, max_tokens=200):
             Make sure to avoid complex concepts that would confuse a {child_age}-year-old.
             """
             system_message += instruction
-            
+
         elif any(word in prompt.lower() for word in ["dinosaur", "dinosaurs"]):
             instruction = f"""
             The child is asking about dinosaurs, a favorite topic! Keep facts age-appropriate and easy to visualize.
@@ -118,7 +111,7 @@ def generate_kid_friendly_response(prompt, child_age=4, max_tokens=200):
             Avoid scary aspects like violent hunting or extinction details if the child is under 7.
             """
             system_message += instruction
-            
+
         elif any(word in prompt.lower() for word in ["space", "planet", "star", "rocket", "moon", "astronaut"]):
             instruction = f"""
             The child is asking about space! Focus on amazing, awe-inspiring facts about space
@@ -126,9 +119,9 @@ def generate_kid_friendly_response(prompt, child_age=4, max_tokens=200):
             when discussing sizes or distances. Make the universe sound wondrous rather than scary.
             """
             system_message += instruction
-        
+
         logger.info(f"Sending request to OpenAI for prompt: {prompt[:30]}...")
-        
+
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
         response = client.chat.completions.create(
@@ -140,7 +133,7 @@ def generate_kid_friendly_response(prompt, child_age=4, max_tokens=200):
             max_tokens=max_tokens,
             temperature=0.7,
         )
-        
+
         logger.info("Successfully received response from OpenAI")
         return response.choices[0].message.content
     except Exception as e:
@@ -152,19 +145,19 @@ def generate_kid_friendly_response(prompt, child_age=4, max_tokens=200):
 def generate_interactive_story(story_prompt, child_age=4, include_questions=True):
     """
     Generate an interactive story with optional questions for the child
-    
+
     Args:
         story_prompt (str): Basic prompt for the story (e.g., "a story about a brave fox")
         child_age (int): Age of the child to tailor content appropriately
         include_questions (bool): Whether to include interactive questions
-        
+
     Returns:
         dict: Story content with pages and optional questions
     """
     # Check if OpenAI client is properly initialized
     if client is None:
         logger.error("OpenAI client not initialized. Cannot generate interactive story.")
-        
+
     # Check if API key is valid
     if not OPENAI_API_KEY or len(OPENAI_API_KEY) < 20:
         logger.error("Invalid OPENAI_API_KEY. Cannot generate interactive story.")
@@ -186,13 +179,13 @@ def generate_interactive_story(story_prompt, child_age=4, include_questions=True
                 }
             ]
         }
-        
+
     try:
         # Build the system message with age-appropriate instructions
         system_message = f"""
         You are a creative storyteller for a {child_age}-year-old child.
         Create a short, engaging, and educational story based on the child's prompt.
-        
+
         Follow these guidelines:
         - Create a story with a title and 3-5 pages
         - Use simple, clear language appropriate for a {child_age}-year-old
@@ -200,7 +193,7 @@ def generate_interactive_story(story_prompt, child_age=4, include_questions=True
         - Keep the story positive, friendly, and engaging
         - Include a main character the child can relate to
         - If requested, add a simple question at the end of some pages to engage the child
-        
+
         Return the story as a JSON object with this structure:
         {{
             "title": "Story Title",
@@ -217,14 +210,14 @@ def generate_interactive_story(story_prompt, child_age=4, include_questions=True
             ]
         }}
         """
-        
+
         # Create the user prompt with the story request
         user_prompt = f"Please create a short children's story about {story_prompt}."
         if include_questions:
             user_prompt += " Include some simple questions to make it interactive."
-        
+
         logger.info(f"Generating interactive story about: {story_prompt[:30]}...")
-        
+
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
         response = client.chat.completions.create(
@@ -237,14 +230,14 @@ def generate_interactive_story(story_prompt, child_age=4, include_questions=True
             temperature=0.8,
             response_format={"type": "json_object"}
         )
-        
+
         # Parse the JSON response
         story_content = json.loads(response.choices[0].message.content)
-        
+
         # Ensure the story has the expected structure
         if "title" not in story_content or "pages" not in story_content:
             raise ValueError("Story response is missing required structure")
-        
+
         logger.info(f"Successfully generated story: {story_content['title']}")
         return story_content
     except Exception as e:
@@ -272,12 +265,12 @@ def generate_interactive_story(story_prompt, child_age=4, include_questions=True
 def answer_story_question(story_context, question, child_age=4):
     """
     Generate an encouraging response to a child's answer to a story question
-    
+
     Args:
         story_context (str): The current story context/page
         question (str): The question asked
         child_age (int): Age of the child
-        
+
     Returns:
         str: Encouraging response to the child's answer
     """
@@ -285,17 +278,17 @@ def answer_story_question(story_context, question, child_age=4):
     if client is None:
         logger.error("OpenAI client not initialized. Cannot generate story question response.")
         return "That's a wonderful answer! You're so creative and smart!"
-        
+
     # Check if API key is valid
     if not OPENAI_API_KEY or len(OPENAI_API_KEY) < 20:
         logger.error("Invalid OPENAI_API_KEY. Cannot generate story question response.")
         return "That's a wonderful answer! You're so creative and smart!"
-        
+
     try:
         # Build the system message with age-appropriate instructions
         system_message = f"""
         You are responding to a {child_age}-year-old child's answer to a story question.
-        
+
         Follow these guidelines:
         - Be enthusiastic, warm, and very encouraging
         - Use simple language appropriate for a {child_age}-year-old
@@ -305,9 +298,9 @@ def answer_story_question(story_context, question, child_age=4):
         - Never criticize or correct their answer
         - Be supportive, friendly, and kind
         """
-        
+
         logger.info(f"Generating response to story question: {question[:30]}...")
-        
+
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
         response = client.chat.completions.create(
@@ -319,7 +312,7 @@ def answer_story_question(story_context, question, child_age=4):
             max_tokens=100,
             temperature=0.7,
         )
-        
+
         logger.info("Successfully generated question response")
         return response.choices[0].message.content
     except Exception as e:
@@ -330,11 +323,11 @@ def answer_story_question(story_context, question, child_age=4):
 def generate_learning_tip(topic, child_age=4):
     """
     Generate a short learning tip on a specific topic for parents
-    
+
     Args:
         topic (str): The learning topic (e.g., "reading", "numbers")
         child_age (int): Age of the child
-        
+
     Returns:
         str: A short learning tip for parents
     """
@@ -342,17 +335,17 @@ def generate_learning_tip(topic, child_age=4):
     if client is None:
         logger.error("OpenAI client not initialized. Cannot generate learning tip.")
         return f"Try incorporating {topic} into everyday activities through play. Children learn best when they're having fun and don't even realize they're learning!"
-        
+
     # Check if API key is valid
     if not OPENAI_API_KEY or len(OPENAI_API_KEY) < 20:
         logger.error("Invalid OPENAI_API_KEY. Cannot generate learning tip.")
         return f"Try incorporating {topic} into everyday activities through play. Children learn best when they're having fun and don't even realize they're learning!"
-        
+
     try:
         # Build the system message with age-appropriate instructions
         system_message = f"""
         You are an expert in early childhood education providing tips to parents of a {child_age}-year-old child.
-        
+
         Follow these guidelines:
         - Provide practical, evidence-based advice
         - Keep tips concise (2-3 sentences)
@@ -361,9 +354,9 @@ def generate_learning_tip(topic, child_age=4):
         - Emphasize play-based and enjoyable learning
         - Include why the activity helps development
         """
-        
+
         logger.info(f"Generating learning tip about: {topic}")
-        
+
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
         response = client.chat.completions.create(
@@ -375,22 +368,22 @@ def generate_learning_tip(topic, child_age=4):
             max_tokens=150,
             temperature=0.7,
         )
-        
+
         logger.info("Successfully generated learning tip")
         return response.choices[0].message.content
     except Exception as e:
         error_trace = traceback.format_exc()
         logger.error(f"Error generating learning tip: {e}\n{error_trace}")
         return f"Try incorporating {topic} into everyday activities through play. Children learn best when they're having fun and don't even realize they're learning!"
-        
+
 def generate_parent_advice(question, child_age=4):
     """
     Generate a helpful response to a parent's question about their child, the app, or parenting
-    
+
     Args:
         question (str): The parent's question
         child_age (int): Age of the child
-        
+
     Returns:
         str: A helpful response for the parent
     """
@@ -398,17 +391,17 @@ def generate_parent_advice(question, child_age=4):
     if client is None:
         logger.error("OpenAI client not initialized. Cannot generate parent advice.")
         return "I recommend focusing on your child's interests and building learning opportunities around them. The Children's Castle app offers personalized recommendations based on your child's engagement patterns that you can find in the Activity Summaries section."
-        
+
     # Check if API key is valid
     if not OPENAI_API_KEY or len(OPENAI_API_KEY) < 20:
         logger.error("Invalid OPENAI_API_KEY. Cannot generate parent advice.")
         return "I recommend focusing on your child's interests and building learning opportunities around them. The Children's Castle app offers personalized recommendations based on your child's engagement patterns that you can find in the Activity Summaries section."
-        
+
     try:
         # Build the system message for the parent assistant
         system_message = f"""
         You are a helpful assistant for parents using the Children's Castle app.
-        
+
         Follow these guidelines:
         - Provide helpful, supportive answers to parents' questions
         - Be empathetic and understanding
@@ -420,12 +413,12 @@ def generate_parent_advice(question, child_age=4):
         - Never judge parenting styles or choices
         - Be encouraging and positive
         """
-        
+
         # Preprocess the question to add context and improve responses
         enhanced_question = f"As a parent of a {child_age}-year-old using the Children's Castle app, I'd like advice about: {question}"
-        
+
         logger.info(f"Generating parent advice for question: {question[:30]}...")
-        
+
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
         response = client.chat.completions.create(
@@ -437,7 +430,7 @@ def generate_parent_advice(question, child_age=4):
             max_tokens=250,
             temperature=0.7,
         )
-        
+
         logger.info("Successfully generated parent advice")
         return response.choices[0].message.content
     except Exception as e:
