@@ -1622,14 +1622,18 @@ def game_mode():
     settings = None
     
     # For regular child users, get parent settings
-    if session.get('user_type') == 'child' and hasattr(current_user, 'parent_id'):
-        parent = Parent.query.get(current_user.parent_id)
-        if parent:
-            settings = ParentSettings.query.filter_by(parent_id=parent.id).first()
+    if session.get('user_type') == 'child':
+        # When current_user is a Child object, we can directly access the parent_id attribute
+        from models import Child, Parent, ParentSettings
+        if isinstance(current_user, Child) and hasattr(current_user, 'parent_id'):
+            parent = Parent.query.get(current_user.parent_id)
+            if parent:
+                settings = ParentSettings.query.filter_by(parent_id=parent.id).first()
     
     # For guest users, use default settings that allow everything
     if session.get('user_type') == 'guest' or not settings:
         # Create default settings for guest users or when parent settings are not available
+        from models import ParentSettings
         settings = ParentSettings()
         settings.allow_external_games = True
         settings.allow_chat_assistant = True
@@ -1638,6 +1642,7 @@ def game_mode():
         settings.age_filter_max = 15
     
     # Record game mode access in session activity log
+    from models import Session
     user_session = Session.query.filter_by(
         user_type='child',
         user_id=current_user.id,
@@ -1660,6 +1665,7 @@ def rewards():
         return redirect(url_for('index'))
     
     # Get child's rewards from database
+    from models import Reward
     child_rewards = Reward.query.filter_by(child_id=current_user.id).all()
     
     # Record rewards page access in session activity log
