@@ -7,7 +7,7 @@ echo "    Children's Castle Firebase Deployment Tool    "
 echo "=================================================="
 echo
 
-# Check if token is set
+# Check if required environment variables are set
 if [ -z "$FIREBASE_TOKEN" ]; then
   echo "❌ Error: FIREBASE_TOKEN is not set."
   echo "Please add your Firebase token as a secret in Replit:"
@@ -17,6 +17,18 @@ if [ -z "$FIREBASE_TOKEN" ]; then
   echo "4. Restart the Replit environment"
   echo
   echo "To generate a token, run 'firebase login:ci' on your local machine."
+  exit 1
+fi
+
+if [ -z "$FIREBASE_API_KEY" ]; then
+  echo "❌ Error: FIREBASE_API_KEY is not set."
+  echo "Please add your Firebase API key as a secret in Replit"
+  exit 1
+fi
+
+if [ -z "$FIREBASE_APP_ID" ]; then
+  echo "❌ Error: FIREBASE_APP_ID is not set."
+  echo "Please add your Firebase App ID as a secret in Replit"
   exit 1
 fi
 

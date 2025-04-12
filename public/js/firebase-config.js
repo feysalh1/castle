@@ -8,13 +8,16 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Note: This config is specifically for the static showcase site
+// Firebase limits what can be done with these client-side keys through project settings & security rules
 const firebaseConfig = {
-  apiKey: "AIzaSyAPTQO3lnt0GSyDgVCZjtj4i3gk3Qi6Vyo",
+  // In a real production app, these would be environment variables injected by the server
+  apiKey: "FIREBASE_API_KEY", // This would be replaced during build
   authDomain: "story-time-fun.firebaseapp.com",
   projectId: "story-time-fun",
   storageBucket: "story-time-fun.firebasestorage.app",
   messagingSenderId: "225122848236",
-  appId: "1:225122848236:web:b52d382202a2ce6a73c4c9",
+  appId: "FIREBASE_APP_ID", // This would be replaced during build
   measurementId: "G-RM452TNB0W"
 };
 

@@ -140,6 +140,26 @@ cat > public/index.html << 'EOF'
 </html>
 EOF
 
+# Step 4: Inject Firebase config variables from environment
+echo "Injecting Firebase configuration from environment variables..."
+if command -v node &> /dev/null; then
+  # Make sure the script is executable
+  chmod +x scripts/prepare_firebase_config.js
+  
+  # Run the script to inject Firebase config
+  node scripts/prepare_firebase_config.js
+  
+  if [ $? -ne 0 ]; then
+    echo "⚠️ Warning: Failed to inject Firebase config variables. Check that FIREBASE_API_KEY and FIREBASE_APP_ID are set."
+    echo "Continuing with deployment, but Firebase functionality may not work correctly."
+  else
+    echo "✅ Firebase configuration injected successfully!"
+  fi
+else
+  echo "⚠️ Warning: Node.js is required to inject Firebase config variables but was not found."
+  echo "Continuing with deployment, but Firebase functionality may not work correctly."
+fi
+
 echo "===== Preparation complete! ====="
 echo "The static assets are now prepared for Firebase Hosting."
 echo "Run 'firebase deploy --only hosting' to publish the site."
