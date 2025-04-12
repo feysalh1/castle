@@ -32,12 +32,14 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: url('/static/images/background/night-castle-second.png') no-repeat center top fixed !important;
-    background-size: contain !important;
-    -webkit-background-size: contain !important;
-    -moz-background-size: contain !important;
-    -o-background-size: contain !important;
+    background: url('../images/background/night-castle-second.png') no-repeat center center fixed !important;
+    background-size: cover !important;
+    -webkit-background-size: cover !important;
+    -moz-background-size: cover !important;
+    -o-background-size: cover !important;
     background-color: #071525 !important;
+    position: relative;
+    z-index: 0;
 }
 
 .container {
