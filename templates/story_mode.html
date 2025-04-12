@@ -11,7 +11,37 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/shooting-star.css') }}">
     <script src="{{ url_for('static', filename='js/shooting-star.js') }}" defer></script>
 </head>
-<body class="story-mode-page">
+<body class="story-mode-page {% if active_mood %}mood-{{ active_mood.mood_type }}{% endif %}">
+    {% if active_mood %}
+    <input type="hidden" id="active-mood" 
+           data-mood="{{ active_mood.mood_type }}" 
+           data-intensity="{{ active_mood.intensity }}" 
+           data-color="{{ active_mood.color_theme }}"
+           data-music="{{ active_mood.background_music }}">
+    {% endif %}
+    
+    <div class="mood-indicator {% if active_mood %}active{% endif %}">
+        {% if active_mood %}
+            <div class="mood-icon">
+                <img src="{{ url_for('static', filename='images/moods/' + active_mood.mood_type + '.svg') }}" 
+                     alt="{{ active_mood.mood_type|capitalize }} mood">
+            </div>
+            <div class="mood-details">
+                <span class="mood-name">{{ active_mood.mood_type|capitalize }}</span>
+                <div class="mood-intensity">
+                    <div class="intensity-bar">
+                        <div class="intensity-fill" style="width: {{ (active_mood.intensity / 10) * 100 }}%"></div>
+                    </div>
+                </div>
+            </div>
+            <a href="{{ url_for('story_mood_selector') }}" class="change-mood-btn">Change</a>
+        {% else %}
+            <div class="mood-empty">
+                <a href="{{ url_for('story_mood_selector') }}" class="set-mood-btn">Set Story Mood</a>
+            </div>
+        {% endif %}
+    </div>
+    
     <header class="dashboard-header child-header">
         <div class="logo">
             <!-- Title removed -->
@@ -354,6 +384,7 @@
 
     <script src="{{ url_for('static', filename='js/story-reader.js') }}"></script>
     <script src="{{ url_for('static', filename='js/story_mode.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mood-handler.js') }}"></script>
     <div id="loading-animation" class="loading-container" style="display: none;">
         <div class="loading-content">
             <div class="fox-animation"></div>
