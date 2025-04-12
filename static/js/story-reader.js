@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize modal close button
     const closeModalBtn = document.getElementById('close-story-modal');
-    
+
     // Add animation handlers for book cards
     const bookCards = document.querySelectorAll('.book-card');
     bookCards.forEach(card => {
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (closeModalBtn) {
         closeModalBtn.addEventListener('click', closeStoryModal);
     }
-    
+
     // Close modal when clicking on overlay (outside the content)
     const storyModal = document.getElementById('story-modal');
     if (storyModal) {
@@ -34,19 +34,19 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     // Close modal with escape key
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape' && storyModal && storyModal.classList.contains('active')) {
             closeStoryModal();
         }
     });
-    
+
     // Function to close the story modal
     function closeStoryModal() {
         if (storyModal) {
             storyModal.classList.remove('active');
-            
+
             // If there's audio playing, pause it
             if (storyAudio && isAudioPlaying) {
                 storyAudio.pause();
@@ -104,12 +104,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (typeof runShootingStarAnimation === 'function') {
                     runShootingStarAnimation(7);
                 }
-                
+
                 // Apply zoom effect if available
                 if (typeof applyZoomTransition === 'function') {
                     applyZoomTransition(this.parentElement);
                 }
-                
+
                 // Load story after a short delay to allow shooting star animation to complete
                 setTimeout(async () => {
                     await loadStoryById(storyId);
@@ -313,11 +313,17 @@ document.addEventListener('DOMContentLoaded', function() {
     function trackProgress(storyId, storyTitle, completed) {
         // Check if we have a valid child ID to prevent database errors
         const childIdElement = document.getElementById('child-id');
-        if (!childIdElement || !childIdElement.value) {
-            console.log('No valid child ID found, skipping progress tracking');
+        if (!childIdElement) {
+            console.log('No child ID element found, skipping progress tracking');
             return;
         }
-        
+
+        const childId = childIdElement.value;
+        if (!childId || isNaN(parseInt(childId))) {
+            console.log('Invalid child ID value:', childId);
+            return;
+        }
+
         const data = {
             content_type: 'story',
             content_id: storyId,
@@ -355,7 +361,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function showLoading(isLoading) {
         if (loadingAnimation) {
             loadingAnimation.style.display = isLoading ? 'flex' : 'none';
-            
+
             // Show the loading animation inside the modal if it's open
             if (isLoading) {
                 const storyModal = document.getElementById('story-modal');

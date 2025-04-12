@@ -291,16 +291,30 @@ def get_favorites(child_id, content_type=None, limit=5):
 
 def track_story_progress(child_id, story_id, story_title, completed=False):
     try:
-        # Check if child exists
+        # Verify child exists first
         child = Child.query.get(child_id)
         if not child:
-            return {"message": f"Child with ID {child_id} not found"}, 404
+            return {"success": False, "message": f"Child with ID {child_id} not found"}, 404
+
+        # Check for existing progress
+        existing_progress = Progress.query.filter_by(
+            child_id=child_id,
+            content_type='story',
+            content_id=story_id
+        ).first()
+
+        if existing_progress:
+            existing_progress.access_count += 1
+            existing_progress.last_accessed = datetime.utcnow()
+            existing_progress.completed = completed or existing_progress.completed
+            db.session.commit()
+            return {"success": True, "message": "Progress updated"}
 
         # Create new progress entry
         new_progress = Progress(
             child_id=child_id,
-            content_id=story_id,
             content_type='story',
+            content_id=story_id,
             content_title=story_title,
             completed=completed,
             access_count=1,
