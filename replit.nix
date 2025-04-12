@@ -1,5 +1,16 @@
 {pkgs}: {
   deps = [
+    pkgs.xcodebuild
+    pkgs.glibcLocales
+    pkgs.libffi
+    pkgs.c-ares
+    pkgs.cacert
+    pkgs.rustc
+    pkgs.pkg-config
+    pkgs.libiconv
+    pkgs.cargo
+    pkgs.grpc
+    pkgs.borgbackup
     pkgs.firebase-tools
     pkgs.zlib
     pkgs.tk

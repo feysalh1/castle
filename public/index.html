@@ -16,7 +16,7 @@
       padding: 0;
       min-height: 100vh;
       background-color: #0c1f3f;
-      background-image: url('/images/background/castle-night.jpg');
+      background-image: url('https://images.unsplash.com/photo-1518050346340-aa2ec3bb424b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y2FzdGxlJTIwYXQlMjBuaWdodHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=1800&q=80');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -97,17 +97,21 @@
       </div>
     </div>
     
-    <div class="buttons-container" style="margin: 2rem 0;">
-      <a href="story-mode.html" class="cta-button">Browse Stories</a>
-      <a href="game-mode.html" class="cta-button" style="background-color: #17a2b8; margin-left: 10px;">Play Games</a>
-      <a href="https://childrencastle.replit.app" class="cta-button" style="background-color: #6c757d; margin-left: 10px;">Full Application</a>
-    </div>
+    <a href="https://childrencastle.replit.app" class="cta-button">Enter the Full Application</a>
     
     <p style="margin-top: 2rem; font-size: 0.9rem;">
       © 2025 Children's Castle. All rights reserved.
     </p>
   </div>
 
-  <script src="/js/shooting-stars-init.js"></script>
+  <script src="/js/shooting-star.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize shooting stars effect
+      if (typeof initShootingStars === 'function') {
+        initShootingStars();
+      }
+    });
+  </script>
 </body>
 </html>
