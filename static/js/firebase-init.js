@@ -7,14 +7,14 @@ import {
     getAdditionalUserInfo
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 
-// Your web app's Firebase configuration - Updated for Letter Adventure
+// Your web app's Firebase configuration - Updated with the new project config
 const firebaseConfig = {
-    apiKey: "AIzaSyCso96A0WrM68-A0FqC8rM01InqRP2mlik",
-    authDomain: "letter-adventure.firebaseapp.com",
-    projectId: "letter-adventure",
-    storageBucket: "letter-adventure.appspot.com",
-    messagingSenderId: "953801566834",
-    appId: "1:953801566834:web:63f311476f3257f7a470eb"
+    apiKey: "AIzaSyAPTQO3lnt0GSyDgVCZjtj4i3gk3Qi6Vyo",
+    authDomain: "story-time-fun.firebaseapp.com",
+    projectId: "story-time-fun",
+    storageBucket: "story-time-fun.appspot.com",
+    messagingSenderId: "225122848236",
+    appId: "1:952095451786:web:b3d6229418a1fd06972693"
 };
 
 // Initialize Firebase
