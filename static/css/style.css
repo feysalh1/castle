@@ -2,13 +2,13 @@
 
 /* Base Styles */
 :root {
-    --primary-color: #6a3093;
-    --primary-light: #a044ff;
-    --primary-dark: #56277a;
+    --primary-color: #1e3a5f;
+    --primary-light: #2c5999;
+    --primary-dark: #132742;
     --secondary-color: #f8c630;
     --secondary-light: #ffde76;
     --secondary-dark: #d6a100;
-    --background-color: #87CEEB;
+    --background-color: #0a1623;
     --text-color: #333333;
     --light-text: #ffffff;
     --success-color: #4CAF50;
@@ -333,7 +333,7 @@ footer {
 }
 
 .login-header {
-    background: linear-gradient(135deg, #4a6da7 0%, #6c8ac2 100%);
+    background: linear-gradient(135deg, #1e3a5f 0%, #2c5999 100%);
     color: white;
     padding: 25px 20px;
     text-align: center;
@@ -370,7 +370,7 @@ footer {
 }
 
 .form-group input:focus {
-    border-color: #4a6da7;
+    border-color: #1e3a5f;
     outline: none;
 }
 
@@ -379,7 +379,7 @@ footer {
 }
 
 .login-btn {
-    background-color: #4a6da7;
+    background-color: #1e3a5f;
     color: white;
     border: none;
     border-radius: 8px;
@@ -392,7 +392,7 @@ footer {
 }
 
 .login-btn:hover {
-    background-color: #3c5a8a;
+    background-color: #132742;
 }
 
 .alt-actions {
@@ -403,7 +403,7 @@ footer {
 }
 
 .alt-actions a {
-    color: #4a6da7;
+    color: #1e3a5f;
     text-decoration: none;
     font-weight: 600;
 }
@@ -421,7 +421,7 @@ footer {
 
 .password-rules {
     background-color: #f8f9fa;
-    border-left: 4px solid #4a6da7;
+    border-left: 4px solid #1e3a5f;
     padding: 10px 15px;
     margin-bottom: 20px;
     font-size: 14px;
@@ -488,7 +488,7 @@ footer {
 
 
 .message.system {
-    background-color: #e3f2fd;
+    background-color: #d6e7f5;
     color: #0d47a1;
     align-self: flex-start;
     border-bottom-left-radius: 5px;
@@ -525,7 +525,7 @@ footer {
 }
 
 .chat-input button {
-    background-color: #5c6bc0;
+    background-color: #1e3a5f;
     color: white;
     border: none;
     border-radius: 20px;
@@ -535,7 +535,7 @@ footer {
 }
 
 .chat-input button:hover {
-    background-color: #3f51b5;
+    background-color: #132742;
 }
 
 .example-questions {
@@ -562,7 +562,7 @@ footer {
 }
 
 .example-question {
-    color: #5c6bc0;
+    color: #1e3a5f;
     text-decoration: none;
     cursor: pointer;
     padding: 3px 5px;
@@ -603,7 +603,7 @@ footer {
 }
 
 .login-header {
-    background: linear-gradient(135deg, #4a6da7 0%, #6c8ac2 100%);
+    background: linear-gradient(135deg, #1e3a5f 0%, #2c5999 100%);
     color: white;
     padding: 25px 20px;
     text-align: center;
@@ -640,7 +640,7 @@ footer {
 }
 
 .form-group input:focus {
-    border-color: #4a6da7;
+    border-color: #1e3a5f;
     outline: none;
 }
 
@@ -649,7 +649,7 @@ footer {
 }
 
 .login-btn {
-    background-color: #4a6da7;
+    background-color: #1e3a5f;
     color: white;
     border: none;
     border-radius: 8px;
@@ -662,7 +662,7 @@ footer {
 }
 
 .login-btn:hover {
-    background-color: #3c5a8a;
+    background-color: #132742;
 }
 
 .alt-actions {
@@ -673,7 +673,7 @@ footer {
 }
 
 .alt-actions a {
-    color: #4a6da7;
+    color: #1e3a5f;
     text-decoration: none;
     font-weight: 600;
 }
@@ -691,7 +691,7 @@ footer {
 
 .password-rules {
     background-color: #f8f9fa;
-    border-left: 4px solid #4a6da7;
+    border-left: 4px solid #1e3a5f;
     padding: 10px 15px;
     margin-bottom: 20px;
     font-size: 14px;
@@ -772,7 +772,7 @@ footer {
     margin-top: 5px;
     margin-bottom: 15px;
     font-size: 14px;
-    color: #4a6da7;
+    color: #1e3a5f;
 }
 
 .forgot-password:hover {
