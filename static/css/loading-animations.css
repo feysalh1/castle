@@ -74,6 +74,46 @@
     }
 }
 
+/* Loading Container (For story modal) */
+.loading-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1999; /* Higher than modal z-index */
+}
+
+.loading-content {
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+}
+
+.fox-animation {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 20px;
+    background-image: url('../images/animals/fox.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    animation: bounce 1.2s infinite alternate ease-in-out;
+}
+
+.loading-content p {
+    font-size: 1.5rem;
+    color: #5a208f;
+    font-weight: bold;
+    margin: 0;
+}
+
 /* Loading text */
 .loading-text {
     font-size: 1.8rem;

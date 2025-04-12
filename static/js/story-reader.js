@@ -333,7 +333,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Show loading animation
     function showLoading(isLoading) {
-        loadingAnimation.style.display = isLoading ? 'flex' : 'none';
+        if (loadingAnimation) {
+            loadingAnimation.style.display = isLoading ? 'flex' : 'none';
+            
+            // Show the loading animation inside the modal if it's open
+            if (isLoading) {
+                const storyModal = document.getElementById('story-modal');
+                if (storyModal && storyModal.classList.contains('active')) {
+                    // Append loading animation to modal instead of body
+                    storyModal.appendChild(loadingAnimation);
+                } else {
+                    // Make sure it's in the body when no modal is active
+                    document.body.appendChild(loadingAnimation);
+                }
+            }
+        }
     }
 
     // Show error message

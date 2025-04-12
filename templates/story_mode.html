@@ -15,7 +15,11 @@
     <header class="dashboard-header child-header">
         <div class="logo">
             <!-- Title removed -->
-
+            {% if current_user.role == 'child' %}
+                <input type="hidden" id="child-id" value="{{ current_user.id }}">
+            {% elif child and child.id %}
+                <input type="hidden" id="child-id" value="{{ child.id }}">
+            {% endif %}
         </div>
         <div class="story-nav">
             <a href="{{ url_for('child_dashboard') }}" class="btn back-btn">Back to Dashboard</a>
