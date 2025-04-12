@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Parent Login - Children's Castle</title>
+<link href="/css/style.css" rel="stylesheet"/>
+<!-- Firebase Configuration -->
+<script>
+        // Firebase configuration values
+        window.FIREBASE_API_KEY = "";
+        window.FIREBASE_PROJECT_ID = "";
+        window.FIREBASE_APP_ID = "";
+    </script>
+<style>
+        .password-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .show-password-toggle {
+            position: absolute;
+            right: 10px;
+            cursor: pointer;
+            color: #4a6da7;
+            font-size: 14px;
+            user-select: none;
+        }
+        
+        .show-password-toggle:hover {
+            text-decoration: underline;
+        }
+        
+        .or-divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: #666;
+        }
+        
+        .or-divider hr {
+            flex: 1;
+            height: 1px;
+            background-color: #ddd;
+            border: none;
+        }
+        
+        .or-divider span {
+            padding: 0 15px;
+            font-size: 14px;
+        }
+        
+        .google-signin {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .google-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 10px 15px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #444;
+            cursor: pointer;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .google-btn:hover {
+            background-color: #f8f8f8;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        }
+        
+        .google-btn img {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+        
+        .guest-signin {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .guest-btn {
+            width: 100%;
+            padding: 10px 15px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #555;
+            cursor: pointer;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .guest-btn:hover {
+            background-color: #ededed;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 10px;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-top-color: #4285F4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+<script type="module">
+            // Import the functions you need from the SDKs
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+            import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+            
+            // Firebase configuration with environment variable placeholders
+            const firebaseConfig = {
+                apiKey: "FIREBASE_API_KEY",
+                authDomain: "story-time-fun.firebaseapp.com",
+                projectId: "story-time-fun",
+                storageBucket: "story-time-fun.firebasestorage.app",
+                messagingSenderId: "225122848236",
+                appId: "FIREBASE_APP_ID",
+            };
+            
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            
+            // Redirect to login if not authenticated (for protected pages)
+            if ("REQUIRE_AUTH" === "true") {
+                auth.onAuthStateChanged(user => {
+                    if (!user && window.location.pathname !== '/index.html' && window.location.pathname !== '/') {
+                        window.location.href = '/index.html';
+                    }
+                });
+            }
+        </script></head>
+<body class="auth-body">
+<div class="login-container">
+<div class="login-header">
+<!-- Title removed -->
+<p>Parent Login</p>
+</div>
+<div class="login-body">
+<form action="/parent/login" method="POST">
+
+<div class="form-group">
+<label for="username">Username</label>
+<input id="username" name="username" required="" type="text"/>
+</div>
+<div class="form-group">
+<label for="password">Password</label>
+<div class="password-input-wrapper">
+<input id="password" name="password" required="" type="password"/>
+<span class="show-password-toggle" onclick="togglePasswordVisibility()">Show</span>
+</div>
+<a class="forgot-password" href="/parent/reset-password">Forgot Password?</a>
+</div>
+<div class="form-group checkbox">
+<input id="remember" name="remember" type="checkbox"/>
+<label for="remember">Remember me</label>
+</div>
+<div class="form-actions">
+<button class="login-btn" type="submit">Login</button>
+</div>
+</form>
+<div class="or-divider">
+<hr/><span>OR</span><hr/>
+</div>
+<div class="google-signin">
+<button class="google-btn" id="google-signin-btn" type="button">
+<img alt="Google logo" src="/images/google-logo.svg"/>
+                    Sign in with Google
+                </button>
+</div>
+<div class="or-divider">
+<hr/><span>OR</span><hr/>
+</div>
+<div class="guest-signin">
+<form action="/guest-login" method="POST">
+
+<button class="guest-btn" type="submit">
+                        Continue as Guest
+                        <small style="display: block; margin-top: 5px; font-size: 11px; color: #666;">
+                            Try all features with parent &amp; child combined view
+                        </small>
+</button>
+</form>
+</div>
+<div class="alt-actions">
+<p>Don't have an account? <a href="/parent/register">Register Now</a></p>
+</div>
+</div>
+</div>
+<script>
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const toggleButton = document.querySelector('.show-password-toggle');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleButton.textContent = 'Hide';
+            } else {
+                passwordInput.type = 'password';
+                toggleButton.textContent = 'Show';
+            }
+        }
+    </script>
+<!-- Firebase SDK -->
+<script type="module">
+        // Import the functions from the SDK
+        import { signInWithGoogle } from "/static/js/firebase-init.js";
+        
+        // Set up event listener for Google Sign-In button
+        document.addEventListener('DOMContentLoaded', function() {
+            const googleButton = document.getElementById('google-signin-btn');
+            if (googleButton) {
+                googleButton.addEventListener('click', async function() {
+                    try {
+                        // Show loading state
+                        googleButton.innerHTML = '<span class="loading-spinner"></span> Signing in...';
+                        googleButton.disabled = true;
+                        
+                        // Call the signInWithGoogle function
+                        await signInWithGoogle();
+                        
+                        // Note: If successful, the signInWithGoogle function will redirect
+                        // to the dashboard, so we only need to handle errors
+                    } catch (error) {
+                        console.error('Google Sign-In error:', error);
+                        googleButton.innerHTML = '<img src="/static/images/google-logo.svg" alt="Google logo"> Sign in with Google';
+                        googleButton.disabled = false;
+                        
+                        // Display error message
+                        const flashContainer = document.querySelector('.flashes') || document.createElement('div');
+                        if (!document.querySelector('.flashes')) {
+                            flashContainer.className = 'flashes';
+                            document.querySelector('.login-body').prepend(flashContainer);
+                        }
+                        
+                        const errorMsg = document.createElement('div');
+                        errorMsg.className = 'flash error';
+                        errorMsg.textContent = 'Google Sign-In failed. Please try again or use email login.';
+                        flashContainer.appendChild(errorMsg);
+                    }
+                });
+            }
+        });
+    </script>
+<script>
+            // Firebase adapter for static hosting
+            window.handleFirebaseAction = function(action, returnUrl) {
+                // In the static deployment, log actions rather than performing them
+                console.log('Firebase action:', action);
+                
+                // For demonstration, simulate the action feedback
+                alert('This would perform ' + action + ' in the full application.');
+                
+                // For login/logout, simulate the navigation
+                if (action === 'login') {
+                    window.location.href = returnUrl || '/story-mode.html';
+                } else if (action === 'logout') {
+                    window.location.href = '/index.html';
+                }
+                
+                return false; // Prevent form submission
+            };
+        </script></body>
+</html>

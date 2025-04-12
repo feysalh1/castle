@@ -5,9 +5,9 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Welcome to Children's Castle</title>
-<link href="/static/css/style.css" rel="stylesheet"/>
-<link href="/static/css/account.css" rel="stylesheet"/>
-<link href="/static/css/loading-animations.css" rel="stylesheet"/>
+<link href="/css/style.css" rel="stylesheet"/>
+<link href="/css/account.css" rel="stylesheet"/>
+<link href="/css/loading-animations.css" rel="stylesheet"/>
 <!-- Firebase SDK -->
 <script type="module">
         // Import the functions you need from the SDKs
@@ -286,9 +286,9 @@
 <div class="login-card parent-login">
 <h3>Parents</h3>
 <p>Access your account to manage settings and monitor your child's progress.</p>
-<a class="btn large-btn" href="/parent/login">Parent Login</a>
+<a class="btn large-btn" href="/parent-login.html">Parent Login</a>
 <button class="btn google-btn" onclick="signInWithGoogle()">
-<img alt="Google" height="20" src="/static/images/google-logo.svg" width="20"/>
+<img alt="Google" height="20" src="/images/google-logo.svg" width="20"/>
                         Sign in with Google
                     </button>
 <div class="registration-link">
@@ -298,7 +298,7 @@
 <div class="login-card child-login">
 <h3>Children</h3>
 <p>Enter your special code to explore stories and play educational games!</p>
-<a class="btn large-btn secondary-btn" href="/child/login">Child Login</a>
+<a class="btn large-btn secondary-btn" href="/child-login.html">Child Login</a>
 </div>
 <div class="login-card guest-login">
 <h3>Try as Guest</h3>
@@ -316,7 +316,7 @@
 <p>© 2025 Children's Castle. All rights reserved.copy; 2025. All rights reserved.</p>
 </div>
 </footer>
-<script src="/static/js/loading-animations.js"></script>
+<script src="/js/loading-animations.js"></script>
 <script>
             // Firebase adapter for static hosting
             window.handleFirebaseAction = function(action, returnUrl) {

@@ -19,6 +19,14 @@
           }
         ]
       }
-    ]
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "appAssociation": "AUTO",
+    "site": "childrencastles"
   }
 }

@@ -18,8 +18,12 @@ OUTPUT_DIR = "public"
 PAGES_TO_CAPTURE = [
     # Main pages
     {"url": "/", "output": "index.html"},
-    {"url": "/story_mode", "output": "story-mode.html"},
+    {"url": "/child/dashboard", "output": "story-mode.html"},
     {"url": "/game_mode", "output": "game-mode.html"},
+    
+    # Additional pages for a more complete experience
+    {"url": "/parent/login", "output": "parent-login.html"},
+    {"url": "/child/login", "output": "child-login.html"},
     
     # Add more pages as needed
     # {"url": "/other_page", "output": "other-page.html"},
@@ -52,6 +56,12 @@ def clean_html_for_static(html, page_url):
             if match:
                 tag['src'] = f"/{match.group(1)}"
     
+    # Fix static directory paths
+    for tag in soup.find_all(['a', 'link', 'script', 'img']):
+        for attr in ['href', 'src']:
+            if tag.has_attr(attr) and '/static/' in tag[attr]:
+                tag[attr] = tag[attr].replace('/static/', '/')
+    
     # Modify all relative URLs to be Firebase-friendly
     for tag in soup.find_all(['a', 'link', 'script', 'img']):
         for attr in ['href', 'src']:
@@ -63,6 +73,23 @@ def clean_html_for_static(html, page_url):
                 # For relative URLs, prepend with /
                 if not tag[attr].startswith('/'):
                     tag[attr] = f"/{tag[attr]}"
+    
+    # Remap URLs for the Firebase static site
+    for tag in soup.find_all('a'):
+        if tag.has_attr('href'):
+            # Convert internal links to the static versions
+            href = tag['href']
+            
+            # Handle core routes
+            if href == '/parent/login' or href == '/parent/dashboard':
+                tag['href'] = '/parent-login.html'
+            elif href == '/child/login':
+                tag['href'] = '/child-login.html'
+            elif href == '/child/dashboard':
+                tag['href'] = '/story-mode.html'
+            elif href == '/game_mode':
+                tag['href'] = '/game-mode.html'
+            # Add more route mappings as needed
     
     # Add Firebase configuration
     head = soup.find('head')
