@@ -50,7 +50,17 @@ if [ $? -eq 0 ]; then
   echo
   echo "✅ Deployment successful!"
   echo "Your site should be available at:"
-  echo "https://story-time-fun.web.app"
+  echo "https://childrencastles.web.app"
+  echo "or at your custom domain if configured: https://childrencastles.com"
+  echo
+  echo "📝 Custom Domain Setup Instructions:"
+  echo "1. Go to Firebase Console → Hosting"
+  echo "2. Click 'Add custom domain'"
+  echo "3. Enter 'childrencastles.com'"
+  echo "4. Follow the verification steps"
+  echo "5. Add the TXT record to your domain registrar for verification"
+  echo "6. Add the A records for your domain to point to Firebase's IP addresses"
+  echo "7. Wait for DNS propagation (can take 24-48 hours)"
 else
   echo
   echo "❌ Deployment failed. Please check the error messages above."

@@ -36,6 +36,12 @@ if curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/ | grep -q "200"
   else
     echo "✅ Successfully captured live HTML from the application!"
     use_template_html=false
+    
+    # Replace API key placeholders in all HTML files
+    echo "Replacing API key placeholders with actual keys..."
+    find public -name "*.html" -type f -exec sed -i "s/FIREBASE_API_KEY/$FIREBASE_API_KEY/g" {} \;
+    find public -name "*.html" -type f -exec sed -i "s/FIREBASE_APP_ID/$FIREBASE_APP_ID/g" {} \;
+    echo "✅ API keys securely injected into HTML files"
   fi
 else
   echo "⚠️ Warning: Flask application does not appear to be running. Falling back to template HTML creation."

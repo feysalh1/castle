@@ -42,6 +42,18 @@ def clean_html_for_static(html, page_url):
         for input_tag in form.find_all('input', {'name': 'csrf_token'}):
             input_tag.decompose()
     
+    # Replace any hardcoded API keys with placeholders
+    html_str = str(soup)
+    api_key_pattern = r'apiKey: "([A-Za-z0-9_\-]+)"'
+    app_id_pattern = r'appId: "([0-9:\-]+)"'
+    
+    # Replace API keys with placeholder
+    html_str = re.sub(api_key_pattern, 'apiKey: "FIREBASE_API_KEY"', html_str)
+    html_str = re.sub(app_id_pattern, 'appId: "FIREBASE_APP_ID"', html_str)
+    
+    # Parse the modified HTML
+    soup = BeautifulSoup(html_str, 'html.parser')
+    
     # Replace Flask URL patterns
     for tag in soup.find_all(['a', 'link', 'script', 'img']):
         if tag.has_attr('href') and "{{ url_for" in tag['href']:
@@ -184,6 +196,8 @@ def main():
     ensure_directory(os.path.join(OUTPUT_DIR, 'css'))
     ensure_directory(os.path.join(OUTPUT_DIR, 'js'))
     ensure_directory(os.path.join(OUTPUT_DIR, 'images'))
+    ensure_directory(os.path.join(OUTPUT_DIR, 'audio'))
+    ensure_directory(os.path.join(OUTPUT_DIR, 'data'))
     
     # First, copy static assets
     if os.path.exists('static'):
@@ -209,10 +223,47 @@ def main():
             with open(output_file, 'w', encoding='utf-8') as file:
                 file.write(cleaned_html)
             
+            # Find and download any missing static assets referenced in the HTML
+            soup = BeautifulSoup(cleaned_html, 'html.parser')
+            for tag in soup.find_all(['link', 'script', 'img']):
+                for attr in ['href', 'src']:
+                    if tag.has_attr(attr):
+                        # Check if this is a static resource path
+                        if any(path_type in tag[attr] for path_type in ['/css/', '/js/', '/images/']):
+                            asset_url = urljoin(FLASK_APP_URL, tag[attr])
+                            local_path = os.path.normpath(os.path.join(OUTPUT_DIR, tag[attr].lstrip('/')))
+                            
+                            # Only download if the file doesn't exist
+                            if not os.path.exists(local_path):
+                                try:
+                                    download_asset(asset_url, local_path)
+                                except Exception as e:
+                                    print(f"  Warning: Could not download asset {asset_url}: {e}")
+            
             print(f"Captured and processed {page_url}")
             
         except Exception as e:
             print(f"Error capturing {page['url']}: {e}")
+    
+    # Fix for common paths in Firebase hosting
+    print("Creating common redirects for Firebase hosting...")
+    
+    # Create a 404 page that redirects to index.html
+    not_found_html = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Page Not Found</title>
+        <meta http-equiv="refresh" content="0;URL='/'">
+    </head>
+    <body>
+        <p>If you are not redirected, <a href="/">click here</a>.</p>
+        <script>window.location.href = "/";</script>
+    </body>
+    </html>
+    """
+    with open(os.path.join(OUTPUT_DIR, '404.html'), 'w') as f:
+        f.write(not_found_html)
     
     print("HTML capture complete!")
 
