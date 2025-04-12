@@ -33,14 +33,18 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
 
-                    // Show loading animation after a short delay to let the shooting star animation finish
+                    // Show loading animation after shooting star animation
                     setTimeout(() => {
                         const loadingAnimation = document.getElementById('loading-animation');
                         if (loadingAnimation) {
                             loadingAnimation.style.display = 'flex';
                         }
-                        loadStoryById(bookId);
-                    }, 1500);
+                        
+                        // Load story with timeout to ensure proper animation
+                        setTimeout(() => {
+                            loadStoryById(bookId);
+                        }, 500);
+                    }, 1000);
 
                     // Load the story content
                     fetch(`/api/story/${bookId}`)

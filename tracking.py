@@ -13,6 +13,11 @@ def track_milestone_progress(child_id, milestone_id, value=1, check_only=False):
     Returns True if the milestone was just completed, False otherwise.
     If check_only is True, just check if the milestone is already completed.
     """
+    child = Child.query.get(child_id)
+    if not child:
+        print(f"Warning: Child with ID {child_id} not found, skipping milestone tracking")
+        return False
+
     milestone = Milestone.query.filter_by(
         child_id=child_id,
         milestone_id=milestone_id
@@ -175,6 +180,11 @@ def check_and_create_milestones(child_id):
 
 def update_streak_milestones(child_id, current_streak):
     """Update streak-based milestones with the current streak count"""
+    child = Child.query.get(child_id)
+    if not child:
+        print(f"Warning: Child with ID {child_id} not found, skipping streak milestone updates")
+        return
+
     # Check 3-day streak
     track_milestone_progress(
         child_id, 
@@ -326,3 +336,26 @@ def track_story_progress(child_id, story_id, story_title, completed=False):
 
     except Exception as e:
         return {"message": f"Error tracking story progress: {e}"}, 500
+
+def track_progress(child_id, content_type, content_id, content_title, **kwargs):
+    try:
+        # Check if child exists
+        child = db.session.query(Child).filter_by(id=child_id).first()
+        if not child:
+            print(f"Warning: Child with ID {child_id} not found, skipping progress tracking")
+            return None
+
+        # Create new progress entry
+        progress = Progress(
+            child_id=child_id,
+            content_type=content_type,
+            content_id=content_id,
+            content_title=content_title,
+            **kwargs
+        )
+        db.session.add(progress)
+        db.session.commit()
+        return progress
+
+    except Exception as e:
+        return {"message": f"Error tracking progress: {e}"}, 500
