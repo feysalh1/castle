@@ -855,4 +855,4 @@ fi
 echo "===== Preparation complete! ====="
 echo "The static assets are now prepared for Firebase Hosting."
 echo "Run 'firebase deploy --only hosting' to publish the site."
-echo "Your site will be available at https://story-time-fun.web.app"
+echo "Your site will be available at https://childrencastles.web.app"
