@@ -146,7 +146,7 @@ def generate_kid_friendly_response(prompt, child_age=4, max_tokens=200):
 
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
-        response = client.chat.completions.create(
+        response = openai_client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": system_message},
@@ -176,13 +176,12 @@ def generate_interactive_story(story_prompt, child_age=4, include_questions=True
     Returns:
         dict: Story content with pages and optional questions
     """
+    # Get the OpenAI client (with retry mechanism)
+    openai_client = get_client()
+    
     # Check if OpenAI client is properly initialized
-    if client is None:
+    if openai_client is None:
         logger.error("OpenAI client not initialized. Cannot generate interactive story.")
-
-    # Check if API key is valid
-    if not OPENAI_API_KEY or len(OPENAI_API_KEY) < 20:
-        logger.error("Invalid OPENAI_API_KEY. Cannot generate interactive story.")
         # Return a simple backup story
         return {
             "title": "The Adventure of the Curious Child",
@@ -242,7 +241,7 @@ def generate_interactive_story(story_prompt, child_age=4, include_questions=True
 
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
-        response = client.chat.completions.create(
+        response = openai_client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": system_message},
@@ -296,14 +295,12 @@ def answer_story_question(story_context, question, child_age=4):
     Returns:
         str: Encouraging response to the child's answer
     """
+    # Get the OpenAI client (with retry mechanism)
+    openai_client = get_client()
+    
     # Check if OpenAI client is properly initialized
-    if client is None:
+    if openai_client is None:
         logger.error("OpenAI client not initialized. Cannot generate story question response.")
-        return "That's a wonderful answer! You're so creative and smart!"
-
-    # Check if API key is valid
-    if not OPENAI_API_KEY or len(OPENAI_API_KEY) < 20:
-        logger.error("Invalid OPENAI_API_KEY. Cannot generate story question response.")
         return "That's a wonderful answer! You're so creative and smart!"
 
     try:
@@ -325,7 +322,7 @@ def answer_story_question(story_context, question, child_age=4):
 
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
-        response = client.chat.completions.create(
+        response = openai_client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": system_message},
@@ -353,14 +350,12 @@ def generate_learning_tip(topic, child_age=4):
     Returns:
         str: A short learning tip for parents
     """
+    # Get the OpenAI client (with retry mechanism)
+    openai_client = get_client()
+    
     # Check if OpenAI client is properly initialized
-    if client is None:
+    if openai_client is None:
         logger.error("OpenAI client not initialized. Cannot generate learning tip.")
-        return f"Try incorporating {topic} into everyday activities through play. Children learn best when they're having fun and don't even realize they're learning!"
-
-    # Check if API key is valid
-    if not OPENAI_API_KEY or len(OPENAI_API_KEY) < 20:
-        logger.error("Invalid OPENAI_API_KEY. Cannot generate learning tip.")
         return f"Try incorporating {topic} into everyday activities through play. Children learn best when they're having fun and don't even realize they're learning!"
 
     try:
@@ -381,7 +376,7 @@ def generate_learning_tip(topic, child_age=4):
 
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
-        response = client.chat.completions.create(
+        response = openai_client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": system_message},
@@ -409,14 +404,12 @@ def generate_parent_advice(question, child_age=4):
     Returns:
         str: A helpful response for the parent
     """
+    # Get the OpenAI client (with retry mechanism)
+    openai_client = get_client()
+    
     # Check if OpenAI client is properly initialized
-    if client is None:
+    if openai_client is None:
         logger.error("OpenAI client not initialized. Cannot generate parent advice.")
-        return "I recommend focusing on your child's interests and building learning opportunities around them. The Children's Castle app offers personalized recommendations based on your child's engagement patterns that you can find in the Activity Summaries section."
-
-    # Check if API key is valid
-    if not OPENAI_API_KEY or len(OPENAI_API_KEY) < 20:
-        logger.error("Invalid OPENAI_API_KEY. Cannot generate parent advice.")
         return "I recommend focusing on your child's interests and building learning opportunities around them. The Children's Castle app offers personalized recommendations based on your child's engagement patterns that you can find in the Activity Summaries section."
 
     try:
@@ -443,7 +436,7 @@ def generate_parent_advice(question, child_age=4):
 
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
-        response = client.chat.completions.create(
+        response = openai_client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": system_message},
