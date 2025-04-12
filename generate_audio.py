@@ -47,44 +47,67 @@ stories = {
 }
 
 def fetch_or_generate_audio():
-    """Generate or record audio files for the stories using espeak."""
+    """Generate or record audio files for the stories using espeak and ffmpeg for post-processing."""
     results = {}
-    
+
     # Make sure the audio directory exists
     os.makedirs("static/audio", exist_ok=True)
-    
+
     # Process each story
     for story_id, story in stories.items():
         print(f"\n{'='*50}")
         print(f"Processing: {story['title']}")
         print(f"{'='*50}")
-        
+
         output_path = os.path.join("static/audio", story["filename"])
-        
+        temp_audio_file = f"{story_id}_temp.mp3"
+        temp_audio_path = os.path.join("static/audio", temp_audio_file)
+
+
         # Generate the audio with espeak (available in most Linux distros)
         try:
             # Create a text file with the story content
             text_file = f"{story_id}.txt"
             with open(text_file, 'w') as f:
                 f.write(story["text"])
-            
-            # Use espeak to generate MP3
+
+            # Use espeak to generate a temporary MP3
             cmd = [
                 "espeak", 
                 "-f", text_file,
-                "-w", output_path,
+                "-w", temp_audio_path,
                 "-s", "130",  # Speed
                 "-p", "50",   # Pitch
                 "-a", "150",  # Amplitude
                 "-v", "en-us+f3"  # Voice (female, child-friendly)
             ]
-            
-            print(f"Generating audio for {story['title']}...")
+
+            print(f"Generating temporary audio for {story['title']}...")
             subprocess.run(cmd, check=True)
-            
+
             # Clean up the text file
             os.remove(text_file)
-            
+
+            #Use ffmpeg to process the audio
+            cmd = [
+                "ffmpeg",
+                "-y",  # Overwrite output file if it exists
+                "-i", 
+                temp_audio_path, 
+                "-acodec",
+                "libmp3lame",
+                "-q:a",
+                "2",
+                "-filter:a",
+                "volume=1.2,loudnorm",  # Normalize audio levels
+                output_path
+            ]
+            print(f"Processing audio for {story['title']}...")
+            subprocess.run(cmd, check=True)
+
+            os.remove(temp_audio_path)
+
+
             if os.path.exists(output_path):
                 print(f"✓ Successfully generated audio for: {story['title']}")
                 results[story_id] = {
@@ -99,7 +122,7 @@ def fetch_or_generate_audio():
                     "status": "Failed",
                     "path": None
                 }
-                
+
         except Exception as e:
             print(f"✗ Error generating audio for {story['title']}: {e}")
             results[story_id] = {
@@ -107,17 +130,17 @@ def fetch_or_generate_audio():
                 "status": "Error",
                 "error": str(e)
             }
-    
+
     # Write results to a JSON file
     with open('audio_generation_results.json', 'w') as f:
         json.dump(results, f, indent=2)
-    
+
     # Print summary
     print("\nAudio Generation Summary:")
     for story_id, info in results.items():
         status_icon = "✓" if info['status'] == 'Generated' else "✗"
         print(f"{status_icon} {info['title']}: {info['status']}")
-    
+
     return results
 
 if __name__ == "__main__":
