@@ -14,14 +14,14 @@ logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "childrens_castle_app_secret")
 
-# Firebase configuration
-app.config['FIREBASE_API_KEY'] = os.environ.get('FIREBASE_API_KEY', 'AIzaSyAPTQO3lnt0GSyDgVCZjtj4i3gk3Qi6Vyo')
-app.config['FIREBASE_PROJECT_ID'] = os.environ.get('FIREBASE_PROJECT_ID', 'story-time-fun')
-app.config['FIREBASE_APP_ID'] = os.environ.get('FIREBASE_APP_ID', '1:952095451786:web:b3d6229418a1fd06972693')
-app.config['FIREBASE_MEASUREMENT_ID'] = os.environ.get('FIREBASE_MEASUREMENT_ID', 'G-RM452TNB0W')
-app.config['FIREBASE_MESSAGING_SENDER_ID'] = os.environ.get('FIREBASE_MESSAGING_SENDER_ID', '225122848236')
-app.config['FIREBASE_STORAGE_BUCKET'] = os.environ.get('FIREBASE_STORAGE_BUCKET', 'story-time-fun.appspot.com')
-app.config['FIREBASE_AUTH_DOMAIN'] = os.environ.get('FIREBASE_AUTH_DOMAIN', 'story-time-fun.firebaseapp.com')
+# Firebase configuration for Letter Adventure
+app.config['FIREBASE_API_KEY'] = os.environ.get('FIREBASE_API_KEY', 'AIzaSyCso96A0WrM68-A0FqC8rM01InqRP2mlik')
+app.config['FIREBASE_PROJECT_ID'] = os.environ.get('FIREBASE_PROJECT_ID', 'letter-adventure')
+app.config['FIREBASE_APP_ID'] = os.environ.get('FIREBASE_APP_ID', '1:953801566834:web:63f311476f3257f7a470eb')
+app.config['FIREBASE_MEASUREMENT_ID'] = os.environ.get('FIREBASE_MEASUREMENT_ID', 'G-PZYTN6H46P')
+app.config['FIREBASE_MESSAGING_SENDER_ID'] = os.environ.get('FIREBASE_MESSAGING_SENDER_ID', '953801566834')
+app.config['FIREBASE_STORAGE_BUCKET'] = os.environ.get('FIREBASE_STORAGE_BUCKET', 'letter-adventure.appspot.com')
+app.config['FIREBASE_AUTH_DOMAIN'] = os.environ.get('FIREBASE_AUTH_DOMAIN', 'letter-adventure.firebaseapp.com')
 
 # Set derived Firebase values if not explicitly set
 if app.config['FIREBASE_PROJECT_ID'] and not app.config['FIREBASE_STORAGE_BUCKET']:
