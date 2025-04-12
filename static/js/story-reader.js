@@ -1,6 +1,26 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize modal close button
     const closeModalBtn = document.getElementById('close-story-modal');
+    
+    // Add animation handlers for book cards
+    const bookCards = document.querySelectorAll('.book-card');
+    bookCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Only trigger if the click wasn't on the button
+            if (!e.target.classList.contains('read-book-btn')) {
+                // Remove expanded class from all cards
+                bookCards.forEach(c => c.classList.remove('expanded'));
+                // Add expanded class to clicked card
+                this.classList.add('expanded');
+                // Add animation class
+                this.classList.add('animate');
+                // Remove animation class after animation completes
+                setTimeout(() => {
+                    this.classList.remove('animate');
+                }, 800);
+            }
+        });
+    });
     if (closeModalBtn) {
         closeModalBtn.addEventListener('click', closeStoryModal);
     }

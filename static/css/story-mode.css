@@ -282,39 +282,39 @@
     .story-title {
         font-size: 1.8rem;
     }
-    
+
     .story-content {
         padding: 0 15px;
         margin: 20px auto;
     }
-    
+
     .story-selection label {
         font-size: 1.1rem;
     }
-    
+
     .story-selection select {
         font-size: 1rem;
         padding: 10px;
     }
-    
+
     .story-content-wrapper {
         padding: 20px;
     }
-    
+
     .story-text {
         padding: 20px;
     }
-    
+
     .story-text p {
         font-size: 1.3rem;
         line-height: 1.6;
         margin-bottom: 1rem;
     }
-    
+
     .story-controls {
         flex-wrap: wrap;
     }
-    
+
     .nav-btn, .primary-btn {
         flex: 1;
         min-width: 100px;
@@ -325,36 +325,69 @@
     .story-title {
         font-size: 1.6rem;
     }
-    
+
     .story-selection {
         padding: 15px;
     }
-    
+
     .empty-icon {
         width: 80px;
         height: 80px;
     }
-    
+
     .empty-story-message p {
         font-size: 1.1rem;
     }
-    
+
     .story-content-wrapper {
         padding: 15px;
     }
-    
+
     .story-text p {
         font-size: 1.1rem;
         line-height: 1.5;
         margin-bottom: 0.8rem;
     }
-    
+
     .story-controls {
         gap: 10px;
     }
-    
+
     .nav-btn, .primary-btn {
         padding: 8px;
         font-size: 0.9rem;
     }
+}
+
+/* Story Card Animation Styles */
+.book-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s ease-in-out;
+    position: relative;
+    cursor: pointer;
+}
+
+.book-card.expanded {
+    transform: scale(1.1);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+}
+
+@keyframes cardExpand {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.book-card.animate {
+    animation: cardExpand 0.8s ease-in-out;
 }
