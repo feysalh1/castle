@@ -28,4 +28,5 @@ dependencies = [
     "wtforms>=3.2.1",
     "oauthlib>=3.2.2",
     "firebase-admin>=6.7.0",
+    "pyopenssl>=25.0.0",
 ]

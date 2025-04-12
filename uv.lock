@@ -1275,6 +1275,19 @@ crypto = [
 ]
 
 [[package]]
+name = "pyopenssl"
+version = "25.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cryptography" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9f/26/e25b4a374b4639e0c235527bbe31c0524f26eda701d79456a7e1877f4cc5/pyopenssl-25.0.0.tar.gz", hash = "sha256:cd2cef799efa3936bb08e8ccb9433a575722b9dd986023f1cabc4ae64e9dac16", size = 179573 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ca/d7/eb76863d2060dcbe7c7e6cccfd95ac02ea0b9acc37745a0d99ff6457aefb/pyOpenSSL-25.0.0-py3-none-any.whl", hash = "sha256:424c247065e46e76a37411b9ab1782541c23bb658bf003772c3405fbaa128e90", size = 56453 },
+]
+
+[[package]]
 name = "pyparsing"
 version = "3.2.3"
 source = { registry = "https://pypi.org/simple" }
@@ -1408,6 +1421,7 @@ dependencies = [
     { name = "psutil" },
     { name = "psycopg2-binary" },
     { name = "pyjwt" },
+    { name = "pyopenssl" },
     { name = "python-dotenv" },
     { name = "qrcode" },
     { name = "requests" },
@@ -1436,6 +1450,7 @@ requires-dist = [
     { name = "psutil", specifier = ">=7.0.0" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
     { name = "pyjwt", specifier = ">=2.10.1" },
+    { name = "pyopenssl", specifier = ">=25.0.0" },
     { name = "python-dotenv", specifier = ">=1.1.0" },
     { name = "qrcode", specifier = ">=8.1" },
     { name = "requests", specifier = ">=2.32.3" },
