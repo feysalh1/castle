@@ -2,21 +2,13 @@ import os
 import logging
 from dotenv import load_dotenv
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase
+from db import db, init_db
 
 # Load environment variables
 load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
-
-# Define base class for SQLAlchemy models
-class Base(DeclarativeBase):
-    pass
-
-# Initialize database
-db = SQLAlchemy(model_class=Base)
 
 # Create Flask app
 app = Flask(__name__)

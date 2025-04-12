@@ -27,8 +27,8 @@ STORIES_DIR = "static/stories"
 IMAGES_DIR = "static/images/stories"
 AUDIO_DIR = "static/audio"
 
-# Use the existing db object defined in models.py
-from models import db
+# Use our db object 
+from db import db
 
 # Import model classes
 from models import (
