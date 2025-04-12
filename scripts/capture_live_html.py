@@ -123,6 +123,13 @@ def clean_html_for_static(html, page_url):
                 appId: "FIREBASE_APP_ID",
             };
             
+            // Fix for popup sign-in issues
+            if (window.location.hostname === 'story-time-fun.web.app' || 
+                window.location.hostname === 'childrencastles.web.app' ||
+                window.location.hostname === 'childrencastles.com') {
+                firebaseConfig.authDomain = 'story-time-fun.firebaseapp.com';
+            }
+            
             // Initialize Firebase
             const app = initializeApp(firebaseConfig);
             const auth = getAuth(app);
@@ -148,7 +155,55 @@ def clean_html_for_static(html, page_url):
                 // In the static deployment, log actions rather than performing them
                 console.log('Firebase action:', action);
                 
-                // For demonstration, simulate the action feedback
+                try {
+                    // Import Firebase Auth if not already available
+                    if (typeof firebase === 'undefined') {
+                        import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js')
+                            .then(module => {
+                                const auth = firebase.auth();
+                                performFirebaseAction(auth, action, returnUrl);
+                            })
+                            .catch(error => {
+                                console.error("Error loading Firebase Auth:", error);
+                                simulateFallback(action, returnUrl);
+                            });
+                    } else {
+                        const auth = firebase.auth();
+                        performFirebaseAction(auth, action, returnUrl);
+                    }
+                } catch (error) {
+                    console.error("Firebase error:", error);
+                    simulateFallback(action, returnUrl);
+                }
+                
+                return false; // Prevent form submission
+            };
+            
+            function performFirebaseAction(auth, action, returnUrl) {
+                if (action === 'login') {
+                    var provider = new firebase.auth.GoogleAuthProvider();
+                    auth.signInWithRedirect(provider)
+                        .then(() => {
+                            window.location.href = returnUrl || '/story-mode.html';
+                        })
+                        .catch(error => {
+                            console.error("Login error:", error);
+                            alert("Login failed: " + error.message);
+                        });
+                } else if (action === 'logout') {
+                    auth.signOut()
+                        .then(() => {
+                            window.location.href = '/index.html';
+                        })
+                        .catch(error => {
+                            console.error("Logout error:", error);
+                            alert("Logout failed: " + error.message);
+                        });
+                }
+            }
+            
+            function simulateFallback(action, returnUrl) {
+                // Fallback for when Firebase auth isn't working
                 alert('This would perform ' + action + ' in the full application.');
                 
                 // For login/logout, simulate the navigation
@@ -157,9 +212,7 @@ def clean_html_for_static(html, page_url):
                 } else if (action === 'logout') {
                     window.location.href = '/index.html';
                 }
-                
-                return false; // Prevent form submission
-            };
+            }
         """
         body.append(adapter_script)
     
