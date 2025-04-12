@@ -13,17 +13,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentPageSpan = document.getElementById('current-page');
     const totalPagesSpan = document.getElementById('total-pages');
     const loadingAnimation = document.getElementById('loading-animation');
-    
+
     // For the new age-based UI
     const readBookButtons = document.querySelectorAll('.read-book-btn');
-    
+
     // Story state
     let storyContent = '';
     let storyPages = [];
     let currentPage = 0;
     let storyAudio = null;
     let isAudioPlaying = false;
-    
+
     // Add event listeners for the read book buttons (new UI)
     if (readBookButtons.length > 0) {
         readBookButtons.forEach(button => {
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    
+
     // Add event listener for the story select dropdown (legacy UI)
     if (storySelect) {
         storySelect.addEventListener('change', async function() {
@@ -45,19 +45,19 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     // Load story content from server
     async function loadStoryById(storyId) {
         showLoading(true);
-        
+
         try {
             const response = await fetch(`/api/story/${storyId}`);
             const data = await response.json();
-            
+
             if (data.success) {
                 // Store story content
                 storyContent = data.content;
-                
+
                 // If enhanced story with pages
                 if (data.enhanced && data.pages) {
                     // For enhanced stories, use the pre-defined pages
@@ -66,21 +66,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     // For regular stories, split by paragraphs
                     storyPages = storyContent.split('\n\n').filter(p => p.trim() !== '');
                 }
-                
+
                 // Initialize story display
                 currentPage = 0;
                 totalPagesSpan.textContent = storyPages.length;
-                
+
                 // Show story and hide empty message
                 emptyMessage.style.display = 'none';
                 storyWrapper.style.display = 'block';
-                
+
                 // Display first page
                 displayPage(0);
-                
+
                 // Track progress with the story
                 trackProgress(storyId, data.title || 'Untitled Story', false);
-                
+
                 // Set up page navigation
                 setupPageNavigation();
             } else {
@@ -92,19 +92,19 @@ document.addEventListener('DOMContentLoaded', function() {
             showLoading(false);
         }
     }
-    
+
     // Display a specific page of the story
     function displayPage(pageIndex) {
         if (pageIndex >= 0 && pageIndex < storyPages.length) {
             currentPage = pageIndex;
-            
+
             // For enhanced stories with pages object
             if (typeof storyPages[pageIndex] === 'object') {
                 const page = storyPages[pageIndex];
-                
+
                 // Set text content
                 storyParagraph.textContent = page.text || '';
-                
+
                 // Set illustration if available
                 if (page.image) {
                     storyIllustration.src = page.image;
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     storyIllustration.style.display = 'none';
                 }
-                
+
                 // Set up audio if available
                 if (page.audio) {
                     setupAudio(page.audio);
@@ -129,16 +129,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 isAudioPlaying = false;
                 playButton.textContent = 'Play / Pause';
             }
-            
+
             // Update UI elements
             currentPageSpan.textContent = currentPage + 1;
             const progressPercent = ((currentPage + 1) / storyPages.length) * 100;
             progressFill.style.width = progressPercent + '%';
-            
+
             // Update button states
             prevButton.disabled = currentPage === 0;
             nextButton.disabled = currentPage === storyPages.length - 1;
-            
+
             // If this is the last page, mark story as completed
             if (currentPage === storyPages.length - 1) {
                 const storyId = storySelect ? storySelect.value : 
@@ -146,28 +146,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 const storyTitle = storySelect ? 
                                   storySelect.options[storySelect.selectedIndex].text : 
                                   document.querySelector('.book-card h4')?.textContent || 'Untitled Story';
-                
+
                 trackProgress(storyId, storyTitle, true);
             }
         }
     }
-    
+
     // Setup audio player
     function setupAudio(audioSrc) {
         if (storyAudio) {
             storyAudio.pause();
             storyAudio = null;
         }
-        
-        storyAudio = new Audio(audioSrc);
-        storyAudio.addEventListener('ended', function() {
-            isAudioPlaying = false;
-            playButton.textContent = 'Play / Pause';
-        });
-        
+
+        // Get selected voice
+        const narratorVoice = document.getElementById('narrator-voice').value;
+
+        // Generate audio with selected voice if it's a text source
+        if (typeof audioSrc === 'string' && !audioSrc.startsWith('http') && !audioSrc.startsWith('/')) {
+            fetch('/api/generate-voice', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    text: audioSrc,
+                    voice_id: narratorVoice
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.audio_url) {
+                    storyAudio = new Audio(data.audio_url);
+                    storyAudio.addEventListener('ended', function() {
+                        isAudioPlaying = false;
+                        playButton.textContent = 'Play / Pause';
+                    });
+                }
+            })
+            .catch(error => console.error('Error generating voice:', error));
+        } else {
+            storyAudio = new Audio(audioSrc);
+            storyAudio.addEventListener('ended', function() {
+                isAudioPlaying = false;
+                playButton.textContent = 'Play / Pause';
+            });
+        }
+
         playButton.disabled = false;
     }
-    
+
     // Setup page navigation buttons
     function setupPageNavigation() {
         prevButton.addEventListener('click', function() {
@@ -180,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-        
+
         nextButton.addEventListener('click', function() {
             if (currentPage < storyPages.length - 1) {
                 displayPage(currentPage + 1);
@@ -191,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-        
+
         playButton.addEventListener('click', function() {
             if (storyAudio) {
                 if (isAudioPlaying) {
@@ -206,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     // Track progress in the story
     function trackProgress(storyId, storyTitle, completed) {
         const data = {
@@ -217,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
             time_spent: 60, // Default to 1 minute
             pages_read: currentPage + 1
         };
-        
+
         fetch('/api/track-progress', {
             method: 'POST',
             headers: {
@@ -227,19 +255,19 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => console.error('Error tracking progress:', error));
     }
-    
+
     // Show loading animation
     function showLoading(isLoading) {
         loadingAnimation.style.display = isLoading ? 'flex' : 'none';
     }
-    
+
     // Show error message
     function showError(message) {
         emptyMessage.style.display = 'block';
         storyWrapper.style.display = 'none';
         const errorParagraph = emptyMessage.querySelector('p');
         errorParagraph.textContent = message;
-        
+
         // Log error to server
         fetch('/api/log-error', {
             method: 'POST',
@@ -253,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
         }).catch(err => console.error('Failed to log error:', err));
     }
-    
+
     // Enable keyboard navigation
     document.addEventListener('keydown', function(event) {
         if (storyWrapper.style.display === 'block') {
@@ -269,7 +297,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-    
+
     // Track emotional feedback with emoji reactions
     const emojiContainer = document.createElement('div');
     emojiContainer.className = 'emoji-reactions';
@@ -283,9 +311,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <button class="emoji-btn" data-emotion="curious">🤔</button>
         </div>
     `;
-    
+
     storyContainer.appendChild(emojiContainer);
-    
+
     // Add styles for emoji reactions
     const style = document.createElement('style');
     style.textContent = `
@@ -297,25 +325,25 @@ document.addEventListener('DOMContentLoaded', function() {
             border-radius: 12px;
             display: none;
         }
-        
+
         .emoji-reactions.show {
             display: block;
             animation: fadeIn 0.5s;
         }
-        
+
         .emoji-title {
             display: block;
             margin-bottom: 10px;
             font-size: 1rem;
             color: #5a208f;
         }
-        
+
         .emoji-buttons {
             display: flex;
             justify-content: center;
             gap: 15px;
         }
-        
+
         .emoji-btn {
             font-size: 1.8rem;
             background: none;
@@ -325,24 +353,24 @@ document.addEventListener('DOMContentLoaded', function() {
             cursor: pointer;
             transition: transform 0.2s, border-color 0.2s;
         }
-        
+
         .emoji-btn:hover {
             transform: scale(1.2);
             border-color: #7e57c2;
         }
-        
+
         .emoji-btn.selected {
             border-color: #7e57c2;
             background-color: #f0e6ff;
         }
-        
+
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
     `;
     document.head.appendChild(style);
-    
+
     // Show emoji reactions when near the end of the story
     function updateEmojiDisplay() {
         if (currentPage >= Math.floor(storyPages.length * 0.75)) {
@@ -351,14 +379,14 @@ document.addEventListener('DOMContentLoaded', function() {
             emojiContainer.classList.remove('show');
         }
     }
-    
+
     // Add event listener to track page changes for emoji display
     const originalDisplayPage = displayPage;
     displayPage = function(pageIndex) {
         originalDisplayPage(pageIndex);
         updateEmojiDisplay();
     };
-    
+
     // Add event listeners to emoji buttons
     document.querySelectorAll('.emoji-btn').forEach(button => {
         button.addEventListener('click', function() {
@@ -366,14 +394,14 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.emoji-btn').forEach(btn => {
                 btn.classList.remove('selected');
             });
-            
+
             // Add selected class to clicked button
             this.classList.add('selected');
-            
+
             // Get the story ID
             const storyId = storySelect ? storySelect.value : 
                             document.querySelector('.read-book-btn[data-book-id]')?.getAttribute('data-book-id');
-            
+
             if (storyId) {
                 // Track emotional feedback
                 fetch('/api/track-event', {
@@ -395,17 +423,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
+
     // Check for query parameters to load a story directly
     const urlParams = new URLSearchParams(window.location.search);
     const storyParam = urlParams.get('story');
-    
+
     if (storyParam) {
         // If using dropdown, select the option
         if (storySelect) {
             storySelect.value = storyParam;
         }
-        
+
         // Load the story
         loadStoryById(storyParam);
     }

@@ -13,24 +13,24 @@
     <header class="dashboard-header child-header">
         <div class="logo">
             <!-- Title removed -->
-            
+
         </div>
         <div class="story-nav">
             <a href="{{ url_for('child_dashboard') }}" class="btn back-btn">Back to Dashboard</a>
             <a href="{{ url_for('logout') }}" class="btn logout-btn">Sign Out</a>
         </div>
     </header>
-    
+
     <main class="story-content">
         <h2 class="story-title">Story Mode</h2>
-        
+
         <div class="age-groups-container">
             {% if age_groups %}
                 {% for age_group in age_groups %}
                 <div class="age-group-section">
                     <h3>{{ age_group.name }}</h3>
                     <p>{{ age_group.description }}</p>
-                    
+
                     <div class="books-grid">
                         {% for book in books %}
                             {% if book.age_group_id == age_group.id %}
@@ -77,12 +77,12 @@
             </div>
             {% endif %}
         </div>
-        
+
         <style>
             .age-groups-container {
                 margin-bottom: 30px;
             }
-            
+
             .age-group-section {
                 margin-bottom: 40px;
                 background-color: #f7f7ff;
@@ -90,25 +90,25 @@
                 padding: 20px;
                 border-left: 6px solid #7e57c2;
             }
-            
+
             .age-group-section h3 {
                 color: #5a208f;
                 margin-bottom: 5px;
                 font-size: 1.4rem;
             }
-            
+
             .age-group-section p {
                 color: #666;
                 margin-bottom: 20px;
                 font-size: 0.9rem;
             }
-            
+
             .books-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
                 gap: 20px;
             }
-            
+
             .book-card {
                 background-color: white;
                 border-radius: 12px;
@@ -117,49 +117,49 @@
                 transition: transform 0.2s;
                 position: relative;
             }
-            
+
             .book-card:hover {
                 transform: translateY(-5px);
             }
-            
+
             .book-card h4 {
                 color: #5a208f;
                 margin-bottom: 5px;
                 font-size: 1.1rem;
             }
-            
+
             .book-author {
                 color: #888;
                 font-size: 0.85rem;
                 font-style: italic;
                 margin-bottom: 10px;
             }
-            
+
             .book-details {
                 display: flex;
                 justify-content: space-between;
                 margin-bottom: 10px;
             }
-            
+
             .difficulty-badge {
                 font-size: 0.75rem;
                 padding: 3px 8px;
                 border-radius: 10px;
                 color: white;
             }
-            
+
             .difficulty-badge.easy {
                 background-color: #4caf50;
             }
-            
+
             .difficulty-badge.medium {
                 background-color: #ff9800;
             }
-            
+
             .difficulty-badge.hard {
                 background-color: #f44336;
             }
-            
+
             .reading-time {
                 font-size: 0.75rem;
                 color: #666;
@@ -167,14 +167,14 @@
                 padding: 3px 8px;
                 border-radius: 10px;
             }
-            
+
             .book-card p {
                 color: #666;
                 font-size: 0.85rem;
                 margin-bottom: 15px;
                 line-height: 1.4;
             }
-            
+
             .read-book-btn {
                 background-color: #7e57c2;
                 color: white;
@@ -186,41 +186,41 @@
                 transition: background-color 0.2s;
                 width: 100%;
             }
-            
+
             .read-book-btn:hover {
                 background-color: #5e35b1;
             }
-            
+
             .book-card.disabled {
                 opacity: 0.7;
                 position: relative;
             }
-            
+
             .book-card.disabled .read-book-btn {
                 background-color: #ccc;
                 cursor: not-allowed;
             }
-            
+
             .age-lock-message {
                 font-size: 0.7rem;
                 color: #e53935;
                 text-align: center;
                 margin-top: 5px;
             }
-            
+
             @media (max-width: 768px) {
                 .books-grid {
                     grid-template-columns: 1fr;
                 }
             }
         </style>
-        
+
         <!-- Enhanced Stories Section -->
         {% if enhanced_stories %}
         <div class="story-selection enhanced-stories-section">
             <h3>Enhanced Stories with Character Voices</h3>
             <p>These stories feature character-specific voices and diverse representation.</p>
-            
+
             <div class="enhanced-stories-grid">
                 {% for story in enhanced_stories %}
                 <div class="enhanced-story-card">
@@ -243,14 +243,14 @@
                 padding: 20px;
                 border-radius: 12px;
             }
-            
+
             .enhanced-stories-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
                 gap: 15px;
                 margin-top: 20px;
             }
-            
+
             .enhanced-story-card {
                 background-color: white;
                 border-radius: 12px;
@@ -260,18 +260,18 @@
                 position: relative;
                 overflow: hidden;
             }
-            
+
             .enhanced-story-card h4 {
                 color: #5a208f;
                 margin-bottom: 5px;
             }
-            
+
             .enhanced-story-card p {
                 font-size: 0.9rem;
                 color: #666;
                 margin-bottom: 15px;
             }
-            
+
             .audio-badge {
                 display: inline-block;
                 background-color: #8a5fff;
@@ -281,7 +281,7 @@
                 border-radius: 10px;
                 margin-bottom: 10px;
             }
-            
+
             @media (max-width: 768px) {
                 .enhanced-stories-grid {
                     grid-template-columns: 1fr;
@@ -289,28 +289,40 @@
             }
         </style>
         {% endif %}
-        
+
         <div id="story-container" class="story-container">
             <div class="empty-story-message">
                 <img src="{{ url_for('static', filename='images/icons/book.svg') }}" alt="Book Icon" class="empty-icon">
                 <p>Choose a story from the list above to begin!</p>
             </div>
-            
+
             <div class="story-content-wrapper" style="display: none;">
                 <div class="story-image">
                     <img id="story-illustration" src="" alt="Story Illustration">
                 </div>
-                
+
                 <div class="story-text">
                     <p id="story-paragraph"></p>
                 </div>
-                
+
+                <div class="voice-settings">
+                    <div class="voice-setting-item">
+                      <label for="narrator-voice">Narrator Voice:</label>
+                      <select id="narrator-voice" class="voice-select">
+                        <option value="EXAVITQu4vr4xnSDxMaL">Sarah (Default)</option>
+                        <option value="pFZP5JQG7iQjIQuC4Bku">Lily (Child)</option>
+                        <option value="CwhRBWXzGAHq8TQ4Fs17">Roger (Fun)</option>
+                        <option value="JBFqnCBsd6RMkjVDRZzb">George (Male)</option>
+                        <option value="XB0fDUnXU5powFXDhCwa">Charlotte (Female)</option>
+                      </select>
+                    </div>
+                  </div>
                 <div class="story-controls">
-                    <button id="prev-btn" class="btn nav-btn">Previous</button>
+                    <button id="prev-btn" class="btn nav-btn" disabled>Previous</button>
                     <button id="play-btn" class="btn primary-btn">Play / Pause</button>
                     <button id="next-btn" class="btn nav-btn">Next</button>
                 </div>
-                
+
                 <div class="story-progress">
                     <div class="progress-bar">
                         <div id="progress-fill" class="progress-fill"></div>
@@ -322,7 +334,7 @@
             </div>
         </div>
     </main>
-    
+
     <script src="{{ url_for('static', filename='js/story-reader.js') }}"></script>
     <script src="{{ url_for('static', filename='js/story_mode.js') }}"></script>
     <div id="loading-animation" class="loading-container" style="display: none;">
@@ -331,7 +343,7 @@
             <p>Loading your adventure...</p>
         </div>
     </div>
-    
+
     <!-- Add console debugging -->
     <script>
         console.log('Story mode template loaded');
