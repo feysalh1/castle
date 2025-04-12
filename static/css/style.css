@@ -70,10 +70,7 @@ header {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.logo small {
-    font-size: 0.9rem;
-    margin-top: -5px;
-}
+/* Removed "Developed for Menira" small text */
 
 nav {
     display: flex;
