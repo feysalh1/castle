@@ -3,29 +3,59 @@
  * Creates a magical shooting star transition when selecting a story
  */
 
+// Wait for the document to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Shooting star script loaded');
+    
+    // Initialize the shooting star functionality
+    enhanceStorySelection();
+});
+
+/**
+ * Creates the container for shooting stars
+ * @returns {HTMLElement} The container element
+ */
 function createShootingStarContainer() {
     // Check if container already exists
-    if (document.querySelector('.shooting-star-container')) {
-        return document.querySelector('.shooting-star-container');
+    let container = document.querySelector('.shooting-star-container');
+    
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'shooting-star-container';
+        document.body.appendChild(container);
     }
-
-    // Create container for the shooting stars
-    const container = document.createElement('div');
-    container.className = 'shooting-star-container';
-    document.body.appendChild(container);
+    
     return container;
 }
 
+/**
+ * Creates a single shooting star
+ * @param {HTMLElement} container The container to add the star to
+ */
 function createShootingStar(container) {
-    // Create a shooting star element
+    // Create the star element
     const star = document.createElement('div');
     star.className = 'shooting-star';
     
-    // Add random positioning
-    const startX = Math.random() * 100 - 50; // Random X position
-    const startY = Math.random() * 100 + 50; // Random Y position
-    star.style.top = `${startY}px`;
+    // Random starting position (top edge)
+    const startX = Math.random() * window.innerWidth * 0.8 + window.innerWidth * 0.1;
+    const startY = Math.random() * window.innerHeight * 0.3;
+    
+    // Calculate travel distance (diagonal path)
+    const travelDistanceX = (Math.random() * 300) - 150;
+    const travelDistanceY = Math.random() * 300 + 200;
+    
+    // Set random rotation
+    const rotation = Math.random() * 45;
+    
+    // Set CSS variables for the animation
+    star.style.setProperty('--travel-distance-x', `${travelDistanceX}px`);
+    star.style.setProperty('--travel-distance-y', `${travelDistanceY}px`);
+    star.style.setProperty('--rotation', `${rotation}deg`);
+    
+    // Position the star
     star.style.left = `${startX}px`;
+    star.style.top = `${startY}px`;
     
     // Add to container
     container.appendChild(star);
@@ -33,112 +63,80 @@ function createShootingStar(container) {
     // Remove after animation completes
     setTimeout(() => {
         star.remove();
-    }, 1500);
+    }, 3000);
 }
 
+/**
+ * Creates multiple shooting stars
+ * @param {number} numStars Number of stars to create
+ */
 function runShootingStarAnimation(numStars = 5) {
     const container = createShootingStarContainer();
-    container.style.display = 'block';
     
-    // Create multiple shooting stars with staggered timing
+    // Create stars with slight delay between each
     for (let i = 0; i < numStars; i++) {
         setTimeout(() => {
             createShootingStar(container);
-        }, i * 300); // Stagger the stars
+        }, i * 300);
     }
-    
-    // Hide container after all animations complete
-    setTimeout(() => {
-        container.style.display = 'none';
-    }, numStars * 300 + 1500);
 }
 
+/**
+ * Applies zoom transition effect to an element
+ * @param {HTMLElement} element The element to apply the effect to
+ */
 function applyZoomTransition(element) {
+    // Add transition class
     element.classList.add('zoom-transition');
     
-    // Remove class after animation completes
+    // Apply active state after a small delay (to ensure the class is applied first)
     setTimeout(() => {
-        element.classList.remove('zoom-transition');
-    }, 1200);
+        element.classList.add('active');
+    }, 50);
 }
 
-// Enhance the story button click
+/**
+ * Enhances story selection with animations
+ */
 function enhanceStorySelection() {
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('Shooting star script loaded');
-        
-        const readBookButtons = document.querySelectorAll('.read-book-btn');
-        
-        if (readBookButtons.length > 0) {
-            readBookButtons.forEach(button => {
-                // Keep the original click handler but add our fancy effects
-                const originalClick = button.onclick;
+    // Add event listeners to both select dropdown and read book buttons
+    const storySelect = document.getElementById('story-select');
+    const readBookButtons = document.querySelectorAll('.read-book-btn');
+    
+    // For the dropdown selection
+    if (storySelect) {
+        storySelect.addEventListener('change', function() {
+            console.log('Story selected from dropdown');
+            
+            if (this.value) {
+                // Run the shooting star animation
+                runShootingStarAnimation(7);
                 
-                button.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    
-                    // Find the parent card and apply selected state
-                    const card = this.closest('.story-card-container');
-                    if (card) {
-                        card.classList.add('selected');
-                    }
-                    
-                    // Run shooting star animation
-                    runShootingStarAnimation(7);
-                    
-                    // Apply zoom transition to the book card
-                    setTimeout(() => {
-                        if (card) {
-                            applyZoomTransition(card);
-                        }
-                        
-                        // Get the book ID
-                        const bookId = this.getAttribute('data-book-id');
-                        
-                        // After visual effects, navigate to the story
-                        setTimeout(() => {
-                            fetch(`/api/story/${bookId}`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    console.log('Story data loaded with magical transition:', data);
-                                    
-                                    if (data.success) {
-                                        // Hide loading if necessary
-                                        if (typeof hideLoading === 'function') {
-                                            hideLoading();
-                                        } else if (document.getElementById('loading-animation')) {
-                                            document.getElementById('loading-animation').style.display = 'none';
-                                        }
-                                    } else {
-                                        console.error('Error loading story:', data.message);
-                                        alert('Sorry, there was a problem loading the story. Please try again.');
-                                        
-                                        // Hide loading if necessary
-                                        if (typeof hideLoading === 'function') {
-                                            hideLoading();
-                                        } else if (document.getElementById('loading-animation')) {
-                                            document.getElementById('loading-animation').style.display = 'none';
-                                        }
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error('Error fetching story:', error);
-                                    alert('Sorry, there was a problem loading the story. Please try again.');
-                                    
-                                    // Hide loading if necessary
-                                    if (typeof hideLoading === 'function') {
-                                        hideLoading();
-                                    } else if (document.getElementById('loading-animation')) {
-                                        document.getElementById('loading-animation').style.display = 'none';
-                                    }
-                                });
-                        }, 1000); // Wait for zoom animation before loading
-                    }, 500); // Small delay before zoom
-                });
+                // Apply zoom effect to the select element
+                applyZoomTransition(this.parentElement);
+            }
+        });
+    }
+    
+    // For the book cards with read buttons
+    if (readBookButtons.length > 0) {
+        readBookButtons.forEach(button => {
+            button.addEventListener('click', function(event) {
+                console.log('Book card button clicked');
+                
+                // Run the shooting star animation
+                runShootingStarAnimation(7);
+                
+                // Apply zoom effect to the book card
+                const bookCard = this.closest('.book-card');
+                if (bookCard) {
+                    applyZoomTransition(bookCard);
+                }
+                
+                // Don't stop the event here - let it propagate to load the story
             });
-        }
-    });
+        });
+    }
+    
+    console.log(`Enhanced story selection: ${storySelect ? 'dropdown active' : 'dropdown not found'}, ${readBookButtons.length} book buttons found`);
 }
-
-// Initialize the enhanced story selection
-enhanceStorySelection();

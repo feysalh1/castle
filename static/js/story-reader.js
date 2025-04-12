@@ -30,7 +30,10 @@ document.addEventListener('DOMContentLoaded', function() {
             button.addEventListener('click', async function() {
                 const bookId = this.getAttribute('data-book-id');
                 if (bookId) {
-                    await loadStoryById(bookId);
+                    // Load story after a short delay to allow shooting star animation to complete
+                    setTimeout(async () => {
+                        await loadStoryById(bookId);
+                    }, 1200);
                 }
             });
         });
@@ -41,7 +44,20 @@ document.addEventListener('DOMContentLoaded', function() {
         storySelect.addEventListener('change', async function() {
             const storyId = this.value;
             if (storyId) {
-                await loadStoryById(storyId);
+                // Run shooting star animation if available
+                if (typeof runShootingStarAnimation === 'function') {
+                    runShootingStarAnimation(7);
+                }
+                
+                // Apply zoom effect if available
+                if (typeof applyZoomTransition === 'function') {
+                    applyZoomTransition(this.parentElement);
+                }
+                
+                // Load story after a short delay to allow shooting star animation to complete
+                setTimeout(async () => {
+                    await loadStoryById(storyId);
+                }, 1200);
             }
         });
     }

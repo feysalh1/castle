@@ -20,12 +20,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log(`Book button clicked: ${bookId}`);
                 
                 if (bookId) {
-                    // Show loading animation if available
-                    if (typeof showLoading === 'function') {
-                        showLoading(true);
-                    } else if (document.getElementById('loading-animation')) {
-                        document.getElementById('loading-animation').style.display = 'flex';
+                    // Run shooting star animation if available
+                    if (typeof runShootingStarAnimation === 'function') {
+                        runShootingStarAnimation(7);
                     }
+                    
+                    // Apply zoom effect if available
+                    if (typeof applyZoomTransition === 'function') {
+                        const bookCard = this.closest('.book-card');
+                        if (bookCard) {
+                            applyZoomTransition(bookCard);
+                        }
+                    }
+                    
+                    // Show loading animation after a short delay to let the shooting star animation finish
+                    setTimeout(() => {
+                        if (typeof showLoading === 'function') {
+                            showLoading(true);
+                        } else if (document.getElementById('loading-animation')) {
+                            document.getElementById('loading-animation').style.display = 'flex';
+                        }
+                    }, 1000);
                     
                     // Load the story content
                     fetch(`/api/story/${bookId}`)

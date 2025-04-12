@@ -2050,14 +2050,16 @@ def get_story_content(story_id):
                 content += page.get('text', '')
             
             # Only track progress if we have a valid child record (or guest)
-            if child or session.get('user_type') == 'guest':
+            if child_exists:
                 try:
-                    # Track this view
-                    progress = Progress.query.filter_by(
-                        child_id=current_user.id,
-                        content_type='story',
-                        content_id=story_id
-                    ).first()
+                    # Use no_autoflush to prevent foreign key errors
+                    with db.session.no_autoflush:
+                        # Track this view
+                        progress = Progress.query.filter_by(
+                            child_id=current_user.id,
+                            content_type='story',
+                            content_id=story_id
+                        ).first()
                     
                     if not progress:
                         progress = Progress(
