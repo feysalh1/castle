@@ -15,16 +15,16 @@ chatgpt_bp = Blueprint('chatgpt', __name__)
 @chatgpt_bp.route('/ai-assistant')
 @login_required
 def ai_assistant():
-    """AI Assistant page for children"""
-    # Check if user is a child
-    if session.get('user_type') != 'child':
-        flash('Access denied. This page is for children only.', 'error')
+    """AI Assistant page for children and guests"""
+    # Check if user is a child or guest
+    if session.get('user_type') not in ['child', 'guest']:
+        flash('Access denied. This page is for children and guests only.', 'error')
         return redirect(url_for('index'))
     
     # Record AI assistant access in session activity log
     from models import Session
     user_session = Session.query.filter_by(
-        user_type='child',
+        user_type=session.get('user_type'),
         user_id=current_user.id,
         end_time=None
     ).order_by(Session.start_time.desc()).first()
@@ -40,8 +40,8 @@ def ai_assistant():
 @csrf.exempt
 def ask_assistant():
     """API endpoint to ask the AI assistant a question"""
-    # Check if user is a child
-    if session.get('user_type') != 'child':
+    # Check if user is a child or guest
+    if session.get('user_type') not in ['child', 'guest']:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     # Get request data
@@ -155,8 +155,8 @@ def ask_assistant():
 @csrf.exempt
 def generate_story():
     """API endpoint to generate an interactive story"""
-    # Check if user is a child
-    if session.get('user_type') != 'child':
+    # Check if user is a child or guest
+    if session.get('user_type') not in ['child', 'guest']:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     # Get request data
@@ -239,8 +239,8 @@ def generate_story():
 @csrf.exempt
 def answer_question():
     """API endpoint to respond to a child's answer to a story question"""
-    # Check if user is a child
-    if session.get('user_type') != 'child':
+    # Check if user is a child or guest
+    if session.get('user_type') not in ['child', 'guest']:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     # Get request data
