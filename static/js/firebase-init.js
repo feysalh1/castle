@@ -1,4 +1,4 @@
-// Firebase SDK - Using the version you provided in your snippet
+// Firebase SDK - Using the latest version
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import {
     getAuth,
@@ -7,14 +7,14 @@ import {
     getAdditionalUserInfo
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 
-// Your web app's Firebase configuration - Using direct values from your provided config
+// Your web app's Firebase configuration - Updated with the new project config
 const firebaseConfig = {
-    apiKey: "AIzaSyCso96A0WrM68-A0FqC8rM01InqRP2mlik",
-    authDomain: "letter-adventure.firebaseapp.com",
-    projectId: "letter-adventure",
-    storageBucket: "letter-adventure.appspot.com",
-    messagingSenderId: "953801566834",
-    appId: "1:953801566834:web:63f311476f3257f7a470eb"
+    apiKey: "AIzaSyCYwkHto_aNvRlNSRlsllBCKqiA3u_VTvc",
+    authDomain: "kingcastle-2e031.firebaseapp.com",
+    projectId: "kingcastle-2e031",
+    storageBucket: "kingcastle-2e031.firebasestorage.app",
+    messagingSenderId: "952095415786",
+    appId: "1:952095415786:web:b36d229418a1fd06972693"
 };
 
 // Initialize Firebase
