@@ -8,8 +8,7 @@
 }
 
 .dashboard-header {
-    background-color: white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background-color: transparent;
     padding: 15px 30px;
     display: flex;
     justify-content: space-between;
@@ -215,7 +214,7 @@
 }
 
 .child-header {
-    background-color: #ffefc4;
+    background-color: transparent;
     justify-content: space-between;
 }
 
@@ -253,11 +252,12 @@
 }
 
 .dashboard-footer {
-    background-color: #6a3093;
+    background-color: transparent;
     color: rgba(255, 255, 255, 0.8);
     text-align: center;
-    padding: 20px;
+    padding: 10px;
     margin-top: auto;
+    font-size: 0.8rem;
 }
 
 /* Avatar selection */
