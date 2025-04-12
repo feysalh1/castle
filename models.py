@@ -95,6 +95,7 @@ class Child(UserMixin, db.Model):
     daily_reports = db.relationship('DailyReport', backref='child', lazy=True, cascade="all, delete-orphan")
     weekly_reports = db.relationship('WeeklyReport', backref='child', lazy=True, cascade="all, delete-orphan")
     approved_books = db.relationship('ApprovedBooks', backref='child', lazy=True, cascade="all, delete-orphan")
+    story_moods = db.relationship('StoryMood', back_populates='child', lazy=True, cascade="all, delete-orphan")
     
     def set_pin(self, pin):
         """Set the PIN hash"""
@@ -747,3 +748,32 @@ class EducationalGame(db.Model):
     
     def __repr__(self):
         return f'<EducationalGame {self.title}>'
+
+
+class StoryMood(db.Model):
+    """Mood settings for dynamic storytelling"""
+    __tablename__ = 'story_moods'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    child_id = db.Column(db.Integer, db.ForeignKey('children.id'), nullable=False)
+    mood_type = db.Column(db.String(50), nullable=False)  # e.g., 'happy', 'calm', 'adventurous', 'sleepy'
+    intensity = db.Column(db.Integer, nullable=False, default=5)  # Scale of 1-10
+    active = db.Column(db.Boolean, default=True)
+    background_music = db.Column(db.String(100), nullable=True)  # Path to background music matching mood
+    color_theme = db.Column(db.String(50), nullable=True)  # CSS color theme for UI
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_used = db.Column(db.DateTime, nullable=True)
+    
+    # Define standard moods
+    @staticmethod
+    def get_standard_moods():
+        return [
+            {"type": "happy", "music": "happy_music.mp3", "color": "#FFD700"},
+            {"type": "calm", "music": "calm_music.mp3", "color": "#87CEEB"},
+            {"type": "adventurous", "music": "adventure_music.mp3", "color": "#FF6347"},
+            {"type": "sleepy", "music": "lullaby_music.mp3", "color": "#9370DB"},
+            {"type": "curious", "music": "curious_music.mp3", "color": "#32CD32"},
+        ]
+    
+    def __repr__(self):
+        return f'<StoryMood {self.child_id} - {self.mood_type}>'
