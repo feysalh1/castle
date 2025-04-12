@@ -32,7 +32,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: url('/static/images/background/night-castle-new.png') no-repeat center top fixed !important;
+    background: url('/static/images/background/night-castle-second.png') no-repeat center top fixed !important;
     background-size: contain !important;
     -webkit-background-size: contain !important;
     -moz-background-size: contain !important;
@@ -49,11 +49,12 @@ body {
 
 /* Header Styles */
 header {
-    background-color: transparent;
+    background-color: transparent !important;
     color: var(--light-text);
     padding: 15px 0;
     position: relative;
     z-index: 10;
+    box-shadow: none !important;
 }
 
 .logo {
@@ -208,11 +209,12 @@ main {
 
 /* Footer Styles */
 footer {
-    background-color: var(--primary-dark);
+    background-color: transparent !important;
     color: var(--light-text);
     text-align: center;
-    padding: 20px;
+    padding: 10px;
     margin-top: auto;
+    font-size: 0.8rem;
 }
 
 /* Responsive Styles */
