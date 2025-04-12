@@ -52,10 +52,10 @@ from models import (
 def try_db_connection():
     if not database_url or not database_url.startswith('postgresql'):
         return False
-    
+
     # Try different SSL modes
     ssl_modes = ["require", "prefer", "allow", "disable"]
-    
+
     for ssl_mode in ssl_modes:
         try:
             print(f"Trying database connection with sslmode={ssl_mode}...")
@@ -69,7 +69,7 @@ def try_db_connection():
             }
             # Re-initialize the app with new settings
             db.init_app(app)
-            
+
             # Test connection by creating tables
             with app.app_context():
                 db.create_all()
@@ -77,7 +77,7 @@ def try_db_connection():
                 return True
         except Exception as e:
             print(f"Connection failed with sslmode={ssl_mode}: {str(e)}")
-    
+
     print("All SSL modes failed. Database functionality may be limited.")
     return False
 
