@@ -19,5 +19,18 @@ steps:
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
+      - '--set-env-vars'
+      - 'DATABASE_URL=${_DATABASE_URL},OPENAI_API_KEY=${_OPENAI_API_KEY},FIREBASE_API_KEY=${_FIREBASE_API_KEY},FIREBASE_PROJECT_ID=${_FIREBASE_PROJECT_ID},FIREBASE_APP_ID=${_FIREBASE_APP_ID},ELEVENLABS_API_KEY=${_ELEVENLABS_API_KEY}'
+      - '--memory'
+      - '1Gi'
+      - '--cpu'
+      - '1'
 images:
   - 'gcr.io/$PROJECT_ID/childrens-castle'
+substitutions:
+  _DATABASE_URL: ''  # Set these values in Cloud Build trigger
+  _OPENAI_API_KEY: ''
+  _FIREBASE_API_KEY: ''
+  _FIREBASE_PROJECT_ID: 'story-time-fun'
+  _FIREBASE_APP_ID: ''
+  _ELEVENLABS_API_KEY: ''
