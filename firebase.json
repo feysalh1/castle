@@ -26,7 +26,6 @@
         "destination": "/index.html"
       }
     ],
-    "appAssociation": "AUTO",
-    "site": "childrencastles"
+    "appAssociation": "AUTO"
   }
 }
