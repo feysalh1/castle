@@ -27,10 +27,10 @@ STORIES_DIR = "static/stories"
 IMAGES_DIR = "static/images/stories"
 AUDIO_DIR = "static/audio"
 
-# Import the db object from main.py
-from main import db
+# Use the existing db object defined in models.py
+from models import db
 
-# Import models after db is defined
+# Import model classes
 from models import (
     Parent, Child, ParentSettings, Progress, Reward, Session,
     LearningGoal, StoryQueue, SkillProgress, WeeklyReport, DevicePairing,

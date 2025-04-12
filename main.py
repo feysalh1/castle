@@ -52,15 +52,16 @@ from models import (
     DailyReport, Milestone, Event, ErrorLog, AgeGroup, Book, ApprovedBooks
 )
 
-# Import views and routes - this must come after db and app are initialized
-import app as application
-
 # Create database tables if they don't exist
 with app.app_context():
     db.create_all()
 
 # Import database commands
 import db_commands
+
+# Import app functions AFTER database initialization
+# The functions and routes are already defined in app.py
+# We do NOT import app as a module to avoid circular imports
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
