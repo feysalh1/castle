@@ -68,7 +68,10 @@
     "rewrites": [
       {
         "source": "**",
-        "destination": "/index.html"
+        "run": {
+          "serviceId": "childrens-castle",
+          "region": "us-central1"
+        }
       }
     ],
     "appAssociation": "AUTO"
