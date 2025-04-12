@@ -38,3 +38,45 @@
         
         <div class="game-container">
             <!-- Age 4 Games -->
+            <div class="game-group active" data-category="age4">
+                <div class="game-card" data-game-id="word-builder">
+                    <h3>Word Builder</h3>
+                    <p>Practice spelling simple words</p>
+                    <button class="play-btn" data-game="word-builder" data-difficulty="easy">Play</button>
+                </div>
+                <div class="game-card" data-game-id="fun-addition">
+                    <h3>Fun Addition</h3>
+                    <p>Learn to add numbers from 1-10</p>
+                    <button class="play-btn" data-game="fun-addition" data-difficulty="easy">Play</button>
+                </div>
+            </div>
+            
+            <!-- Age 5+ Games -->
+            <div class="game-group" data-category="age5">
+                <div class="game-card" data-game-id="word-builder-advanced">
+                    <h3>Word Builder Advanced</h3>
+                    <p>Practice spelling more complex words</p>
+                    <button class="play-btn" data-game="word-builder" data-difficulty="medium">Play</button>
+                </div>
+                <div class="game-card" data-game-id="fun-subtraction">
+                    <h3>Fun Subtraction</h3>
+                    <p>Learn to subtract numbers from 1-20</p>
+                    <button class="play-btn" data-game="fun-subtraction" data-difficulty="medium">Play</button>
+                </div>
+            </div>
+            
+            <!-- External Games - Only visible if parent has allowed them -->
+            {% if settings and settings.allow_external_games %}
+            <div class="game-group" data-category="external">
+                <div class="game-card external" data-game-id="external-game-1">
+                    <h3>PBS Kids Games</h3>
+                    <p>Educational games from PBS Kids</p>
+                    <a href="https://pbskids.org/games/" target="_blank" class="external-link">Open</a>
+                </div>
+                <div class="game-card external" data-game-id="external-game-2">
+                    <h3>National Geographic Kids</h3>
+                    <p>Fun learning games from Nat Geo</p>
+                    <a href="https://kids.nationalgeographic.com/games/" target="_blank" class="external-link">Open</a>
+                </div>
+            </div>
+            {% endif %}
