@@ -6,18 +6,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-// Note: This config is specifically for the static showcase site
-// Firebase limits what can be done with these client-side keys through project settings & security rules
+// Firebase configuration
 const firebaseConfig = {
-  // In a real production app, these would be environment variables injected by the server
-  apiKey: "FIREBASE_API_KEY", // This would be replaced during build
+  apiKey: process.env.FIREBASE_API_KEY,
   authDomain: "story-time-fun.firebaseapp.com",
   projectId: "story-time-fun",
-  storageBucket: "story-time-fun.firebasestorage.app",
-  messagingSenderId: "225122848236",
-  appId: "FIREBASE_APP_ID", // This would be replaced during build
+  storageBucket: "story-time-fun.appspot.com",
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID,
   measurementId: "G-RM452TNB0W"
 };
 
