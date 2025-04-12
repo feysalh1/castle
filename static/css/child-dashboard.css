@@ -41,9 +41,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #8a5fff;
+    background-color: transparent;
     padding: 15px 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     position: relative;
     z-index: 10;
 }
@@ -273,10 +272,10 @@
 /* Dashboard Footer */
 .dashboard-footer {
     text-align: center;
-    padding: 20px;
-    background-color: #6a3093;
+    padding: 10px;
+    background-color: transparent;
     color: rgba(255, 255, 255, 0.8);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
 
 /* Animations */
