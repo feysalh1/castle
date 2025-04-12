@@ -2012,7 +2012,7 @@ def get_story_content(story_id):
                 content = f.read()
             
             # Only track progress if we have a valid child record (or guest)
-            if child_exists:
+            if child_exists and Child.query.get(current_user.id):
                 try:
                     # Use no_autoflush to prevent foreign key errors
                     with db.session.no_autoflush:
