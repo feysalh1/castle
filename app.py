@@ -1605,7 +1605,7 @@ def story_mode():
                           enhanced_stories=enhanced_stories, child_age=child_age)
 
 
-@app.route('/game-mode')
+@app.route('/game_mode')
 @login_required
 def game_mode():
     """Game mode page for children"""
@@ -1639,7 +1639,7 @@ def game_mode():
     # Record game mode access in session activity log
     from models import Session
     user_session = Session.query.filter_by(
-        user_type='child',
+        user_type=session.get('user_type'),
         user_id=current_user.id,
         end_time=None
     ).order_by(Session.start_time.desc()).first()
@@ -1665,7 +1665,7 @@ def rewards():
     
     # Record rewards page access in session activity log
     user_session = Session.query.filter_by(
-        user_type='child',
+        user_type=session.get('user_type'),
         user_id=current_user.id,
         end_time=None
     ).order_by(Session.start_time.desc()).first()

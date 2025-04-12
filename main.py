@@ -28,6 +28,10 @@ app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
+    "connect_args": {
+        "options": "-c timezone=utc",
+        "sslmode": "require"
+    } if database_url and database_url.startswith('postgresql') else {}
 }
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -44,9 +48,53 @@ from models import (
     DailyReport, Milestone, Event, ErrorLog, AgeGroup, Book, ApprovedBooks
 )
 
+# Function to test different SSL modes for PostgreSQL
+def try_db_connection():
+    if not database_url or not database_url.startswith('postgresql'):
+        return False
+    
+    # Try different SSL modes
+    ssl_modes = ["require", "prefer", "allow", "disable"]
+    
+    for ssl_mode in ssl_modes:
+        try:
+            print(f"Trying database connection with sslmode={ssl_mode}...")
+            app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+                "pool_recycle": 300,
+                "pool_pre_ping": True,
+                "connect_args": {
+                    "options": "-c timezone=utc",
+                    "sslmode": ssl_mode
+                } if database_url and database_url.startswith('postgresql') else {}
+            }
+            # Re-initialize the app with new settings
+            db.init_app(app)
+            
+            # Test connection by creating tables
+            with app.app_context():
+                db.create_all()
+                print(f"Database connection successful with sslmode={ssl_mode}!")
+                return True
+        except Exception as e:
+            print(f"Connection failed with sslmode={ssl_mode}: {str(e)}")
+    
+    print("All SSL modes failed. Database functionality may be limited.")
+    return False
+
 # Create database tables if they don't exist
-with app.app_context():
-    db.create_all()
+db_connected = False
+try:
+    with app.app_context():
+        db.create_all()
+        print("Database tables created successfully.")
+        db_connected = True
+except Exception as e:
+    print(f"Error creating database tables: {str(e)}")
+    print("Attempting to reconnect to database with different settings...")
+    db_connected = try_db_connection()
+
+if not db_connected:
+    print("WARNING: Database connection failed. Some features may not work correctly.")
 
 # Import database commands
 import db_commands
