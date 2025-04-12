@@ -307,9 +307,13 @@ def get_favorites(child_id, content_type=None, limit=5):
 
 def track_story_progress(child_id, story_id, story_title, completed=False):
     try:
-        # Verify child exists first
-        child = Child.query.get(child_id)
-        if not child:
+        # First check if child exists using direct SQL to prevent ORM issues
+        from sqlalchemy import text
+        from db import db
+        result = db.session.execute(text("SELECT COUNT(*) FROM children WHERE id = :child_id"), 
+                                  {"child_id": child_id}).scalar()
+        
+        if not result:
             print(f"Warning: Child with ID {child_id} not found, skipping story progress tracking")
             return {"success": False, "message": f"Child with ID {child_id} not found"}, 404
 
