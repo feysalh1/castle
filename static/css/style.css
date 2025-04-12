@@ -486,6 +486,12 @@ footer {
     word-wrap: break-word;
 }
 
+body {
+    background: url('/static/images/background/castle-night.jpg') no-repeat center center fixed;
+    background-size: cover;
+    min-height: 100vh;
+}
+
 .message.system {
     background-color: #e3f2fd;
     color: #0d47a1;
