@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to run shooting star animation
     window.runShootingStarAnimation = function(starCount = 5) {
-        console.log('Running shooting star animation with', starCount, 'stars');
         // Remove any existing stars
         container.innerHTML = '';
         
@@ -105,24 +104,3 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-
-// Function to initialize shooting stars that can be called from any page
-function initShootingStars() {
-    console.log("Initializing shooting stars...");
-    
-    // Create a test star every 8 seconds
-    setInterval(() => {
-        if (typeof window.runShootingStarAnimation === 'function') {
-            window.runShootingStarAnimation(1);
-        } else {
-            console.log("runShootingStarAnimation not defined yet");
-        }
-    }, 8000);
-    
-    // Create an initial set of stars
-    setTimeout(() => {
-        if (typeof window.runShootingStarAnimation === 'function') {
-            window.runShootingStarAnimation(3);
-        }
-    }, 1000);
-}
