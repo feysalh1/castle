@@ -9,6 +9,20 @@
   <link href="/css/story-mode.css" rel="stylesheet">
   <link href="/css/shooting-star.css" rel="stylesheet">
   <style>
+    /* Set body background to castle image */
+    body {
+      font-family: 'Nunito', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background-color: #0c1f3f;
+      background-image: url('/images/background/castle-night.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      color: #fff;
+    }
+    
     /* Additional styles for the static version */
     .story-selection {
       display: flex;
@@ -166,18 +180,18 @@
     </div>
   </footer>
   
-  <script src="/js/shooting-star.js"></script>
+  <script src="/js/shooting-stars-init.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Initialize shooting stars effect
-      if (typeof initShootingStars === 'function') {
-        initShootingStars();
-      }
-      
       // Add click event to story cards
       const storyCards = document.querySelectorAll('.story-card');
       storyCards.forEach(card => {
         card.addEventListener('click', function() {
+          // Create a burst of stars when clicking a story card
+          if (typeof createMultipleStars === 'function') {
+            createMultipleStars(5);
+          }
+          
           alert('This is a static demo. To access the full interactive story experience, please visit the full application at https://childrencastle.replit.app');
         });
       });
