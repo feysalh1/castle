@@ -1526,6 +1526,118 @@ def list_voices():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+@app.route('/story-mood-selector')
+@login_required
+def story_mood_selector():
+    """Mood selector page for story mode"""
+    if session.get('user_type') not in ['child', 'guest']:
+        flash('Access denied. This page is for children only.', 'error')
+        return redirect(url_for('index'))
+    
+    # Get child information
+    child = Child.query.get(current_user.id)
+    if not child:
+        # Handle guest child
+        if session.get('user_type') == 'guest' and session.get('guest_child_id'):
+            child = Child.query.get(session.get('guest_child_id'))
+    
+    # Get current active mood if any
+    active_mood = None
+    if child:
+        active_mood = StoryMood.query.filter_by(
+            child_id=child.id,
+            active=True
+        ).order_by(StoryMood.last_used.desc()).first()
+    
+    # Get standard moods from the model
+    moods = StoryMood.get_standard_moods()
+    
+    return render_template(
+        'story_mood_selector.html',
+        moods=moods,
+        active_mood=active_mood,
+        child=child
+    )
+
+@app.route('/api/save-mood', methods=['POST'])
+@login_required
+@csrf.exempt
+def save_mood():
+    """API endpoint to save mood selection"""
+    if session.get('user_type') not in ['child', 'guest']:
+        return jsonify({'success': False, 'message': 'Access denied.'}), 403
+    
+    # Get the request data
+    data = request.get_json()
+    mood_type = data.get('mood_type')
+    intensity = int(data.get('intensity', 5))
+    
+    # Validate the data
+    if not mood_type or not mood_type in [m['type'] for m in StoryMood.get_standard_moods()]:
+        return jsonify({'success': False, 'message': 'Invalid mood type.'}), 400
+    
+    if intensity < 1 or intensity > 10:
+        return jsonify({'success': False, 'message': 'Intensity must be between 1 and 10.'}), 400
+    
+    # Get child information
+    child = Child.query.get(current_user.id)
+    if not child:
+        # Handle guest child
+        if session.get('user_type') == 'guest' and session.get('guest_child_id'):
+            child = Child.query.get(session.get('guest_child_id'))
+        else:
+            return jsonify({'success': False, 'message': 'Child record not found.'}), 404
+    
+    try:
+        # Deactivate all existing moods
+        existing_moods = StoryMood.query.filter_by(child_id=child.id).all()
+        for mood in existing_moods:
+            mood.active = False
+        
+        # Look for existing mood of this type
+        existing_mood = StoryMood.query.filter_by(
+            child_id=child.id,
+            mood_type=mood_type
+        ).first()
+        
+        if existing_mood:
+            # Update existing mood
+            existing_mood.intensity = intensity
+            existing_mood.active = True
+            existing_mood.last_used = datetime.utcnow()
+            
+            # Get the color and background music for this mood
+            for mood in StoryMood.get_standard_moods():
+                if mood['type'] == mood_type:
+                    existing_mood.color_theme = mood['color']
+                    existing_mood.background_music = mood['music']
+                    break
+        else:
+            # Create new mood
+            new_mood = StoryMood(
+                child_id=child.id,
+                mood_type=mood_type,
+                intensity=intensity,
+                active=True,
+                last_used=datetime.utcnow()
+            )
+            
+            # Get the color and background music for this mood
+            for mood in StoryMood.get_standard_moods():
+                if mood['type'] == mood_type:
+                    new_mood.color_theme = mood['color']
+                    new_mood.background_music = mood['music']
+                    break
+            
+            db.session.add(new_mood)
+        
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error saving mood: {str(e)}")
+        return jsonify({'success': False, 'message': f'Error saving mood: {str(e)}'}), 500
+
 @app.route('/story-mode')
 @login_required
 def story_mode():
@@ -1540,6 +1652,14 @@ def story_mode():
     # Get child's age and information
     child = Child.query.get(current_user.id)
     child_age = child.age if child else 4  # Default to 4 if not set
+    
+    # Get the active mood if available
+    active_mood = None
+    if child:
+        active_mood = StoryMood.query.filter_by(
+            child_id=child.id,
+            active=True
+        ).order_by(StoryMood.last_used.desc()).first()
     
     # Get parent settings for age filter
     parent_settings = None
@@ -1610,7 +1730,8 @@ def story_mode():
         db.session.commit()
     
     return render_template('story_mode.html', age_groups=age_groups, books=books, 
-                          enhanced_stories=enhanced_stories, child_age=child_age)
+                          enhanced_stories=enhanced_stories, child_age=child_age,
+                          active_mood=active_mood)
 
 
 @app.route('/game_mode')

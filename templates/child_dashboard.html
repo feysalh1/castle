@@ -36,7 +36,10 @@
                     <img src="{{ url_for('static', filename='images/icons/book.svg') }}" alt="Story Mode" class="mode-icon">
                     <h3>Story Mode</h3>
                     <p>Read fun stories!</p>
-                    <a href="{{ url_for('story_mode') }}" class="btn">Start Reading</a>
+                    <div class="story-buttons">
+                        <a href="{{ url_for('story_mood_selector') }}" class="btn">Choose Mood</a>
+                        <a href="{{ url_for('story_mode') }}" class="btn">Start Reading</a>
+                    </div>
                 </div>
             </div>
             
