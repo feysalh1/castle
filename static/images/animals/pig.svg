@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200px" height="200px" viewBox="0 0 200 200" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g>
+    <!-- Pig Body -->
+    <circle cx="100" cy="110" r="60" fill="#ffcdd2" />
+    
+    <!-- Pig Face -->
+    <circle cx="100" cy="85" r="40" fill="#ffcdd2" />
+    
+    <!-- Pig Ears -->
+    <path d="M65 60 L55 30 L80 45 Z" fill="#ef9a9a" />
+    <path d="M135 60 L145 30 L120 45 Z" fill="#ef9a9a" />
+    
+    <!-- Eyes -->
+    <circle cx="85" cy="75" r="5" fill="#3e2723" />
+    <circle cx="115" cy="75" r="5" fill="#3e2723" />
+    <circle cx="87" cy="73" r="2" fill="white" />
+    <circle cx="117" cy="73" r="2" fill="white" />
+    
+    <!-- Snout -->
+    <ellipse cx="100" cy="95" rx="20" ry="15" fill="#f8bbd0" />
+    <circle cx="95" cy="95" r="4" fill="#e57373" />
+    <circle cx="105" cy="95" r="4" fill="#e57373" />
+    
+    <!-- Mouth -->
+    <path d="M90 105 C95 110, 105 110, 110 105" stroke="#e57373" stroke-width="2" fill="none" />
+    
+    <!-- Tail -->
+    <path d="M45 90 C35 85, 30 95, 35 100 C40 105, 42 95, 45 90" fill="#ffcdd2" stroke="#ef9a9a" stroke-width="1" />
+    
+    <!-- Legs -->
+    <rect x="70" y="150" width="15" height="20" rx="5" fill="#ffcdd2" />
+    <rect x="115" y="150" width="15" height="20" rx="5" fill="#ffcdd2" />
+  </g>
+</svg>

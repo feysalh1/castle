@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200px" height="200px" viewBox="0 0 200 200" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g>
+    <!-- Bear Body -->
+    <circle cx="100" cy="110" r="65" fill="#795548" />
+    
+    <!-- Bear Face -->
+    <circle cx="100" cy="85" r="45" fill="#8d6e63" />
+    
+    <!-- Bear Ears -->
+    <circle cx="70" cy="50" r="15" fill="#8d6e63" />
+    <circle cx="130" cy="50" r="15" fill="#8d6e63" />
+    <circle cx="70" cy="50" r="10" fill="#6d4c41" />
+    <circle cx="130" cy="50" r="10" fill="#6d4c41" />
+    
+    <!-- Muzzle -->
+    <circle cx="100" cy="100" r="25" fill="#bcaaa4" />
+    
+    <!-- Eyes -->
+    <circle cx="85" cy="75" r="6" fill="#3e2723" />
+    <circle cx="115" cy="75" r="6" fill="#3e2723" />
+    <circle cx="87" cy="73" r="2" fill="white" />
+    <circle cx="117" cy="73" r="2" fill="white" />
+    
+    <!-- Nose and Mouth -->
+    <circle cx="100" cy="95" r="7" fill="#3e2723" />
+    <path d="M100 102 L100 110 M90 108 C95 115, 105 115, 110 108" stroke="#3e2723" stroke-width="2" fill="none" />
+    
+    <!-- Arms -->
+    <circle cx="60" cy="130" r="15" fill="#8d6e63" />
+    <circle cx="140" cy="130" r="15" fill="#8d6e63" />
+  </g>
+</svg>

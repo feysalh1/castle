@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/child-dashboard.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/game-mode.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/loading-animations.css') }}">
+    <!-- Add jQuery and Bootstrap for interactivity -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body class="game-mode-page">
     <header class="dashboard-header child-header">
@@ -80,3 +83,431 @@
                 </div>
             </div>
             {% endif %}
+        </div>
+    </main>
+    
+    <!-- Game area - will be populated with the selected game -->
+    <div id="game-area" class="game-area hidden">
+        <div class="game-header">
+            <h3 id="current-game-title">Game Title</h3>
+            <button id="close-game" class="btn close-btn">Back to Games</button>
+        </div>
+        <div id="game-content" class="game-content-area">
+            <!-- Game content will be loaded here -->
+        </div>
+    </div>
+    
+    <!-- Loading animation overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-animation">
+            <div class="animal-container">
+                <div class="animal fox"></div>
+                <div class="animal bear"></div>
+                <div class="animal pig"></div>
+                <div class="animal monkey"></div>
+            </div>
+            <div class="loading-text">Loading your game...</div>
+        </div>
+    </div>
+    
+    <!-- Game JavaScript -->
+    <script src="{{ url_for('static', filename='js/games.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/loadGameWithAnimations.js') }}"></script>
+    
+    <script>
+    $(document).ready(function() {
+        // Tab switching functionality
+        $('.tab-btn').click(function() {
+            $('.tab-btn').removeClass('active');
+            $(this).addClass('active');
+            
+            const category = $(this).data('category');
+            $('.game-group').removeClass('active');
+            $(`.game-group[data-category="${category}"]`).addClass('active');
+        });
+        
+        // Game launching
+        $('.play-btn').click(function() {
+            const game = $(this).data('game');
+            const difficulty = $(this).data('difficulty');
+            const gameTitle = $(this).closest('.game-card').find('h3').text();
+            
+            // Show loading animation
+            $('#loading-overlay').removeClass('hidden');
+            
+            // Load the appropriate game
+            setTimeout(function() {
+                loadGame(game, difficulty, gameTitle);
+                $('#loading-overlay').addClass('hidden');
+                $('#game-area').removeClass('hidden');
+                $('#current-game-title').text(gameTitle);
+            }, 1500); // Delay to show animation
+        });
+        
+        // Close game button
+        $('#close-game').click(function() {
+            $('#game-area').addClass('hidden');
+            $('#game-content').empty();
+        });
+        
+        // Helper function to load a game
+        function loadGame(game, difficulty, title) {
+            $('#game-content').empty();
+            
+            switch(game) {
+                case 'word-builder':
+                    createWordBuilderGame(difficulty);
+                    break;
+                case 'fun-addition':
+                    createAdditionGame(difficulty);
+                    break;
+                case 'fun-subtraction':
+                    createSubtractionGame(difficulty);
+                    break;
+                default:
+                    $('#game-content').html('<p>Game not found. Please try another game.</p>');
+            }
+            
+            // Record that the user started this game
+            $.post('/api/track-progress', {
+                content_type: 'game',
+                content_id: game + '-' + difficulty,
+                content_title: title,
+                completed: false,
+                time_spent: 0
+            });
+        }
+        
+        // Word Builder Game
+        function createWordBuilderGame(difficulty) {
+            const gameContainer = $('<div class="word-builder-game"></div>');
+            
+            // Words based on difficulty
+            let words = [];
+            if (difficulty === 'easy') {
+                words = ['CAT', 'DOG', 'SUN', 'HAT', 'BED', 'MAP', 'PEN'];
+            } else {
+                words = ['TRAIN', 'HOUSE', 'PLANT', 'CHAIR', 'APPLE', 'WATER', 'ROBOT'];
+            }
+            
+            // Game state
+            let currentWord = '';
+            let score = 0;
+            let totalRounds = 5;
+            let currentRound = 0;
+            
+            // Game UI
+            const scoreDisplay = $('<div class="score-display">Score: <span id="current-score">0</span></div>');
+            const wordDisplay = $('<div class="word-display"><span id="current-word"></span></div>');
+            const letterContainer = $('<div class="letter-container"></div>');
+            const feedback = $('<div class="feedback"></div>');
+            
+            gameContainer.append(scoreDisplay, wordDisplay, letterContainer, feedback);
+            $('#game-content').append(gameContainer);
+            
+            // Start the game
+            nextWord();
+            
+            function nextWord() {
+                if (currentRound >= totalRounds) {
+                    // Game over
+                    feedback.html(`<p>Game Over! Your final score is ${score}.</p>
+                                <button id="play-again" class="btn play-again-btn">Play Again</button>`);
+                    
+                    // Record game completion
+                    $.post('/api/track-progress', {
+                        content_type: 'game',
+                        content_id: 'word-builder-' + difficulty,
+                        content_title: 'Word Builder ' + (difficulty === 'easy' ? '' : 'Advanced'),
+                        completed: true,
+                        time_spent: 300, // Approximate time in seconds
+                        score: Math.round((score / totalRounds) * 100) // Convert to percentage
+                    });
+                    
+                    $('#play-again').click(function() {
+                        currentRound = 0;
+                        score = 0;
+                        $('#current-score').text('0');
+                        feedback.empty();
+                        nextWord();
+                    });
+                    
+                    return;
+                }
+                
+                currentRound++;
+                
+                // Pick a random word
+                currentWord = words[Math.floor(Math.random() * words.length)];
+                
+                // Display word initially
+                $('#current-word').text(currentWord);
+                
+                // After 3 seconds, hide the word and show scrambled letters
+                setTimeout(function() {
+                    $('#current-word').text('?????');
+                    
+                    // Create scrambled letters
+                    letterContainer.empty();
+                    const letters = currentWord.split('').sort(() => Math.random() - 0.5);
+                    
+                    letters.forEach(letter => {
+                        const letterBtn = $(`<button class="letter-btn">${letter}</button>`);
+                        letterContainer.append(letterBtn);
+                    });
+                    
+                    // Add input area
+                    const inputArea = $('<div class="input-area"><span id="input-word"></span></div>');
+                    const submitBtn = $('<button class="btn submit-btn">Submit</button>');
+                    const clearBtn = $('<button class="btn clear-btn">Clear</button>');
+                    
+                    letterContainer.append('<br>', inputArea, submitBtn, clearBtn);
+                    
+                    // Letter click functionality
+                    $('.letter-btn').click(function() {
+                        const letter = $(this).text();
+                        $('#input-word').append(letter);
+                        $(this).prop('disabled', true);
+                    });
+                    
+                    // Submit functionality
+                    submitBtn.click(function() {
+                        const userWord = $('#input-word').text();
+                        
+                        if (userWord === currentWord) {
+                            score++;
+                            $('#current-score').text(score);
+                            feedback.html(`<p class="correct">Correct! The word is ${currentWord}.</p>`);
+                        } else {
+                            feedback.html(`<p class="incorrect">Incorrect. The word is ${currentWord}.</p>`);
+                        }
+                        
+                        // Next round after delay
+                        setTimeout(nextWord, 2000);
+                    });
+                    
+                    // Clear functionality
+                    clearBtn.click(function() {
+                        $('#input-word').empty();
+                        $('.letter-btn').prop('disabled', false);
+                    });
+                    
+                }, 3000);
+            }
+        }
+        
+        // Addition Game
+        function createAdditionGame(difficulty) {
+            const gameContainer = $('<div class="addition-game"></div>');
+            
+            // Game state
+            let score = 0;
+            let totalRounds = 10;
+            let currentRound = 0;
+            let num1, num2, correctAnswer;
+            
+            // Game UI
+            const scoreDisplay = $('<div class="score-display">Score: <span id="current-score">0</span></div>');
+            const equation = $('<div class="equation"><span id="num1"></span> + <span id="num2"></span> = ?</div>');
+            const answerArea = $('<div class="answer-area"></div>');
+            const feedback = $('<div class="feedback"></div>');
+            
+            gameContainer.append(scoreDisplay, equation, answerArea, feedback);
+            $('#game-content').append(gameContainer);
+            
+            // Start the game
+            nextEquation();
+            
+            function nextEquation() {
+                if (currentRound >= totalRounds) {
+                    // Game over
+                    feedback.html(`<p>Game Over! Your final score is ${score}.</p>
+                                <button id="play-again" class="btn play-again-btn">Play Again</button>`);
+                    
+                    // Record game completion
+                    $.post('/api/track-progress', {
+                        content_type: 'game',
+                        content_id: 'fun-addition-' + difficulty,
+                        content_title: 'Fun Addition',
+                        completed: true,
+                        time_spent: 300, // Approximate time in seconds
+                        score: Math.round((score / totalRounds) * 100) // Convert to percentage
+                    });
+                    
+                    $('#play-again').click(function() {
+                        currentRound = 0;
+                        score = 0;
+                        $('#current-score').text('0');
+                        feedback.empty();
+                        nextEquation();
+                    });
+                    
+                    return;
+                }
+                
+                currentRound++;
+                
+                // Generate random numbers based on difficulty
+                if (difficulty === 'easy') {
+                    num1 = Math.floor(Math.random() * 10) + 1; // 1-10
+                    num2 = Math.floor(Math.random() * 10) + 1; // 1-10
+                } else {
+                    num1 = Math.floor(Math.random() * 20) + 1; // 1-20
+                    num2 = Math.floor(Math.random() * 20) + 1; // 1-20
+                }
+                
+                correctAnswer = num1 + num2;
+                
+                $('#num1').text(num1);
+                $('#num2').text(num2);
+                
+                // Generate answer buttons
+                answerArea.empty();
+                
+                // Generate some incorrect answers
+                const answers = [correctAnswer];
+                while (answers.length < 4) {
+                    const wrongAnswer = correctAnswer + Math.floor(Math.random() * 10) - 5;
+                    if (wrongAnswer > 0 && !answers.includes(wrongAnswer)) {
+                        answers.push(wrongAnswer);
+                    }
+                }
+                
+                // Shuffle answers
+                answers.sort(() => Math.random() - 0.5);
+                
+                // Create answer buttons
+                answers.forEach(answer => {
+                    const answerBtn = $(`<button class="answer-btn">${answer}</button>`);
+                    answerArea.append(answerBtn);
+                    
+                    answerBtn.click(function() {
+                        const selectedAnswer = parseInt($(this).text());
+                        
+                        if (selectedAnswer === correctAnswer) {
+                            score++;
+                            $('#current-score').text(score);
+                            feedback.html(`<p class="correct">Correct!</p>`);
+                        } else {
+                            feedback.html(`<p class="incorrect">Incorrect. ${num1} + ${num2} = ${correctAnswer}</p>`);
+                        }
+                        
+                        // Disable all buttons
+                        $('.answer-btn').prop('disabled', true);
+                        
+                        // Next equation after delay
+                        setTimeout(nextEquation, 1500);
+                    });
+                });
+            }
+        }
+        
+        // Subtraction Game (simplified)
+        function createSubtractionGame(difficulty) {
+            const gameContainer = $('<div class="subtraction-game"></div>');
+            
+            // Game state
+            let score = 0;
+            let totalRounds = 10;
+            let currentRound = 0;
+            let num1, num2, correctAnswer;
+            
+            // Game UI
+            const scoreDisplay = $('<div class="score-display">Score: <span id="current-score">0</span></div>');
+            const equation = $('<div class="equation"><span id="num1"></span> - <span id="num2"></span> = ?</div>');
+            const answerArea = $('<div class="answer-area"></div>');
+            const feedback = $('<div class="feedback"></div>');
+            
+            gameContainer.append(scoreDisplay, equation, answerArea, feedback);
+            $('#game-content').append(gameContainer);
+            
+            // Start the game
+            nextEquation();
+            
+            function nextEquation() {
+                if (currentRound >= totalRounds) {
+                    // Game over
+                    feedback.html(`<p>Game Over! Your final score is ${score}.</p>
+                                <button id="play-again" class="btn play-again-btn">Play Again</button>`);
+                    
+                    // Record game completion
+                    $.post('/api/track-progress', {
+                        content_type: 'game',
+                        content_id: 'fun-subtraction-' + difficulty,
+                        content_title: 'Fun Subtraction',
+                        completed: true,
+                        time_spent: 300, // Approximate time in seconds
+                        score: Math.round((score / totalRounds) * 100) // Convert to percentage
+                    });
+                    
+                    $('#play-again').click(function() {
+                        currentRound = 0;
+                        score = 0;
+                        $('#current-score').text('0');
+                        feedback.empty();
+                        nextEquation();
+                    });
+                    
+                    return;
+                }
+                
+                currentRound++;
+                
+                // Generate random numbers based on difficulty
+                if (difficulty === 'easy') {
+                    num1 = Math.floor(Math.random() * 10) + 5; // 5-14
+                    num2 = Math.floor(Math.random() * num1); // 0-(num1-1)
+                } else {
+                    num1 = Math.floor(Math.random() * 20) + 10; // 10-29
+                    num2 = Math.floor(Math.random() * num1); // 0-(num1-1)
+                }
+                
+                correctAnswer = num1 - num2;
+                
+                $('#num1').text(num1);
+                $('#num2').text(num2);
+                
+                // Generate answer buttons
+                answerArea.empty();
+                
+                // Generate some incorrect answers
+                const answers = [correctAnswer];
+                while (answers.length < 4) {
+                    const wrongAnswer = correctAnswer + Math.floor(Math.random() * 10) - 5;
+                    if (wrongAnswer >= 0 && !answers.includes(wrongAnswer)) {
+                        answers.push(wrongAnswer);
+                    }
+                }
+                
+                // Shuffle answers
+                answers.sort(() => Math.random() - 0.5);
+                
+                // Create answer buttons
+                answers.forEach(answer => {
+                    const answerBtn = $(`<button class="answer-btn">${answer}</button>`);
+                    answerArea.append(answerBtn);
+                    
+                    answerBtn.click(function() {
+                        const selectedAnswer = parseInt($(this).text());
+                        
+                        if (selectedAnswer === correctAnswer) {
+                            score++;
+                            $('#current-score').text(score);
+                            feedback.html(`<p class="correct">Correct!</p>`);
+                        } else {
+                            feedback.html(`<p class="incorrect">Incorrect. ${num1} - ${num2} = ${correctAnswer}</p>`);
+                        }
+                        
+                        // Disable all buttons
+                        $('.answer-btn').prop('disabled', true);
+                        
+                        // Next equation after delay
+                        setTimeout(nextEquation, 1500);
+                    });
+                });
+            }
+        }
+    });
+    </script>
+</body>
+</html>
