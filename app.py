@@ -1921,43 +1921,58 @@ def get_story_content(story_id):
     from models import Book, Child
     book = Book.query.filter_by(file_name=f"{story_id}.txt").first()
     
-    # Verify child exists in database to prevent foreign key violation
-    child = Child.query.get(current_user.id)
-    if not child and session.get('user_type') != 'guest':
-        return jsonify({'success': False, 'message': 'Child account not found. Please log in again.'}), 404
+    # Check if child exists in database using direct SQL to prevent ORM autoflush issues
+    child_exists = False
+    if session.get('user_type') == 'child':
+        from sqlalchemy import text
+        try:
+            # Directly check if child record exists
+            sql = text("SELECT COUNT(*) FROM children WHERE id = :child_id")
+            result = db.session.execute(sql, {"child_id": current_user.id}).scalar()
+            child_exists = result > 0
+            if not child_exists:
+                return jsonify({'success': False, 'message': 'Child account not found. Please log in again.'}), 404
+        except Exception as e:
+            app.logger.error(f"Error checking child record: {str(e)}")
+            # Continue anyway to serve content, just don't track progress
+    else:
+        # For guest users, always allow access
+        child_exists = session.get('user_type') == 'guest'
     
     if book:
         try:
             with open(book.file_name, 'r') as f:
                 content = f.read()
             
-            # Only track progress if we have a valid child record
-            if child or session.get('user_type') == 'guest':
+            # Only track progress if we have a valid child record or it's a guest
+            if child_exists:
                 try:
-                    # Track this story view
-                    progress = Progress.query.filter_by(
-                        child_id=current_user.id,
-                        content_type='story',
-                        content_id=story_id
-                    ).first()
-                    
-                    if not progress:
-                        progress = Progress(
+                    # Use no_autoflush to prevent foreign key errors
+                    with db.session.no_autoflush:
+                        # Track this story view
+                        progress = Progress.query.filter_by(
                             child_id=current_user.id,
                             content_type='story',
-                            content_id=story_id,
-                            content_title=book.title,
-                            completed=False,
-                            access_count=1,
-                            last_session_duration=0
-                        )
-                        db.session.add(progress)
-                    else:
-                        progress.last_accessed = datetime.utcnow()
-                        progress.access_count += 1
-                    
-                    progress.update_streak()
-                    db.session.commit()
+                            content_id=story_id
+                        ).first()
+                        
+                        if not progress:
+                            progress = Progress(
+                                child_id=current_user.id,
+                                content_type='story',
+                                content_id=story_id,
+                                content_title=book.title,
+                                completed=False,
+                                access_count=1,
+                                last_session_duration=0
+                            )
+                            db.session.add(progress)
+                        else:
+                            progress.last_accessed = datetime.utcnow()
+                            progress.access_count += 1
+                        
+                        progress.update_streak()
+                        db.session.commit()
                 except Exception as e:
                     # Log the progress tracking error but still return the story content
                     app.logger.error(f"Error tracking progress: {str(e)}")
@@ -1984,32 +1999,34 @@ def get_story_content(story_id):
                 content = f.read()
             
             # Only track progress if we have a valid child record (or guest)
-            if child or session.get('user_type') == 'guest':
+            if child_exists:
                 try:
-                    # Also track this view
-                    progress = Progress.query.filter_by(
-                        child_id=current_user.id,
-                        content_type='story',
-                        content_id=story_id
-                    ).first()
-                    
-                    if not progress:
-                        progress = Progress(
+                    # Use no_autoflush to prevent foreign key errors
+                    with db.session.no_autoflush:
+                        # Also track this view
+                        progress = Progress.query.filter_by(
                             child_id=current_user.id,
                             content_type='story',
-                            content_id=story_id,
-                            content_title=story_id.replace('_', ' ').title(),
-                            completed=False,
-                            access_count=1,
-                            last_session_duration=0
-                        )
-                        db.session.add(progress)
-                    else:
-                        progress.last_accessed = datetime.utcnow()
-                        progress.access_count += 1
-                    
-                    progress.update_streak()
-                    db.session.commit()
+                            content_id=story_id
+                        ).first()
+                        
+                        if not progress:
+                            progress = Progress(
+                                child_id=current_user.id,
+                                content_type='story',
+                                content_id=story_id,
+                                content_title=story_id.replace('_', ' ').title(),
+                                completed=False,
+                                access_count=1,
+                                last_session_duration=0
+                            )
+                            db.session.add(progress)
+                        else:
+                            progress.last_accessed = datetime.utcnow()
+                            progress.access_count += 1
+                        
+                        progress.update_streak()
+                        db.session.commit()
                 except Exception as e:
                     # Log the error but don't prevent loading the story
                     app.logger.error(f"Error tracking progress for legacy story: {str(e)}")

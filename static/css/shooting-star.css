@@ -1,0 +1,81 @@
+/* Shooting Star Animation CSS */
+.shooting-star-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+    display: none;
+    overflow: hidden;
+}
+
+.shooting-star {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 
+        0 0 0 4px rgba(255, 255, 255, 0.1),
+        0 0 0 8px rgba(255, 255, 255, 0.1),
+        0 0 20px rgba(255, 255, 255, 1);
+    animation: shooting-star-animation 1.5s linear;
+}
+
+.shooting-star::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 100px;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.8), transparent);
+    border-radius: 50%;
+    right: 4px;
+}
+
+@keyframes shooting-star-animation {
+    0% {
+        transform: translateX(-100px) translateY(100px) rotate(-35deg) scale(0.5);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    80% {
+        transform: translateX(calc(100vw + 100px)) translateY(calc(-100vh - 100px)) rotate(-35deg) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(calc(100vw + 120px)) translateY(calc(-100vh - 120px)) rotate(-35deg) scale(1);
+        opacity: 0;
+    }
+}
+
+.zoom-transition {
+    animation: page-zoom 1.2s ease-in-out forwards;
+    position: relative;
+    z-index: 100;
+}
+
+@keyframes page-zoom {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.9;
+    }
+    100% {
+        transform: scale(20);
+        opacity: 0;
+    }
+}
+
+.story-card-container.selected {
+    box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.7);
+    transition: all 0.3s ease;
+}
