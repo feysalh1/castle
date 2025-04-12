@@ -17,11 +17,37 @@ mkdir -p public/data
 echo "Copying static files..."
 cp -r static/* public/
 
-# Step 3: Export templates to static HTML
-echo "Exporting Flask templates to static HTML..."
+# Step 3: Capture live HTML from running application for 1:1 match
+echo "Capturing live HTML from the running application..."
 
-# Create a special HTML version of the Firebase login page
-cat > public/index.html << 'EOF'
+# Check if the Flask application is running
+if curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/ | grep -q "200"; then
+  echo "Flask application is running, capturing live HTML..."
+  
+  # Make sure we have the required Python packages
+  pip install requests beautifulsoup4 >/dev/null 2>&1
+  
+  # Run the capture script
+  python scripts/capture_live_html.py
+  
+  if [ $? -ne 0 ]; then
+    echo "⚠️ Warning: Failed to capture live HTML. Falling back to template HTML creation."
+    use_template_html=true
+  else
+    echo "✅ Successfully captured live HTML from the application!"
+    use_template_html=false
+  fi
+else
+  echo "⚠️ Warning: Flask application does not appear to be running. Falling back to template HTML creation."
+  use_template_html=true
+fi
+
+# If we couldn't capture live HTML, fall back to using templates
+if [ "$use_template_html" = true ]; then
+  echo "Creating template HTML files..."
+  
+  # Create a special HTML version of the Firebase login page
+  cat > public/index.html << 'EOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -758,32 +784,50 @@ cat > public/game-mode.html << 'EOF'
 </html>
 EOF
 
-# Step 4: Create required images for the deployment
-echo "Creating required images for the story cards..."
-mkdir -p public/images
+# If we're using template HTML, make sure we have all required images
+if [ "$use_template_html" = true ]; then
+  # Step 4: Create required images for the deployment
+  echo "Creating required images for the story cards..."
+  mkdir -p public/images
 
-# Make sure all the required SVG files exist, create placeholder ones if needed
-mkdir -p public/images
-for img in three_pigs goldilocks little_fox word_builder fun_addition three_pigs_1 three_pigs_2 three_pigs_3 three_pigs_4 three_pigs_5 goldilocks_1 goldilocks_2 goldilocks_3; do
-  if [ ! -f "public/images/${img}.svg" ]; then
-    # Create a simple placeholder SVG
-    cat > "public/images/${img}.svg" << SVGEOF
+  # Make sure all the required SVG files exist, create placeholder ones if needed
+  mkdir -p public/images
+  for img in three_pigs goldilocks little_fox word_builder fun_addition three_pigs_1 three_pigs_2 three_pigs_3 three_pigs_4 three_pigs_5 goldilocks_1 goldilocks_2 goldilocks_3; do
+    if [ ! -f "public/images/${img}.svg" ]; then
+      # Create a simple placeholder SVG
+      cat > "public/images/${img}.svg" << SVGEOF
 <svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
   <rect width="300" height="200" fill="#f0f0f0" />
   <text x="150" y="100" font-family="Arial" font-size="16" text-anchor="middle">${img}</text>
 </svg>
 SVGEOF
-    echo "Created placeholder for ${img}.svg"
-  fi
-done
+      echo "Created placeholder for ${img}.svg"
+    fi
+  done
 
-# Create a Google icon if needed
-if [ ! -f "public/images/google-icon.png" ]; then
-  # Create a simple placeholder for the Google icon or copy from static if available
-  if [ -f "static/images/google-icon.png" ]; then
-    cp "static/images/google-icon.png" "public/images/google-icon.png"
+  # Create a Google icon if needed
+  if [ ! -f "public/images/google-icon.png" ]; then
+    # Create a simple placeholder for the Google icon or copy from static if available
+    if [ -f "static/images/google-icon.png" ]; then
+      cp "static/images/google-icon.png" "public/images/google-icon.png"
+    else
+      echo "⚠️ Warning: Missing Google icon, authentication may look broken"
+    fi
+  fi
+fi # End of template-specific assets
+
+# Always ensure we have the castle background image
+echo "Ensuring castle background image is available..."
+CASTLE_IMAGE_URL="https://images.unsplash.com/photo-1518050346340-aa2ec3bb424b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y2FzdGxlJTIwYXQlMjBuaWdodHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=1800&q=80"
+CASTLE_IMAGE_PATH="public/images/castle-night-background.jpg"
+
+if [ ! -f "$CASTLE_IMAGE_PATH" ]; then
+  echo "Downloading castle background image..."
+  curl -s "$CASTLE_IMAGE_URL" -o "$CASTLE_IMAGE_PATH"
+  if [ $? -ne 0 ]; then
+    echo "⚠️ Warning: Failed to download castle background image"
   else
-    echo "⚠️ Warning: Missing Google icon, authentication may look broken"
+    echo "✅ Castle background image downloaded successfully!"
   fi
 fi
 
