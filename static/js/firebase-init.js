@@ -9,12 +9,12 @@ import {
 
 // Your web app's Firebase configuration - Updated with the new project config
 const firebaseConfig = {
-    apiKey: "AIzaSyCYwkHto_aNvRlNSRlsllBCKqiA3u_VTvc",
-    authDomain: "kingcastle-2e031.firebaseapp.com",
-    projectId: "kingcastle-2e031",
-    storageBucket: "kingcastle-2e031.firebasestorage.app",
-    messagingSenderId: "952095415786",
-    appId: "1:952095415786:web:b36d229418a1fd06972693"
+    apiKey: "AIzaSyAPTQO3lnt0GSyDgVCZjtj4i3gk3Qi6Vyo",
+    authDomain: "story-time-fun.firebaseapp.com",
+    projectId: "story-time-fun",
+    storageBucket: "story-time-fun.appspot.com",
+    messagingSenderId: "225122848236",
+    appId: "1:952095451786:web:b3d6229418a1fd06972693"
 };
 
 // Initialize Firebase
