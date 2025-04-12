@@ -291,6 +291,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Track progress in the story
     function trackProgress(storyId, storyTitle, completed) {
+        // Check if we have a valid child ID to prevent database errors
+        const childIdElement = document.getElementById('child-id');
+        if (!childIdElement) {
+            console.log('No child ID found, skipping progress tracking');
+            return;
+        }
+        
         const data = {
             content_type: 'story',
             content_id: storyId,
@@ -307,7 +314,21 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify(data)
         })
-        .catch(error => console.error('Error tracking progress:', error));
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to track progress');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data.success) {
+                console.warn('Progress tracking response indicated failure:', data.message || 'Unknown error');
+            }
+        })
+        .catch(error => {
+            console.error('Error tracking progress:', error);
+            // Continue loading the story even if progress tracking fails
+        });
     }
 
     // Show loading animation
