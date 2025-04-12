@@ -1,4 +1,40 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize modal close button
+    const closeModalBtn = document.getElementById('close-story-modal');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeStoryModal);
+    }
+    
+    // Close modal when clicking on overlay (outside the content)
+    const storyModal = document.getElementById('story-modal');
+    if (storyModal) {
+        storyModal.addEventListener('click', function(event) {
+            if (event.target === storyModal) {
+                closeStoryModal();
+            }
+        });
+    }
+    
+    // Close modal with escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && storyModal && storyModal.classList.contains('active')) {
+            closeStoryModal();
+        }
+    });
+    
+    // Function to close the story modal
+    function closeStoryModal() {
+        if (storyModal) {
+            storyModal.classList.remove('active');
+            
+            // If there's audio playing, pause it
+            if (storyAudio && isAudioPlaying) {
+                storyAudio.pause();
+                isAudioPlaying = false;
+                playButton.textContent = 'Play / Pause';
+            }
+        }
+    }
     // Story elements
     const storySelect = document.getElementById('story-select');
     const storyContainer = document.getElementById('story-container');
@@ -87,9 +123,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentPage = 0;
                 totalPagesSpan.textContent = storyPages.length;
 
-                // Show story and hide empty message
+                // Show story modal
                 emptyMessage.style.display = 'none';
                 storyWrapper.style.display = 'block';
+                document.getElementById('story-modal').classList.add('active');
+                document.getElementById('story-modal-title').textContent = data.title || 'Reading Story';
 
                 // Display first page
                 displayPage(0);

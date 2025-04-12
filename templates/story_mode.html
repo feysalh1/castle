@@ -292,49 +292,60 @@
         </style>
         {% endif %}
 
-        <div id="story-container" class="story-container">
-            <div class="empty-story-message">
-                <img src="{{ url_for('static', filename='images/icons/book.svg') }}" alt="Book Icon" class="empty-icon">
-                <p>Choose a story from the list above to begin!</p>
-            </div>
-
-            <div class="story-content-wrapper" style="display: none;">
-                <div class="story-image">
-                    <img id="story-illustration" src="" alt="Story Illustration">
+        <!-- Story Modal -->
+        <div id="story-modal" class="story-modal">
+            <div id="story-container" class="story-container">
+                <div class="modal-header">
+                    <h3 id="story-modal-title">Story Reading</h3>
+                    <button id="close-story-modal" class="close-modal-btn">&times;</button>
+                </div>
+                
+                <div class="empty-story-message">
+                    <img src="{{ url_for('static', filename='images/icons/book.svg') }}" alt="Book Icon" class="empty-icon">
+                    <p>Choose a story from the list above to begin!</p>
                 </div>
 
-                <div class="story-text">
-                    <p id="story-paragraph"></p>
-                </div>
-
-                <div class="voice-settings">
-                    <div class="voice-setting-item">
-                      <label for="narrator-voice">Narrator Voice:</label>
-                      <select id="narrator-voice" class="voice-select">
-                        <option value="EXAVITQu4vr4xnSDxMaL">Sarah (Default)</option>
-                        <option value="pFZP5JQG7iQjIQuC4Bku">Lily (Child)</option>
-                        <option value="CwhRBWXzGAHq8TQ4Fs17">Roger (Fun)</option>
-                        <option value="JBFqnCBsd6RMkjVDRZzb">George (Male)</option>
-                        <option value="XB0fDUnXU5powFXDhCwa">Charlotte (Female)</option>
-                      </select>
+                <div class="story-content-wrapper" style="display: none;">
+                    <div class="story-image">
+                        <img id="story-illustration" src="" alt="Story Illustration">
                     </div>
-                  </div>
-                <div class="story-controls">
-                    <button id="prev-btn" class="btn nav-btn" disabled>Previous</button>
-                    <button id="play-btn" class="btn primary-btn">Play / Pause</button>
-                    <button id="next-btn" class="btn nav-btn">Next</button>
-                </div>
 
-                <div class="story-progress">
-                    <div class="progress-bar">
-                        <div id="progress-fill" class="progress-fill"></div>
+                    <div class="story-text">
+                        <p id="story-paragraph"></p>
                     </div>
-                    <div class="progress-text">
-                        Page <span id="current-page">0</span> of <span id="total-pages">0</span>
+
+                    <div class="voice-settings">
+                        <div class="voice-setting-item">
+                            <label for="narrator-voice">Narrator Voice:</label>
+                            <select id="narrator-voice" class="voice-select">
+                                <option value="EXAVITQu4vr4xnSDxMaL">Sarah (Default)</option>
+                                <option value="pFZP5JQG7iQjIQuC4Bku">Lily (Child)</option>
+                                <option value="CwhRBWXzGAHq8TQ4Fs17">Roger (Fun)</option>
+                                <option value="JBFqnCBsd6RMkjVDRZzb">George (Male)</option>
+                                <option value="XB0fDUnXU5powFXDhCwa">Charlotte (Female)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="story-controls">
+                        <button id="prev-btn" class="btn nav-btn" disabled>Previous</button>
+                        <button id="play-btn" class="btn primary-btn">Play / Pause</button>
+                        <button id="next-btn" class="btn nav-btn">Next</button>
+                    </div>
+
+                    <div class="story-progress">
+                        <div class="progress-bar">
+                            <div id="progress-fill" class="progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            Page <span id="current-page">0</span> of <span id="total-pages">0</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Hidden placeholder for empty state -->
+        <div id="story-container-placeholder" style="display: none;"></div>
     </main>
 
     <script src="{{ url_for('static', filename='js/story-reader.js') }}"></script>
