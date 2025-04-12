@@ -32,7 +32,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: url('/static/images/background/castle-night.jpg') no-repeat center center fixed !important;
+    background: url('/static/images/background/night-castle-new.png') no-repeat center center fixed !important;
     background-size: cover !important;
     -webkit-background-size: cover !important;
     -moz-background-size: cover !important;
@@ -106,16 +106,17 @@ main {
 
 .welcome h2 {
     font-size: 2.5rem;
-    color: var(--primary-color);
+    color: #fff;
     margin-bottom: 15px;
-    text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.7);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .welcome p {
     font-size: 1.2rem;
     max-width: 800px;
     margin: 0 auto 20px;
-    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+    color: #fff;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 /* Mode Selection */
@@ -128,7 +129,7 @@ main {
 }
 
 .mode-card {
-    background-color: rgba(180, 220, 255, 0.8);
+    background-color: rgba(180, 220, 255, 0.9);
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
     padding: 20px;
