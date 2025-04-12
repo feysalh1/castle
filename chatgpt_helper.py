@@ -7,32 +7,56 @@ import os
 import json
 import logging
 import traceback
+import time
 from openai import OpenAI
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize OpenAI client
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    logger.error("OPENAI_API_KEY not found in environment variables. ChatGPT functions will not work.")
-else:
-    logger.info("OPENAI_API_KEY found. Length: %d", len(OPENAI_API_KEY))
-
-# Set a default value for the client
-client = None
-
-# Only attempt to initialize if we have a key
-if OPENAI_API_KEY:
+def initialize_openai_client():
+    """
+    Attempt to initialize the OpenAI client with proper error handling
+    Returns the client if successful, None otherwise
+    """
+    # Get API key from environment
+    api_key = os.environ.get("OPENAI_API_KEY")
+    
+    # Validate API key
+    if not api_key:
+        logger.error("OPENAI_API_KEY not found in environment variables. ChatGPT functions will not work.")
+        return None
+    
+    if len(api_key.strip()) < 20:
+        logger.error("OPENAI_API_KEY is too short to be valid. ChatGPT functions will not work.")
+        return None
+    
+    logger.info("OPENAI_API_KEY found. Length: %d", len(api_key))
+    
+    # Try to initialize the client
     try:
-        client = OpenAI(api_key=OPENAI_API_KEY)
-        # Skip test request to avoid unnecessary API calls
+        client = OpenAI(api_key=api_key)
         logger.info("OpenAI client initialized successfully")
+        return client
     except Exception as e:
         error_trace = traceback.format_exc()
         logger.error(f"Failed to initialize OpenAI client: {e}\n{error_trace}")
-        client = None
+        return None
+
+# Set a default value for the client
+client = initialize_openai_client()
+
+# Add retry mechanism
+def get_client():
+    """
+    Get the OpenAI client with retry mechanism.
+    If the client is not initialized, try to initialize it again.
+    """
+    global client
+    if client is None:
+        logger.info("Attempting to reinitialize OpenAI client...")
+        client = initialize_openai_client()
+    return client
 
 def generate_kid_friendly_response(prompt, child_age=4, max_tokens=200):
     """
@@ -46,14 +70,12 @@ def generate_kid_friendly_response(prompt, child_age=4, max_tokens=200):
     Returns:
         str: Kid-friendly response
     """
+    # Get the OpenAI client (with retry mechanism)
+    openai_client = get_client()
+    
     # Check if OpenAI client is properly initialized
-    if client is None:
+    if openai_client is None:
         logger.error("OpenAI client not initialized. Cannot generate response.")
-        return "I'm having a little nap right now. Please ask an adult to wake me up!"
-
-    # Check if API key is valid
-    if not OPENAI_API_KEY or len(OPENAI_API_KEY) < 20:
-        logger.error("Invalid OPENAI_API_KEY. Cannot generate response.")
         return "I'm having a little nap right now. Please ask an adult to wake me up!"
 
     try:
