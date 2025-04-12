@@ -111,6 +111,15 @@
                     <p>Enter your special code to explore stories and play educational games!</p>
                     <a href="{{ url_for('child_login') }}" class="btn large-btn secondary-btn">Child Login</a>
                 </div>
+                
+                <div class="login-card guest-login">
+                    <h3>Try as Guest</h3>
+                    <p>Explore the app features without creating an account</p>
+                    <form action="{{ url_for('guest_login') }}" method="POST">
+                        {{ form.hidden_tag() if form else "" }}
+                        <button type="submit" class="btn large-btn tertiary-btn">Continue as Guest</button>
+                    </form>
+                </div>
             </div>
         </div>
     </main>
