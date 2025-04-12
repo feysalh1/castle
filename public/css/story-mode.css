@@ -1,7 +1,7 @@
 /* Story Mode Styles for Children's Castle */
 
 .story-mode-page {
-    background: url('/static/images/background/castle-night.jpg') no-repeat center center fixed;
+    background: url('/images/background/castle-night.jpg') no-repeat center center fixed;
     background-size: cover;
     min-height: 100vh;
     position: relative;

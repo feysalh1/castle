@@ -51,6 +51,9 @@ def clean_html_for_static(html, page_url):
     html_str = re.sub(api_key_pattern, 'apiKey: "FIREBASE_API_KEY"', html_str)
     html_str = re.sub(app_id_pattern, 'appId: "FIREBASE_APP_ID"', html_str)
     
+    # Fix CSS background URLs in story-mode.css references
+    html_str = html_str.replace('url(\'/static/images/background/castle-night.jpg\')', 'url(\'/images/background/castle-night.jpg\')')
+    
     # Parse the modified HTML
     soup = BeautifulSoup(html_str, 'html.parser')
     
@@ -68,11 +71,21 @@ def clean_html_for_static(html, page_url):
             if match:
                 tag['src'] = f"/{match.group(1)}"
     
-    # Fix static directory paths
+    # Fix static directory paths and expand CSS backgrounds
     for tag in soup.find_all(['a', 'link', 'script', 'img']):
         for attr in ['href', 'src']:
             if tag.has_attr(attr) and '/static/' in tag[attr]:
                 tag[attr] = tag[attr].replace('/static/', '/')
+    
+    # Fix background image paths in inline styles
+    for tag in soup.find_all(style=True):
+        if 'background' in tag['style'] and '/static/' in tag['style']:
+            tag['style'] = tag['style'].replace('/static/', '/')
+            
+    # Fix CSS rules with background images
+    for style_tag in soup.find_all('style'):
+        if style_tag.string and '/static/' in style_tag.string:
+            style_tag.string = style_tag.string.replace('/static/', '/')
     
     # Modify all relative URLs to be Firebase-friendly
     for tag in soup.find_all(['a', 'link', 'script', 'img']):
@@ -242,6 +255,89 @@ def ensure_directory(directory):
     """Ensure a directory exists, creating it if necessary"""
     os.makedirs(directory, exist_ok=True)
 
+def extract_background_images_from_css(css_content):
+    """
+    Extract background image URLs from CSS content and return a list of image paths
+    """
+    # Find all background image URLs in CSS
+    background_images = []
+    pattern = r'background(?:-image)?:\s*url\([\'"]?([^\'")]+)[\'"]?\)'
+    
+    for match in re.finditer(pattern, css_content):
+        img_path = match.group(1).strip()
+        if img_path.startswith('/static/'):
+            img_path = img_path[8:]  # Remove '/static/' prefix
+            background_images.append(img_path)
+    
+    return background_images
+
+def copy_theme_assets():
+    """
+    Copy theme assets including background images and SVGs
+    """
+    print("Copying theme assets...")
+    
+    # Ensure themes directory exists
+    ensure_directory(os.path.join(OUTPUT_DIR, 'images/background'))
+    
+    # List of theme assets to ensure are included
+    theme_assets = [
+        'images/background/castle-night.jpg',
+        'images/background/forest-day.jpg',
+        'images/background/space-stars.jpg',
+        'images/animals/fox.svg',
+        'images/animals/bear.svg',
+        'images/animals/pig.svg',
+        'images/animals/monkey.svg'
+    ]
+    
+    # Copy each theme asset
+    for asset in theme_assets:
+        source_path = os.path.join('static', asset)
+        dest_path = os.path.join(OUTPUT_DIR, asset)
+        
+        if os.path.exists(source_path):
+            ensure_directory(os.path.dirname(dest_path))
+            shutil.copy2(source_path, dest_path)
+            print(f"  Copied theme asset: {asset}")
+        else:
+            print(f"  Warning: Theme asset not found: {asset}")
+
+def fix_css_files():
+    """
+    Fix CSS files to ensure all paths are correct for Firebase hosting
+    """
+    print("Fixing CSS files with correct paths...")
+    css_files = [
+        'css/story-mode.css',
+        'css/game-mode.css',
+        'css/shooting-star.css',
+        'css/loading-animations.css'
+    ]
+    
+    for css_file in css_files:
+        css_path = os.path.join(OUTPUT_DIR, css_file)
+        if not os.path.exists(css_path):
+            print(f"  Warning: CSS file not found: {css_file}")
+            continue
+            
+        try:
+            with open(css_path, 'r', encoding='utf-8') as file:
+                css_content = file.read()
+                
+            # Fix background image paths
+            css_content = css_content.replace('/static/images/', '/images/')
+            css_content = css_content.replace("url('/static/", "url('/")
+            css_content = css_content.replace('url("/static/', 'url("/')
+            
+            # Write the fixed content back to the file
+            with open(css_path, 'w', encoding='utf-8') as file:
+                file.write(css_content)
+                
+            print(f"  Fixed CSS file: {css_file}")
+        except Exception as e:
+            print(f"  Error fixing CSS file {css_file}: {e}")
+
 def main():
     print("Starting to capture live HTML from Flask application...")
     
@@ -249,8 +345,13 @@ def main():
     ensure_directory(os.path.join(OUTPUT_DIR, 'css'))
     ensure_directory(os.path.join(OUTPUT_DIR, 'js'))
     ensure_directory(os.path.join(OUTPUT_DIR, 'images'))
+    ensure_directory(os.path.join(OUTPUT_DIR, 'images/background'))
+    ensure_directory(os.path.join(OUTPUT_DIR, 'images/animals'))
     ensure_directory(os.path.join(OUTPUT_DIR, 'audio'))
     ensure_directory(os.path.join(OUTPUT_DIR, 'data'))
+    
+    # Copy theme assets first
+    copy_theme_assets()
     
     # First, copy static assets
     if os.path.exists('static'):
@@ -317,6 +418,9 @@ def main():
     """
     with open(os.path.join(OUTPUT_DIR, '404.html'), 'w') as f:
         f.write(not_found_html)
+    
+    # Fix CSS files as the last step
+    fix_css_files()
     
     print("HTML capture complete!")
 

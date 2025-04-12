@@ -20,6 +20,42 @@
         ]
       },
       {
+        "source": "**/*.@(jpg|jpeg)",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "image/jpeg"
+          }
+        ]
+      },
+      {
+        "source": "**/*.png",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "image/png"
+          }
+        ]
+      },
+      {
+        "source": "**/*.gif",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "image/gif"
+          }
+        ]
+      },
+      {
+        "source": "**/*.svg",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "image/svg+xml"
+          }
+        ]
+      },
+      {
         "source": "**",
         "headers": [
           {
