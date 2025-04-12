@@ -422,7 +422,7 @@ def reset_password(token):
     return render_template('reset_password.html', form=form)
 
 
-@app.route('/guest-login', methods=['POST'])
+@app.route('/guest_login', methods=['POST'])
 def guest_login():
     """Guest login functionality with combined parent/child view"""
     form = EmptyForm()

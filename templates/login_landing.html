@@ -115,7 +115,7 @@
                     <h3>Try as Guest</h3>
                     <p>Explore the app features without creating an account</p>
                     <form action="{{ url_for('guest_login') }}" method="POST">
-                        {{ form.hidden_tag() if form else "" }}
+                        {{ form.hidden_tag() }}
                         <button type="submit" class="btn large-btn tertiary-btn">Continue as Guest</button>
                     </form>
                 </div>
