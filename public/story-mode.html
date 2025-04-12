@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Story Mode - Children's Castle</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="/css/style.css" rel="stylesheet">
+  <link href="/css/story-mode.css" rel="stylesheet">
+  <link href="/css/shooting-star.css" rel="stylesheet">
+  <style>
+    /* Additional styles for the static version */
+    .story-selection {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 30px;
+    }
+    
+    .story-card {
+      width: 220px;
+      height: 280px;
+      background-color: rgba(0, 0, 0, 0.6);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+      border: 2px solid #3873d1;
+    }
+    
+    .story-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+    }
+    
+    .story-image {
+      width: 100%;
+      height: 150px;
+      background-size: cover;
+      background-position: center;
+    }
+    
+    .story-info {
+      padding: 15px;
+      text-align: center;
+    }
+    
+    .story-title {
+      font-size: 1.2rem;
+      color: #7db9ff;
+      margin-bottom: 5px;
+    }
+    
+    .story-description {
+      font-size: 0.9rem;
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
+    
+    .age-label {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #2b5fb4;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+    }
+    
+    .back-button {
+      background-color: #2b5fb4;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background-color 0.3s;
+      display: inline-block;
+      text-decoration: none;
+    }
+    
+    .back-button:hover {
+      background-color: #3873d1;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Story Mode</h1>
+      <p>Choose a story to read:</p>
+    </div>
+  </header>
+  
+  <main>
+    <div class="container">
+      <div class="story-selection">
+        <!-- Sample story cards -->
+        <div class="story-card">
+          <div class="story-image" style="background-image: url('https://images.unsplash.com/photo-1500259571355-332da5cb07aa?ixlib=rb-4.0.3')"></div>
+          <div class="age-label">Ages 3-5</div>
+          <div class="story-info">
+            <div class="story-title">Three Little Pigs</div>
+            <div class="story-description">A classic tale of three pigs and their houses.</div>
+          </div>
+        </div>
+        
+        <div class="story-card">
+          <div class="story-image" style="background-image: url('https://images.unsplash.com/photo-1516117172878-fd2c41f4a759?ixlib=rb-4.0.3')"></div>
+          <div class="age-label">Ages 4-6</div>
+          <div class="story-info">
+            <div class="story-title">Goldilocks</div>
+            <div class="story-description">The adventure of a girl who visits the home of three bears.</div>
+          </div>
+        </div>
+        
+        <div class="story-card">
+          <div class="story-image" style="background-image: url('https://images.unsplash.com/photo-1533450718592-29d45635f0a9?ixlib=rb-4.0.3')"></div>
+          <div class="age-label">Ages 3-5</div>
+          <div class="story-info">
+            <div class="story-title">Little Fox</div>
+            <div class="story-description">A curious fox explores the forest and makes new friends.</div>
+          </div>
+        </div>
+        
+        <div class="story-card">
+          <div class="story-image" style="background-image: url('https://images.unsplash.com/photo-1557682224-5b8590cd9ec5?ixlib=rb-4.0.3')"></div>
+          <div class="age-label">Ages 6-8</div>
+          <div class="story-info">
+            <div class="story-title">Space Explorer Sam</div>
+            <div class="story-description">Join Sam on an exciting journey through the stars.</div>
+          </div>
+        </div>
+        
+        <div class="story-card">
+          <div class="story-image" style="background-image: url('https://images.unsplash.com/photo-1597423244036-ef5020e83f3c?ixlib=rb-4.0.3')"></div>
+          <div class="age-label">Ages 5-7</div>
+          <div class="story-info">
+            <div class="story-title">Magic Paintbrush</div>
+            <div class="story-description">A paintbrush that brings drawings to life.</div>
+          </div>
+        </div>
+        
+        <div class="story-card">
+          <div class="story-image" style="background-image: url('https://images.unsplash.com/photo-1578950435899-d1c1bf932b6f?ixlib=rb-4.0.3')"></div>
+          <div class="age-label">Ages 4-6</div>
+          <div class="story-info">
+            <div class="story-title">Rainbow Fish</div>
+            <div class="story-description">The most beautiful fish in the ocean learns to share.</div>
+          </div>
+        </div>
+      </div>
+      
+      <a href="index.html" class="back-button">Back to Home</a>
+    </div>
+  </main>
+  
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 Children's Castle. All rights reserved.</p>
+    </div>
+  </footer>
+  
+  <script src="/js/shooting-star.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize shooting stars effect
+      if (typeof initShootingStars === 'function') {
+        initShootingStars();
+      }
+      
+      // Add click event to story cards
+      const storyCards = document.querySelectorAll('.story-card');
+      storyCards.forEach(card => {
+        card.addEventListener('click', function() {
+          alert('This is a static demo. To access the full interactive story experience, please visit the full application at https://childrencastle.replit.app');
+        });
+      });
+    });
+  </script>
+</body>
+</html>
