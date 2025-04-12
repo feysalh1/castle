@@ -17,6 +17,7 @@ class Parent(UserMixin, db.Model):
     password_hash = db.Column(db.String(256), nullable=True)  # Made nullable for Firebase auth
     first_name = db.Column(db.String(64))
     last_name = db.Column(db.String(64))
+    display_name = db.Column(db.String(128), nullable=True)  # Display name for Firebase auth
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     reset_password_token = db.Column(db.String(256), nullable=True)
     reset_token_expires = db.Column(db.DateTime, nullable=True)

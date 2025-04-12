@@ -182,3 +182,97 @@ def handle_firebase_auth():
 def google_signin():
     """Redirect to Google Sign-in page"""
     return redirect(url_for('index', google_signin='true'))
+
+
+@firebase_auth.route('/firebase-auth/token', methods=['POST'])
+def handle_token():
+    """Handle token received from client-side Firebase authentication"""
+    if not firebase_initialized:
+        return jsonify({'success': False, 'message': 'Firebase not configured'}), 500
+    
+    data = request.json
+    token = data.get('token')
+    uid = data.get('uid')
+    name = data.get('name')
+    email = data.get('email')
+    
+    if not token or not uid or not email:
+        return jsonify({'success': False, 'message': 'Invalid request data'}), 400
+    
+    try:
+        # Verify the ID token with Firebase
+        decoded_token = auth.verify_id_token(token)
+        
+        # Check that the UID matches
+        if decoded_token.get('uid') != uid:
+            return jsonify({'success': False, 'message': 'Token UID mismatch'}), 401
+        
+        # Check if user exists in our database
+        parent = Parent.query.filter_by(email=email).first()
+        
+        if not parent:
+            # Create a new parent account
+            username = email.split('@')[0]  # Use email prefix as username
+            # Make sure username is unique
+            base_username = username
+            counter = 1
+            while Parent.query.filter_by(username=username).first():
+                username = f"{base_username}{counter}"
+                counter += 1
+                
+            parent = Parent(
+                username=username,
+                email=email,
+                firebase_uid=uid,
+                display_name=name or username,
+                first_name=name.split(' ')[0] if name and ' ' in name else name,
+                last_name=name.split(' ')[1] if name and ' ' in name else ''
+            )
+            db.session.add(parent)
+            db.session.commit()
+            
+            # Create default parent settings
+            settings = ParentSettings(
+                parent_id=parent.id,
+                allow_external_games=True,
+                max_daily_playtime=90,
+                content_age_filter=6
+            )
+            db.session.add(settings)
+            db.session.commit()
+            
+            print(f"Created new parent account for {email} with Firebase UID {uid}")
+        else:
+            # Update Firebase UID if it's not set
+            if not parent.firebase_uid:
+                parent.firebase_uid = uid
+                db.session.commit()
+                print(f"Updated Firebase UID for {email}")
+        
+        # Log in the parent
+        login_user(parent)
+        session['user_type'] = 'parent'
+        
+        # Record login session with additional metadata
+        from app import Session, detect_device_type
+        
+        new_session = Session(
+            user_type='parent', 
+            user_id=parent.id,
+            ip_address=request.remote_addr,
+            user_agent=request.user_agent.string,
+            device_type=detect_device_type(request.user_agent.string)
+        )
+        new_session.record_activity('login')
+        db.session.add(new_session)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True, 
+            'message': 'Login successful', 
+            'redirect': url_for('parent_dashboard')
+        })
+        
+    except Exception as e:
+        print(f"Firebase token verification error: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 401
