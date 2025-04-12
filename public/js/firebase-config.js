@@ -5,7 +5,7 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDmxlqDwUXnF5QrHjgW_RBvxOh-K6IFrB4",
+  apiKey: "AIzaSyAPTQO3lnt0GSyDgVCZjtj4i3gk3Qi6Vyo",
   authDomain: "story-time-fun.firebaseapp.com",
   projectId: "story-time-fun",
   storageBucket: "story-time-fun.appspot.com",
