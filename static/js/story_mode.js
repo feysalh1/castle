@@ -82,34 +82,22 @@ document.addEventListener('DOMContentLoaded', function() {
                                 // let the story-reader.js handle it
                                 // Otherwise, we might need to manually display the content
 
-                                // Hide loading if necessary
-                                if (typeof hideLoading === 'function') {
-                                    hideLoading();
-                                } else if (document.getElementById('loading-animation')) {
-                                    document.getElementById('loading-animation').style.display = 'none';
-                                }
+                                // Hide all loading animations
+                                hideAllLoadingAnimations();
                             } else {
                                 console.error('Error loading story:', data.message);
                                 alert('Sorry, there was a problem loading the story. Please try again.');
 
-                                // Hide loading if necessary
-                                if (typeof hideLoading === 'function') {
-                                    hideLoading();
-                                } else if (document.getElementById('loading-animation')) {
-                                    document.getElementById('loading-animation').style.display = 'none';
-                                }
+                                // Hide all loading animations
+                                hideAllLoadingAnimations();
                             }
                         })
                         .catch(error => {
                             console.error('Error fetching story:', error);
                             alert('Sorry, there was a problem loading the story. Please try again.');
 
-                            // Hide loading if necessary
-                            if (typeof hideLoading === 'function') {
-                                hideLoading();
-                            } else if (document.getElementById('loading-animation')) {
-                                document.getElementById('loading-animation').style.display = 'none';
-                            }
+                            // Hide all loading animations
+                            hideAllLoadingAnimations();
                         });
                 }
             });
