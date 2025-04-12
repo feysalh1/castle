@@ -14,6 +14,15 @@ logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "childrens_castle_app_secret")
 
+# Firebase configuration
+app.config['FIREBASE_API_KEY'] = os.environ.get('FIREBASE_API_KEY', 'AIzaSyAPTQO3lnt0GSyDgVCZjtj4i3gk3Qi6Vyo')
+app.config['FIREBASE_PROJECT_ID'] = os.environ.get('FIREBASE_PROJECT_ID', 'story-time-fun')
+app.config['FIREBASE_APP_ID'] = os.environ.get('FIREBASE_APP_ID', '1:225122848236:web:b52d382202a2ce6a73c4c9')
+app.config['FIREBASE_MEASUREMENT_ID'] = os.environ.get('FIREBASE_MEASUREMENT_ID', 'G-RM452TNB0W')
+app.config['FIREBASE_MESSAGING_SENDER_ID'] = os.environ.get('FIREBASE_MESSAGING_SENDER_ID', '225122848236')
+app.config['FIREBASE_STORAGE_BUCKET'] = os.environ.get('FIREBASE_STORAGE_BUCKET', 'story-time-fun.firebasestorage.app')
+app.config['FIREBASE_AUTH_DOMAIN'] = os.environ.get('FIREBASE_AUTH_DOMAIN', 'story-time-fun.firebaseapp.com')
+
 # Configure database
 # Default database URL for local development if not provided
 default_db_url = "sqlite:///children_castle.db"

@@ -207,7 +207,15 @@ def index():
             return redirect(url_for('child_dashboard'))
     # Create empty form for CSRF protection in the guest login form
     form = EmptyForm()
-    return render_template('login_landing.html', form=form)
+    return render_template('login_landing.html', 
+                          form=form,
+                          firebase_api_key=app.config.get('FIREBASE_API_KEY'),
+                          firebase_project_id=app.config.get('FIREBASE_PROJECT_ID'),
+                          firebase_app_id=app.config.get('FIREBASE_APP_ID'),
+                          firebase_measurement_id=app.config.get('FIREBASE_MEASUREMENT_ID'),
+                          firebase_messaging_sender_id=app.config.get('FIREBASE_MESSAGING_SENDER_ID'),
+                          firebase_storage_bucket=app.config.get('FIREBASE_STORAGE_BUCKET'),
+                          firebase_auth_domain=app.config.get('FIREBASE_AUTH_DOMAIN'))
 
 
 @app.route('/parent/register', methods=['GET', 'POST'])
