@@ -71,27 +71,57 @@ To use a custom domain:
 4. Click "Add custom domain"
 5. Follow the instructions to verify and set up your domain
 
-## CI/CD Deployment from Replit (Advanced)
+# Firebase Authentication from Replit
 
-If you want to deploy directly from Replit:
+Since Replit is a non-interactive environment, standard `firebase login` won't work. Here's how to authenticate:
 
-1. Generate a CI token on your local machine:
+## Method 1: Using CI Token (Recommended)
+
+1. **Generate a CI token on your local machine**:
    ```bash
+   npm install -g firebase-tools  # If not already installed
+   firebase login
    firebase login:ci
    ```
+   This will display a token in your terminal.
 
-2. Copy the token and add it as a secret in Replit:
+2. **Add the token as a secret in Replit**:
    - Open your Replit project
-   - Go to "Secrets" in the Tools menu
-   - Add a new secret with key `FIREBASE_TOKEN` and your token as the value
+   - Click on "Tools" in the left sidebar
+   - Select "Secrets"
+   - Add a new secret with key `FIREBASE_TOKEN` and paste your token as the value
 
-3. Create a deployment script in Replit:
+3. **Create a deployment script in Replit**:
    ```bash
    #!/bin/bash
+   # Save this as deploy_firebase.sh
    firebase deploy --token "$FIREBASE_TOKEN" --only hosting
    ```
 
-4. Make the script executable and run it when you want to deploy.
+4. **Make the script executable and run it**:
+   ```bash
+   chmod +x deploy_firebase.sh
+   ./deploy_firebase.sh
+   ```
+
+## Method 2: Deploy from GitHub (Alternative)
+
+1. **Push your Replit project to GitHub**
+2. **Set up GitHub Actions** with Firebase token as a secret
+3. **Configure workflow** to deploy on commits to main branch
+
+## Method 3: Google Cloud Authentication (Advanced)
+
+For more advanced setups, you can use Google Cloud service accounts:
+
+1. Create a service account in Google Cloud Console
+2. Generate and download a key file
+3. Add the key file contents as a secret in Replit
+4. Use the key for authentication:
+   ```bash
+   export GOOGLE_APPLICATION_CREDENTIALS="/path/to/keyfile.json"
+   firebase deploy --only hosting
+   ```
 
 ## Troubleshooting
 
