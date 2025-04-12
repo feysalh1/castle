@@ -1953,8 +1953,13 @@ def get_story_content(story_id):
                 content = f.read()
             
             # Only track progress if we have a valid child record or it's a guest
-            if child_exists:
+            if child_exists and current_user and current_user.id:
                 try:
+                    # Verify child record exists
+                    child = Child.query.get(current_user.id)
+                    if not child:
+                        app.logger.error(f"Child record not found for id {current_user.id}")
+                        return jsonify({'success': True, 'content': content})
                     # Use no_autoflush to prevent foreign key errors
                     with db.session.no_autoflush:
                         # Track this story view

@@ -42,6 +42,17 @@ CREATE TABLE IF NOT EXISTS events (
     session_id INTEGER REFERENCES sessions(id) ON DELETE SET NULL
 );
 
+-- Add display_name column to parents table if it doesn't exist
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'parents' AND column_name = 'display_name'
+    ) THEN
+        ALTER TABLE parents ADD COLUMN display_name VARCHAR(128);
+    END IF;
+END $$;
+
 -- Create error_logs table for error tracking
 CREATE TABLE IF NOT EXISTS error_logs (
     id SERIAL PRIMARY KEY,
