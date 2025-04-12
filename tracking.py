@@ -7,49 +7,55 @@ from flask_login import current_user
 from app import db
 from models import Progress, Milestone, Event, ErrorLog, Reward, Session, Child
 
-def track_milestone_progress(child_id, milestone_id, value=1, check_only=False):
+def track_milestone_progress(child_id, milestone_id, check_only=False):
     """
-    Track progress towards a milestone and award if completed.
+    Track progress towards a milestone.
     Returns True if the milestone was just completed, False otherwise.
     If check_only is True, just check if the milestone is already completed.
     """
-    child = Child.query.get(child_id)
-    if not child:
-        print(f"Warning: Child with ID {child_id} not found, skipping milestone tracking")
-        return False
+    try:
+        child = Child.query.get(child_id)
+        if not child:
+            print(f"Warning: Child with ID {child_id} not found")
+            return False
 
-    milestone = Milestone.query.filter_by(
-        child_id=child_id,
-        milestone_id=milestone_id
-    ).first()
-
-    if not milestone:
-        return False
-
-    if check_only:
-        return milestone.completed
-
-    # Update progress and check if completed
-    completed = milestone.update_progress(value)
-    db.session.commit()
-
-    if completed:
-        # Award a reward for achieving the milestone
-        reward = Reward(
+        milestone = Milestone.query.filter_by(
             child_id=child_id,
-            badge_id=f"milestone_{milestone_id}",
-            badge_name=f"Achievement: {milestone.milestone_name}",
-            badge_description=milestone.milestone_description or f"Completed {milestone.milestone_name}",
-            badge_image=f"badges/milestone_{milestone_id}.png",
-            source_type='milestone',
-            source_id=milestone_id,
-            achievement_level='gold',  # Milestones are higher value
-            points_value=5  # Higher points for milestones
-        )
-        db.session.add(reward)
+            milestone_id=milestone_id
+        ).first()
+
+        if not milestone:
+            return False
+
+        if check_only:
+            return milestone.completed
+
+        # Update progress and check if completed
+        completed = milestone.update_progress(value)
         db.session.commit()
 
-    return completed
+        if completed:
+            # Award a reward for achieving the milestone
+            reward = Reward(
+                child_id=child_id,
+                badge_id=f"milestone_{milestone_id}",
+                badge_name=f"Achievement: {milestone.milestone_name}",
+                badge_description=milestone.milestone_description or f"Completed {milestone.milestone_name}",
+                badge_image=f"badges/milestone_{milestone_id}.png",
+                source_type='milestone',
+                source_id=milestone_id,
+                achievement_level='gold',  # Milestones are higher value
+                points_value=5  # Higher points for milestones
+            )
+            db.session.add(reward)
+            db.session.commit()
+
+        return completed
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error tracking milestone progress: {e}")
+        return False
+
 
 def check_and_create_milestones(child_id):
     """

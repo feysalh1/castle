@@ -39,16 +39,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         loadingContainer = document.createElement('div');
                         loadingContainer.id = 'story-loading-container';
                         loadingContainer.className = 'loading-container';
-                        
+
                         const loadingContent = document.createElement('div');
                         loadingContent.className = 'loading-content';
-                        
+
                         const foxAnimation = document.createElement('div');
                         foxAnimation.className = 'fox-animation';
-                        
+
                         const loadingText = document.createElement('p');
                         loadingText.textContent = 'Loading your story...';
-                        
+
                         loadingContent.appendChild(foxAnimation);
                         loadingContent.appendChild(loadingText);
                         loadingContainer.appendChild(loadingContent);
@@ -56,49 +56,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         loadingContainer.style.display = 'flex';
                     }
-                    
-                    // Show loading animation after shooting star animation
+
+                    // Navigate to story page after animation
                     setTimeout(() => {
-                        // Also show regular loading animation if it exists
-                        const loadingAnimation = document.getElementById('loading-animation');
-                        if (loadingAnimation) {
-                            loadingAnimation.style.display = 'flex';
-                        }
-                        
-                        // Load story with timeout to ensure proper animation
-                        setTimeout(() => {
-                            loadStoryById(bookId);
-                        }, 800);
-                    }, 1200);
-
-                    // Load the story content
-                    fetch(`/api/story/${bookId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log('Story data loaded:', data);
-
-                            if (data.success) {
-                                // If we have an enhanced story with pages data, 
-                                // let the story-reader.js handle it
-                                // Otherwise, we might need to manually display the content
-
-                                // Hide all loading animations
-                                hideAllLoadingAnimations();
-                            } else {
-                                console.error('Error loading story:', data.message);
-                                alert('Sorry, there was a problem loading the story. Please try again.');
-
-                                // Hide all loading animations
-                                hideAllLoadingAnimations();
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error fetching story:', error);
-                            alert('Sorry, there was a problem loading the story. Please try again.');
-
-                            // Hide all loading animations
-                            hideAllLoadingAnimations();
-                        });
+                        window.location.href = `/story/${bookId}`;
+                    }, 1500);
                 }
             });
         });
@@ -142,13 +104,13 @@ function hideAllLoadingAnimations() {
     if (loadingAnimation) {
         loadingAnimation.style.display = 'none';
     }
-    
+
     // Hide story loading container
     const storyLoadingContainer = document.getElementById('story-loading-container');
     if (storyLoadingContainer) {
         storyLoadingContainer.style.display = 'none';
     }
-    
+
     // Call external hideLoading function if it exists
     if (typeof hideLoading === 'function') {
         hideLoading();
