@@ -38,7 +38,7 @@ if [ $? -eq 0 ]; then
   echo
   echo "✅ Deployment successful!"
   echo "Your site should be available at:"
-  echo "https://childrens-castle.web.app"
+  echo "https://story-time-fun.web.app"
 else
   echo
   echo "❌ Deployment failed. Please check the error messages above."
