@@ -35,7 +35,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Show loading animation after a short delay to let the shooting star animation finish
                     setTimeout(() => {
-                        if (typeof showLoading === 'function') {
+                        const loadingAnimation = document.getElementById('loading-animation');
+                        if (loadingAnimation) {
+                            loadingAnimation.style.display = 'flex';
+                        }
+                        loadStoryById(bookId);
+                    }, 1500);
                             showLoading(true);
                         } else if (document.getElementById('loading-animation')) {
                             document.getElementById('loading-animation').style.display = 'flex';

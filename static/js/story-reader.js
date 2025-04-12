@@ -313,8 +313,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function trackProgress(storyId, storyTitle, completed) {
         // Check if we have a valid child ID to prevent database errors
         const childIdElement = document.getElementById('child-id');
-        if (!childIdElement) {
-            console.log('No child ID found, skipping progress tracking');
+        if (!childIdElement || !childIdElement.value) {
+            console.log('No valid child ID found, skipping progress tracking');
             return;
         }
         
