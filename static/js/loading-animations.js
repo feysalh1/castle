@@ -15,6 +15,9 @@ function initLoadingSystem() {
     createTransitionOverlay();
     setupLoadingEventListeners();
     console.log('Loading system initialized');
+    
+    // Hide loading overlay immediately to fix stuck loading animation
+    setTimeout(hideLoading, 100);
 }
 
 /**
@@ -29,7 +32,7 @@ function createLoadingOverlay() {
     // Create the overlay
     loadingOverlay = document.createElement('div');
     loadingOverlay.id = 'loading-overlay';
-    loadingOverlay.className = 'loading-overlay';
+    loadingOverlay.className = 'loading-overlay'; // Not visible by default
 
     // Create the loading character (randomly selected)
     const characters = ['fox', 'bear', 'pig', 'monkey'];

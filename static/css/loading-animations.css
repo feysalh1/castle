@@ -13,6 +13,13 @@
     justify-content: center;
     align-items: center;
     transition: opacity 0.3s ease;
+    opacity: 0; /* Hidden by default */
+    pointer-events: none; /* Don't block interactions when hidden */
+}
+
+.loading-overlay.visible {
+    opacity: 1; /* Show when visible class is added */
+    pointer-events: all; /* Allow interactions when visible */
 }
 
 /* Animal animations */
