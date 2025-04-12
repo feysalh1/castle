@@ -22,9 +22,22 @@ def initialize_openai_client():
     # Get API key from environment
     api_key = os.environ.get("OPENAI_API_KEY")
     
+    # Check if the .env file exists and try to load from there if no API key in environment
+    if not api_key:
+        try:
+            # Try to load from .env file as a fallback
+            dotenv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
+            if os.path.exists(dotenv_path):
+                logger.info("Trying to load OPENAI_API_KEY from .env file")
+                from dotenv import load_dotenv
+                load_dotenv(dotenv_path)
+                api_key = os.environ.get("OPENAI_API_KEY")
+        except Exception as e:
+            logger.warning(f"Failed to load from .env file: {e}")
+    
     # Validate API key
     if not api_key:
-        logger.error("OPENAI_API_KEY not found in environment variables. ChatGPT functions will not work.")
+        logger.error("OPENAI_API_KEY not found in environment variables or .env file. ChatGPT functions will not work.")
         return None
     
     if len(api_key.strip()) < 20:
