@@ -205,7 +205,9 @@ def index():
             return redirect(url_for('parent_dashboard'))
         elif session.get('user_type') == 'child':
             return redirect(url_for('child_dashboard'))
-    return render_template('login_landing.html')
+    # Create empty form for CSRF protection in the guest login form
+    form = EmptyForm()
+    return render_template('login_landing.html', form=form)
 
 
 @app.route('/parent/register', methods=['GET', 'POST'])
