@@ -41,8 +41,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                         loadStoryById(bookId);
                     }, 1500);
-                        }
-                    }, 1000);
 
                     // Load the story content
                     fetch(`/api/story/${bookId}`)
