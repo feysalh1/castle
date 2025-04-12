@@ -33,8 +33,33 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
 
+                    // Create a modal loading container if needed
+                    let loadingContainer = document.getElementById('story-loading-container');
+                    if (!loadingContainer) {
+                        loadingContainer = document.createElement('div');
+                        loadingContainer.id = 'story-loading-container';
+                        loadingContainer.className = 'loading-container';
+                        
+                        const loadingContent = document.createElement('div');
+                        loadingContent.className = 'loading-content';
+                        
+                        const foxAnimation = document.createElement('div');
+                        foxAnimation.className = 'fox-animation';
+                        
+                        const loadingText = document.createElement('p');
+                        loadingText.textContent = 'Loading your story...';
+                        
+                        loadingContent.appendChild(foxAnimation);
+                        loadingContent.appendChild(loadingText);
+                        loadingContainer.appendChild(loadingContent);
+                        document.body.appendChild(loadingContainer);
+                    } else {
+                        loadingContainer.style.display = 'flex';
+                    }
+                    
                     // Show loading animation after shooting star animation
                     setTimeout(() => {
+                        // Also show regular loading animation if it exists
                         const loadingAnimation = document.getElementById('loading-animation');
                         if (loadingAnimation) {
                             loadingAnimation.style.display = 'flex';
@@ -43,8 +68,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Load story with timeout to ensure proper animation
                         setTimeout(() => {
                             loadStoryById(bookId);
-                        }, 500);
-                    }, 1000);
+                        }, 800);
+                    }, 1200);
 
                     // Load the story content
                     fetch(`/api/story/${bookId}`)
@@ -122,9 +147,30 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Function to hide all loading animations
+function hideAllLoadingAnimations() {
+    // Hide main loading animation
+    const loadingAnimation = document.getElementById('loading-animation');
+    if (loadingAnimation) {
+        loadingAnimation.style.display = 'none';
+    }
+    
+    // Hide story loading container
+    const storyLoadingContainer = document.getElementById('story-loading-container');
+    if (storyLoadingContainer) {
+        storyLoadingContainer.style.display = 'none';
+    }
+    
+    // Call external hideLoading function if it exists
+    if (typeof hideLoading === 'function') {
+        hideLoading();
+    }
+}
+
 function loadStoryById(bookId) {
     if (!bookId) {
         console.error('Invalid book ID');
+        hideAllLoadingAnimations();
         return;
     }
 
@@ -140,16 +186,11 @@ function loadStoryById(bookId) {
                 throw new Error(data.error);
             }
             console.log('Story data loaded:', data);
+            hideAllLoadingAnimations();
         })
         .catch(error => {
             console.error('Error loading story:', error);
             alert('Sorry, there was a problem loading the story. Please try again.  Details: ' + error);
-
-            // Hide loading if necessary
-            if (typeof hideLoading === 'function') {
-                hideLoading();
-            } else if (document.getElementById('loading-animation')) {
-                document.getElementById('loading-animation').style.display = 'none';
-            }
+            hideAllLoadingAnimations();
         });
 }

@@ -304,6 +304,7 @@ def track_story_progress(child_id, story_id, story_title, completed=False):
         # Verify child exists first
         child = Child.query.get(child_id)
         if not child:
+            print(f"Warning: Child with ID {child_id} not found, skipping story progress tracking")
             return {"success": False, "message": f"Child with ID {child_id} not found"}, 404
 
         # Check for existing progress
@@ -335,7 +336,9 @@ def track_story_progress(child_id, story_id, story_title, completed=False):
         return new_progress
 
     except Exception as e:
-        return {"message": f"Error tracking story progress: {e}"}, 500
+        db.session.rollback()  # Rollback on error
+        print(f"Error tracking story progress: {e}")
+        return {"success": False, "message": f"Error tracking story progress: {e}"}, 500
 
 def track_progress(child_id, content_type, content_id, content_title, **kwargs):
     try:
@@ -343,7 +346,7 @@ def track_progress(child_id, content_type, content_id, content_title, **kwargs):
         child = db.session.query(Child).filter_by(id=child_id).first()
         if not child:
             print(f"Warning: Child with ID {child_id} not found, skipping progress tracking")
-            return None
+            return {"success": False, "message": f"Child with ID {child_id} not found"}
 
         # Create new progress entry
         progress = Progress(
@@ -355,7 +358,9 @@ def track_progress(child_id, content_type, content_id, content_title, **kwargs):
         )
         db.session.add(progress)
         db.session.commit()
-        return progress
+        return {"success": True, "data": progress}
 
     except Exception as e:
-        return {"message": f"Error tracking progress: {e}"}, 500
+        db.session.rollback()  # Rollback on error
+        print(f"Error tracking progress: {e}")
+        return {"success": False, "message": f"Error tracking progress: {e}"}
