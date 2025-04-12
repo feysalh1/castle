@@ -1,0 +1,368 @@
+/* Child Dashboard Styles for Children's Castle */
+
+.child-dashboard {
+    background-color: #fcf8ff;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Decorative elements */
+.cloud {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    z-index: -1;
+}
+
+.cloud-1 {
+    width: 250px;
+    height: 100px;
+    top: 50px;
+    left: -50px;
+}
+
+.cloud-2 {
+    width: 180px;
+    height: 80px;
+    top: 150px;
+    right: 100px;
+}
+
+.cloud-3 {
+    width: 220px;
+    height: 90px;
+    bottom: 200px;
+    left: 15%;
+}
+
+/* Dashboard Header */
+.child-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: transparent;
+    padding: 15px 20px;
+    position: relative;
+    z-index: 10;
+}
+
+.child-header .logo {
+    display: flex;
+    flex-direction: column;
+}
+
+.child-header .logo h1 {
+    font-size: 1.8rem;
+    color: #fff;
+    margin: 0;
+}
+
+.child-header .logo small {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.child-header .nav-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+/* Dashboard Main Content */
+.dashboard-main {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.greeting {
+    font-size: 2rem;
+    color: #6a3093;
+    text-align: center;
+    margin-bottom: 40px;
+    animation: bounce 2s infinite alternate;
+}
+
+/* Mode Selection */
+.mode-selection {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.mode-card {
+    width: 280px;
+    height: 280px;
+    background-color: #fff;
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+    position: relative;
+}
+
+.mode-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.mode-card-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.mode-card-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.1;
+    background-size: cover;
+    background-position: center;
+    transition: opacity 0.3s;
+}
+
+.mode-card:hover .mode-card-bg {
+    opacity: 0.2;
+}
+
+.mode-icon {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 20px;
+}
+
+.mode-card h3 {
+    color: #6a3093;
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.mode-card p {
+    color: #666;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+/* Progress Section */
+.progress-section {
+    background-color: #fff;
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 40px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.progress-section h3 {
+    color: #6a3093;
+    font-size: 1.6rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.progress-cards {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+.progress-card {
+    min-width: 200px;
+    background-color: #f8f6ff;
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+}
+
+.progress-card h4 {
+    color: #6a3093;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.progress-bar-container {
+    height: 15px;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: #8a5fff;
+    border-radius: 10px;
+    transition: width 0.5s;
+}
+
+.progress-stat {
+    display: flex;
+    justify-content: space-between;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Recently Played */
+.recent-section {
+    background-color: #fff;
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 40px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.recent-section h3 {
+    color: #6a3093;
+    font-size: 1.6rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.recent-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+}
+
+.recent-item {
+    width: 150px;
+    text-align: center;
+}
+
+.recent-item-image {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 10px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.recent-item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.recent-item h4 {
+    color: #6a3093;
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.recent-item p {
+    color: #888;
+    font-size: 0.85rem;
+}
+
+/* Dashboard Footer */
+.dashboard-footer {
+    text-align: center;
+    padding: 10px;
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.8rem;
+}
+
+/* Animations */
+@keyframes bounce {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0) rotate(0);
+    }
+    50% {
+        transform: translateY(-15px) rotate(5deg);
+    }
+    100% {
+        transform: translateY(0) rotate(0);
+    }
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .child-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px 10px;
+    }
+    
+    .child-header .logo {
+        margin-bottom: 10px;
+    }
+    
+    .greeting {
+        font-size: 1.6rem;
+        margin-bottom: 30px;
+    }
+    
+    .mode-selection {
+        gap: 20px;
+    }
+    
+    .mode-card {
+        width: 100%;
+        max-width: 280px;
+        height: 240px;
+    }
+    
+    .mode-icon {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 15px;
+    }
+    
+    .mode-card h3 {
+        font-size: 1.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-main {
+        padding: 0 15px;
+        margin: 20px auto;
+    }
+    
+    .greeting {
+        font-size: 1.4rem;
+        margin-bottom: 25px;
+    }
+    
+    .progress-cards {
+        flex-direction: column;
+    }
+    
+    .progress-card {
+        min-width: auto;
+    }
+    
+    .recent-item {
+        width: 120px;
+    }
+    
+    .recent-item-image {
+        width: 80px;
+        height: 80px;
+    }
+}

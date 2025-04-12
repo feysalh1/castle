@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">
+  <!-- Fox character for loading animation -->
+  <g id="fox-character">
+    <!-- Body -->
+    <ellipse cx="75" cy="90" rx="40" ry="30" fill="#ff8c00" />
+    
+    <!-- Head -->
+    <circle cx="75" cy="60" r="30" fill="#ff8c00" />
+    
+    <!-- Ears -->
+    <polygon points="50,40 60,55 40,55" fill="#ff8c00" />
+    <polygon points="100,40 110,55 90,55" fill="#ff8c00" />
+    <polygon points="53,42 60,52 46,52" fill="#ffffff" />
+    <polygon points="97,42 104,52 90,52" fill="#ffffff" />
+    
+    <!-- Eyes -->
+    <g id="eyes">
+      <circle cx="60" cy="60" r="7" fill="#ffffff" />
+      <circle cx="90" cy="60" r="7" fill="#ffffff" />
+      <circle cx="60" cy="60" r="3" fill="#000000" />
+      <circle cx="90" cy="60" r="3" fill="#000000" />
+    </g>
+    
+    <!-- Nose -->
+    <circle cx="75" cy="70" r="5" fill="#000000" />
+    
+    <!-- Mouth -->
+    <path d="M65,80 Q75,90 85,80" fill="none" stroke="#000000" stroke-width="2" />
+    
+    <!-- Tail -->
+    <path d="M35,90 Q15,70 25,50" fill="none" stroke="#ff8c00" stroke-width="12" stroke-linecap="round" />
+    
+    <!-- Legs -->
+    <rect x="50" y="110" width="10" height="20" rx="5" fill="#ff8c00" />
+    <rect x="90" y="110" width="10" height="20" rx="5" fill="#ff8c00" />
+    
+    <!-- Arms -->
+    <rect x="40" y="80" width="10" height="25" rx="5" fill="#ff8c00" transform="rotate(30, 40, 80)" />
+    <rect x="100" y="80" width="10" height="25" rx="5" fill="#ff8c00" transform="rotate(-30, 100, 80)" />
+  </g>
+</svg>

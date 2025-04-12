@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200px" height="200px" viewBox="0 0 200 200" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g>
+    <!-- Fox Body -->
+    <circle cx="100" cy="110" r="60" fill="#e67e22" />
+    
+    <!-- Fox Face -->
+    <circle cx="100" cy="85" r="40" fill="#e67e22" />
+    
+    <!-- Fox Ears -->
+    <path d="M70 65 L55 25 L80 55 Z" fill="#e67e22" />
+    <path d="M130 65 L145 25 L120 55 Z" fill="#e67e22" />
+    <path d="M75 63 L65 35 L85 55 Z" fill="#d35400" />
+    <path d="M125 63 L135 35 L115 55 Z" fill="#d35400" />
+    
+    <!-- White Face Patches -->
+    <path d="M85 100 C85 110, 115 110, 115 100 L115 120 C115 135, 85 135, 85 120 Z" fill="white" />
+    <circle cx="85" cy="80" r="15" fill="white" />
+    <circle cx="115" cy="80" r="15" fill="white" />
+    
+    <!-- Eyes -->
+    <circle cx="90" cy="80" r="5" fill="#2c3e50" />
+    <circle cx="110" cy="80" r="5" fill="#2c3e50" />
+    <circle cx="92" cy="78" r="2" fill="white" />
+    <circle cx="112" cy="78" r="2" fill="white" />
+    
+    <!-- Nose and Mouth -->
+    <circle cx="100" cy="95" r="5" fill="#2c3e50" />
+    <path d="M100 100 L100 110 M90 105 C95 115, 105 115, 110 105" stroke="#2c3e50" stroke-width="2" fill="none" />
+    
+    <!-- Tail -->
+    <path d="M40 100 C10 70, 40 40, 55 60" fill="#e67e22" />
+    <path d="M45 95 C20 70, 45 50, 55 65" fill="#d35400" />
+  </g>
+</svg>

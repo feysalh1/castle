@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cat SVG -->
+  <circle cx="100" cy="100" r="80" fill="#F9FAFB"/>
+  <circle cx="100" cy="100" r="70" fill="#FEF3C7"/>
+  
+  <!-- Cat ears -->
+  <path d="M60,55 L80,80 L50,90 Z" fill="#D97706"/>
+  <path d="M140,55 L120,80 L150,90 Z" fill="#D97706"/>
+  
+  <!-- Cat face -->
+  <circle cx="75" cy="90" r="8" fill="#1F2937"/>
+  <circle cx="125" cy="90" r="8" fill="#1F2937"/>
+  
+  <!-- Cat nose and mouth -->
+  <circle cx="100" cy="110" r="5" fill="#F87171"/>
+  <path d="M100,115 L100,125 M85,125 C90,135 110,135 115,125" fill="none" stroke="#1F2937" stroke-width="2"/>
+  
+  <!-- Cat whiskers -->
+  <line x1="80" y1="110" x2="50" y2="105" stroke="#1F2937" stroke-width="1"/>
+  <line x1="80" y1="115" x2="50" y2="115" stroke="#1F2937" stroke-width="1"/>
+  <line x1="80" y1="120" x2="50" y2="125" stroke="#1F2937" stroke-width="1"/>
+  
+  <line x1="120" y1="110" x2="150" y2="105" stroke="#1F2937" stroke-width="1"/>
+  <line x1="120" y1="115" x2="150" y2="115" stroke="#1F2937" stroke-width="1"/>
+  <line x1="120" y1="120" x2="150" y2="125" stroke="#1F2937" stroke-width="1"/>
+</svg>

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <!-- Background -->
+  <rect width="400" height="300" fill="#e6f7ff"/>
+  
+  <!-- Stream -->
+  <path d="M0,200 Q100,180 200,210 T400,190 L400,300 L0,300 Z" fill="#bbdefb"/>
+  
+  <!-- Grass -->
+  <path d="M0,200 Q50,195 100,205 T200,200 T300,205 T400,190 L400,190 L0,190 Z" fill="#a5d6a7"/>
+  
+  <!-- Sky -->
+  <rect width="400" height="190" fill="#87ceeb"/>
+  
+  <!-- Little Fox -->
+  <g transform="translate(200, 160) scale(0.8)">
+    <!-- Body -->
+    <ellipse cx="0" cy="0" rx="40" ry="25" fill="#ff8c00"/>
+    
+    <!-- Head -->
+    <circle cx="-30" cy="0" r="25" fill="#ff8c00"/>
+    
+    <!-- Ears -->
+    <polygon points="-50,-5 -55,-25 -45,-10" fill="#ff8c00"/>
+    <polygon points="-45,10 -60,20 -40,20" fill="#ff8c00"/>
+    
+    <!-- Face -->
+    <circle cx="-35" cy="-5" r="3" fill="#000"/>
+    <ellipse cx="-45" cy="0" rx="8" ry="5" fill="#fff"/>
+    <ellipse cx="-45" cy="5" rx="5" ry="3" fill="#000"/>
+    
+    <!-- Legs -->
+    <rect x="-20" y="20" width="8" height="20" rx="4" fill="#ff8c00"/>
+    <rect x="15" y="20" width="8" height="20" rx="4" fill="#ff8c00"/>
+    
+    <!-- Tail -->
+    <path d="M35,0 Q55,10 50,-15" fill="none" stroke="#ff8c00" stroke-width="10" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Rocks -->
+  <ellipse cx="100" cy="240" rx="30" ry="20" fill="#9e9e9e"/>
+  <ellipse cx="300" cy="250" rx="40" ry="20" fill="#757575"/>
+  
+  <!-- Fish in stream -->
+  <g transform="translate(150, 240) rotate(30)">
+    <path d="M0,0 L15,8 L15,-8 Z" fill="#e57373"/>
+    <ellipse cx="-5" cy="0" rx="15" ry="8" fill="#ef5350"/>
+    <circle cx="5" cy="0" r="2" fill="#000"/>
+    <path d="M-20,0 L-10,5 L-10,-5 Z" fill="#ef5350"/>
+  </g>
+  
+  <!-- Sun -->
+  <circle cx="60" cy="60" r="30" fill="#ffeb3b"/>
+  
+  <!-- Birds -->
+  <path d="M280,80 Q290,70 300,80 Q310,70 320,80" fill="none" stroke="#000" stroke-width="2"/>
+  <path d="M250,50 Q260,40 270,50 Q280,40 290,50" fill="none" stroke="#000" stroke-width="2"/>
+</svg>

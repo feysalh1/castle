@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="400" fill="#F5F3FF" rx="15" ry="15"/>
+  
+  <!-- Letters background -->
+  <rect x="50" y="150" width="300" height="120" rx="20" ry="20" fill="#D8B4FE" />
+  
+  <!-- Letter blocks -->
+  <g>
+    <!-- C -->
+    <rect x="70" y="170" width="60" height="80" rx="10" ry="10" fill="#8B5CF6" stroke="#4C1D95" stroke-width="3"/>
+    <text x="100" y="225" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="white">C</text>
+  </g>
+  <g>
+    <!-- A -->
+    <rect x="140" y="170" width="60" height="80" rx="10" ry="10" fill="#8B5CF6" stroke="#4C1D95" stroke-width="3"/>
+    <text x="170" y="225" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="white">A</text>
+  </g>
+  <g>
+    <!-- T -->
+    <rect x="210" y="170" width="60" height="80" rx="10" ry="10" fill="#8B5CF6" stroke="#4C1D95" stroke-width="3"/>
+    <text x="240" y="225" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="white">T</text>
+  </g>
+  <g>
+    <!-- ? -->
+    <rect x="280" y="170" width="60" height="80" rx="10" ry="10" fill="#C7D2FE" stroke="#4C1D95" stroke-width="3" stroke-dasharray="5,5"/>
+    <text x="310" y="225" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="#6D28D9">?</text>
+  </g>
+  
+  <!-- Decorative elements -->
+  <circle cx="70" cy="80" r="20" fill="#FCD34D"/>
+  <circle cx="330" cy="80" r="20" fill="#FCD34D"/>
+  <path d="M180 70 Q200 40 220 70" stroke="#34D399" stroke-width="5" fill="none"/>
+  <path d="M160 100 Q200 60 240 100" stroke="#34D399" stroke-width="5" fill="none"/>
+  
+  <!-- Small stars -->
+  <path d="M50,320 l10,0 l3,-9 l3,9 l10,0 l-8,6 l3,9 l-8,-6 l-8,6 l3,-9 z" fill="#FCD34D"/>
+  <path d="M340,320 l10,0 l3,-9 l3,9 l10,0 l-8,6 l3,9 l-8,-6 l-8,6 l3,-9 z" fill="#FCD34D"/>
+</svg>

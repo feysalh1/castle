@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">
+  <g id="book-icon">
+    <!-- Book base -->
+    <rect x="25" y="30" width="100" height="90" rx="5" ry="5" fill="#8a5fff" />
+    
+    <!-- Pages -->
+    <rect x="30" y="35" width="90" height="80" rx="3" ry="3" fill="#ffffff" />
+    
+    <!-- Bookmark -->
+    <polygon points="100,35 100,60 90,50 80,60 80,35" fill="#ff6b6b" />
+    
+    <!-- Text lines -->
+    <rect x="40" y="50" width="60" height="4" rx="2" ry="2" fill="#e0e0e0" />
+    <rect x="40" y="60" width="50" height="4" rx="2" ry="2" fill="#e0e0e0" />
+    <rect x="40" y="70" width="70" height="4" rx="2" ry="2" fill="#e0e0e0" />
+    <rect x="40" y="80" width="40" height="4" rx="2" ry="2" fill="#e0e0e0" />
+    <rect x="40" y="90" width="60" height="4" rx="2" ry="2" fill="#e0e0e0" />
+    <rect x="40" y="100" width="55" height="4" rx="2" ry="2" fill="#e0e0e0" />
+  </g>
+</svg>

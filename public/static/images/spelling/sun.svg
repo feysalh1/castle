@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Sun SVG -->
+  <circle cx="100" cy="100" r="50" fill="#FEF3C7"/>
+  <circle cx="100" cy="100" r="40" fill="#FBBF24"/>
+  
+  <!-- Sun rays -->
+  <line x1="100" y1="30" x2="100" y2="10" stroke="#FBBF24" stroke-width="6" stroke-linecap="round"/>
+  <line x1="100" y1="170" x2="100" y2="190" stroke="#FBBF24" stroke-width="6" stroke-linecap="round"/>
+  <line x1="30" y1="100" x2="10" y2="100" stroke="#FBBF24" stroke-width="6" stroke-linecap="round"/>
+  <line x1="170" y1="100" x2="190" y2="100" stroke="#FBBF24" stroke-width="6" stroke-linecap="round"/>
+  
+  <line x1="50" y1="50" x2="35" y2="35" stroke="#FBBF24" stroke-width="6" stroke-linecap="round"/>
+  <line x1="150" y1="50" x2="165" y2="35" stroke="#FBBF24" stroke-width="6" stroke-linecap="round"/>
+  <line x1="50" y1="150" x2="35" y2="165" stroke="#FBBF24" stroke-width="6" stroke-linecap="round"/>
+  <line x1="150" y1="150" x2="165" y2="165" stroke="#FBBF24" stroke-width="6" stroke-linecap="round"/>
+  
+  <!-- Sun face -->
+  <circle cx="85" cy="90" r="5" fill="#92400E"/>
+  <circle cx="115" cy="90" r="5" fill="#92400E"/>
+  <path d="M85,115 C90,125 110,125 115,115" fill="none" stroke="#92400E" stroke-width="3" stroke-linecap="round"/>
+</svg>

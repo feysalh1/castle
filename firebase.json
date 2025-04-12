@@ -7,7 +7,10 @@
     "rewrites": [
       {
         "source": "**",
-        "destination": "/index.html"
+        "run": {
+          "serviceId": "childrens-castle",
+          "region": "us-central1"
+        }
       }
     ],
     "ignore": [
@@ -16,13 +19,6 @@
       "**/node_modules/**",
       "**/__pycache__/**",
       "**/venv/**"
-    ],
-    "redirects": [
-      {
-        "source": "/",
-        "destination": "https://story-time-fun.web.app",
-        "type": 302
-      }
     ]
   }
 }

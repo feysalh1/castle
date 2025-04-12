@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">
+  <rect width="150" height="150" fill="#f8f8f8" rx="10" ry="10"/>
+  
+  <!-- Number 1 -->
+  <text x="30" y="50" font-family="Arial" font-size="40" font-weight="bold" fill="#8a5fff">1</text>
+  
+  <!-- Number 2 -->
+  <text x="80" y="50" font-family="Arial" font-size="40" font-weight="bold" fill="#ff6b6b">2</text>
+  
+  <!-- Number 3 -->
+  <text x="130" y="50" font-family="Arial" font-size="40" font-weight="bold" fill="#4CAF50">3</text>
+  
+  <!-- Plus sign -->
+  <text x="55" y="90" font-family="Arial" font-size="40" font-weight="bold" fill="#333">+</text>
+  
+  <!-- Equals sign -->
+  <text x="105" y="90" font-family="Arial" font-size="40" font-weight="bold" fill="#333">=</text>
+  
+  <!-- Number 6 (result) -->
+  <text x="75" y="130" font-family="Arial" font-size="50" font-weight="bold" fill="#FFD700">6</text>
+</svg>

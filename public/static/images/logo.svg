@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <circle cx="100" cy="100" r="90" fill="#ff70a6" />
+  <text x="100" y="115" font-family="Comic Sans MS, Arial" font-size="32" fill="white" text-anchor="middle">Baby Girl</text>
+  <path d="M50,70 C60,40 140,40 150,70" stroke="white" stroke-width="3" fill="none" />
+</svg>

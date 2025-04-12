@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <!-- Background - meadow -->
+  <rect width="300" height="300" fill="#c5e1a5" />
+  
+  <!-- Sky -->
+  <rect width="300" height="150" fill="#bbdefb" />
+  
+  <!-- Sun -->
+  <circle cx="250" cy="50" r="20" fill="#ffeb3b" />
+  <line x1="250" y1="20" x2="250" y2="10" stroke="#ffeb3b" stroke-width="2" />
+  <line x1="250" y1="80" x2="250" y2="90" stroke="#ffeb3b" stroke-width="2" />
+  <line x1="220" y1="50" x2="210" y2="50" stroke="#ffeb3b" stroke-width="2" />
+  <line x1="280" y1="50" x2="290" y2="50" stroke="#ffeb3b" stroke-width="2" />
+  
+  <!-- Hills -->
+  <ellipse cx="70" cy="150" rx="100" ry="20" fill="#aed581" />
+  <ellipse cx="230" cy="150" rx="100" ry="30" fill="#9ccc65" />
+  
+  <!-- Bo-Peep Character -->
+  <circle cx="130" cy="160" r="15" fill="#ffccbc" /> <!-- Head -->
+  <path d="M120,146 L115,130 A10,10 0 0,1 135,140 Z" fill="#f48fb1" /> <!-- Bonnet -->
+  <rect x="122" y="175" width="16" height="40" fill="#f8bbd0" /> <!-- Dress -->
+  <path d="M122,175 L138,175 L145,210 L115,210 Z" fill="#f8bbd0" /> <!-- Dress flared -->
+  <rect x="125" y="210" width="5" height="15" fill="#ffccbc" /> <!-- Left leg -->
+  <rect x="135" y="210" width="5" height="15" fill="#ffccbc" /> <!-- Right leg -->
+  <circle cx="125" cy="155" r="2" fill="black" /> <!-- Left eye -->
+  <circle cx="135" cy="155" r="2" fill="black" /> <!-- Right eye -->
+  <path d="M126,165 Q130,167 134,165" fill="none" stroke="#e57373" stroke-width="1" /> <!-- Mouth -->
+  
+  <!-- Shepherd's Crook -->
+  <path d="M150,160 L160,220 Q175,230 170,215 L160,160" fill="none" stroke="#8d6e63" stroke-width="3" />
+  
+  <!-- Lost Sheep 1 -->
+  <ellipse cx="50" cy="250" rx="25" ry="20" fill="white" />
+  <circle cx="50" cy="225" r="15" fill="white" />
+  <ellipse cx="45" cy="220" rx="3" ry="2" fill="black" />
+  <ellipse cx="55" cy="220" rx="3" ry="2" fill="black" />
+  <ellipse cx="50" cy="230" rx="4" ry="2" fill="#616161" />
+  <rect x="40" y="265" width="5" height="15" fill="#bdbdbd" />
+  <rect x="55" y="265" width="5" height="15" fill="#bdbdbd" />
+  
+  <!-- Lost Sheep 2 -->
+  <ellipse cx="200" cy="230" rx="25" ry="20" fill="white" />
+  <circle cx="200" cy="205" r="15" fill="white" />
+  <ellipse cx="195" cy="200" rx="3" ry="2" fill="black" />
+  <ellipse cx="205" cy="200" rx="3" ry="2" fill="black" />
+  <ellipse cx="200" cy="210" rx="4" ry="2" fill="#616161" />
+  <rect x="190" y="245" width="5" height="15" fill="#bdbdbd" />
+  <rect x="205" y="245" width="5" height="15" fill="#bdbdbd" />
+  
+  <!-- Lost Sheep 3 - hiding -->
+  <ellipse cx="250" cy="270" rx="25" ry="20" fill="white" />
+  <circle cx="250" cy="245" r="15" fill="white" />
+  <ellipse cx="240" cy="260" rx="3" ry="7" fill="#81c784" /> <!-- Hiding in bush -->
+  <ellipse cx="250" cy="260" rx="3" ry="9" fill="#81c784" /> <!-- Hiding in bush -->
+  <ellipse cx="260" cy="260" rx="3" ry="8" fill="#81c784" /> <!-- Hiding in bush -->
+  <rect x="240" y="285" width="5" height="15" fill="#bdbdbd" />
+  <rect x="255" y="285" width="5" height="15" fill="#bdbdbd" />
+  
+  <!-- Tail left behind -->
+  <path d="M30,270 C40,260 50,260 60,270" fill="none" stroke="white" stroke-width="5" />
+  <path d="M170,250 C180,240 190,240 200,250" fill="none" stroke="white" stroke-width="5" />
+  <path d="M270,290 C280,280 290,280 295,290" fill="none" stroke="white" stroke-width="5" />
+  
+  <!-- Speech bubble showing concern -->
+  <path d="M90,140 A40,30 0 0,1 150,120 A40,30 0 0,1 90,140 Z" fill="white" stroke="black" stroke-width="1" />
+  <polygon points="100,140 90,160 110,145" fill="white" stroke="black" stroke-width="1" />
+  <text x="120" y="135" font-family="Comic Sans MS, Arial" font-size="10" fill="black" text-anchor="middle">Where are</text>
+  <text x="120" y="145" font-family="Comic Sans MS, Arial" font-size="10" fill="black" text-anchor="middle">my sheep?</text>
+  
+  <!-- Story Title -->
+  <text x="150" y="30" font-family="Comic Sans MS, Arial" font-size="20" fill="#f06292" text-anchor="middle">Little Bo-Peep</text>
+</svg>

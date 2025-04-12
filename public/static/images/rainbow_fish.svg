@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Ocean Background -->
+  <rect width="300" height="300" fill="#E3F2FD"/>
+  
+  <!-- Ocean Gradient -->
+  <rect width="300" height="300" fill="url(#ocean_gradient)"/>
+  <defs>
+    <linearGradient id="ocean_gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#81D4FA;stop-opacity:0.5"/>
+      <stop offset="100%" style="stop-color:#01579B;stop-opacity:0.7"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Seaweed 1 -->
+  <path d="M 30 300 C 25 280 35 260 30 240 C 25 220 35 200 30 180 C 25 160 35 140 30 120" 
+        stroke="#004D40" stroke-width="4" fill="none"/>
+  
+  <!-- Seaweed 2 -->
+  <path d="M 50 300 C 60 270 45 250 55 220 C 65 190 50 170 60 140" 
+        stroke="#00695C" stroke-width="5" fill="none"/>
+  
+  <!-- Seaweed 3 -->
+  <path d="M 15 300 C 10 280 20 270 15 250 C 10 230 20 220 15 200" 
+        stroke="#00796B" stroke-width="3" fill="none"/>
+  
+  <!-- Coral 1 -->
+  <path d="M 270 300 C 275 290 280 280 290 280 C 295 275 290 270 285 270 C 280 265 285 260 290 255 C 295 250 290 245 285 245" 
+        stroke="#E91E63" stroke-width="4" fill="#F48FB1"/>
+  
+  <!-- Coral 2 -->
+  <path d="M 240 300 C 245 290 235 280 240 270 C 235 260 245 250 240 240" 
+        stroke="#D81B60" stroke-width="3" fill="#F06292"/>
+  
+  <!-- Sea Floor -->
+  <path d="M 0 300 C 50 290 100 295 150 285 C 200 295 250 290 300 300 Z" fill="#FFA726"/>
+  
+  <!-- Bubbles -->
+  <circle cx="80" cy="80" r="5" fill="#E1F5FE" fill-opacity="0.7"/>
+  <circle cx="90" cy="60" r="3" fill="#E1F5FE" fill-opacity="0.7"/>
+  <circle cx="75" cy="45" r="4" fill="#E1F5FE" fill-opacity="0.7"/>
+  <circle cx="240" cy="70" r="6" fill="#E1F5FE" fill-opacity="0.7"/>
+  <circle cx="260" cy="100" r="4" fill="#E1F5FE" fill-opacity="0.7"/>
+  <circle cx="225" cy="120" r="3" fill="#E1F5FE" fill-opacity="0.7"/>
+  
+  <!-- Rainbow Fish (Main) -->
+  <path d="M 180 150 C 220 120 240 150 220 180 C 240 210 220 240 180 210 C 140 240 80 200 80 180 C 80 160 140 120 180 150 Z" 
+        fill="#3F51B5" stroke="#1A237E" stroke-width="2"/>
+  
+  <!-- Fish Tail -->
+  <path d="M 80 180 L 40 150 L 80 180 L 40 210 Z" fill="#3F51B5" stroke="#1A237E" stroke-width="2"/>
+  
+  <!-- Rainbow Scales -->
+  <circle cx="160" cy="160" r="10" fill="#FF5252" stroke="#D50000" stroke-width="1"/> <!-- Red scale -->
+  <circle cx="180" cy="170" r="10" fill="#FF9800" stroke="#E65100" stroke-width="1"/> <!-- Orange scale -->
+  <circle cx="200" cy="165" r="10" fill="#FFEB3B" stroke="#F57F17" stroke-width="1"/> <!-- Yellow scale -->
+  <circle cx="190" cy="190" r="10" fill="#4CAF50" stroke="#1B5E20" stroke-width="1"/> <!-- Green scale -->
+  <circle cx="170" cy="190" r="10" fill="#2196F3" stroke="#0D47A1" stroke-width="1"/> <!-- Blue scale -->
+  <circle cx="150" cy="180" r="10" fill="#9C27B0" stroke="#4A148C" stroke-width="1"/> <!-- Purple scale -->
+  <circle cx="130" cy="170" r="10" fill="#F48FB1" stroke="#EC407A" stroke-width="1"/> <!-- Pink scale -->
+  <circle cx="120" cy="190" r="10" fill="#00BCD4" stroke="#006064" stroke-width="1"/> <!-- Cyan scale -->
+  
+  <!-- Fish Eye -->
+  <circle cx="200" cy="150" r="8" fill="white" stroke="#1A237E" stroke-width="1"/>
+  <circle cx="203" cy="150" r="4" fill="black"/>
+  
+  <!-- Fish Fin -->
+  <path d="M 150 150 C 140 130 160 120 170 130" fill="#3F51B5" stroke="#1A237E" stroke-width="2"/>
+  <path d="M 140 200 C 130 220 150 230 160 220" fill="#3F51B5" stroke="#1A237E" stroke-width="2"/>
+  
+  <!-- Small Blue Fish -->
+  <path d="M 100 100 C 120 90 130 100 120 110 C 130 120 120 130 100 120 C 90 125 80 115 80 110 C 80 105 90 95 100 100 Z" 
+        fill="#29B6F6" stroke="#0277BD" stroke-width="1"/>
+  <path d="M 80 110 L 70 100 L 80 110 L 70 120 Z" fill="#29B6F6" stroke="#0277BD" stroke-width="1"/> <!-- Tail -->
+  <circle cx="110" cy="105" r="3" fill="white" stroke="#0277BD" stroke-width="0.5"/> <!-- Eye -->
+  <circle cx="112" cy="105" r="1.5" fill="black"/> <!-- Pupil -->
+  
+  <!-- Small Yellow Fish -->
+  <path d="M 230 230 C 250 220 260 230 250 240 C 260 250 250 260 230 250 C 220 255 210 245 210 240 C 210 235 220 225 230 230 Z" 
+        fill="#FDD835" stroke="#F57F17" stroke-width="1"/>
+  <path d="M 210 240 L 200 230 L 210 240 L 200 250 Z" fill="#FDD835" stroke="#F57F17" stroke-width="1"/> <!-- Tail -->
+  <circle cx="240" cy="235" r="3" fill="white" stroke="#F57F17" stroke-width="0.5"/> <!-- Eye -->
+  <circle cx="242" cy="235" r="1.5" fill="black"/> <!-- Pupil -->
+  
+  <!-- Title -->
+  <text x="150" y="25" font-family="Arial" font-size="16" text-anchor="middle" fill="#000">The Rainbow Fish</text>
+</svg>

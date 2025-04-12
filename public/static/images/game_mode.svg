@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect x="30" y="40" width="140" height="120" rx="10" fill="#ffd670" />
+  <circle cx="100" cy="100" r="35" fill="white" />
+  <rect x="95" y="75" width="10" height="50" rx="2" fill="#ffd670" />
+  <rect x="75" y="95" width="50" height="10" rx="2" fill="#ffd670" />
+  <circle cx="70" cy="140" r="10" fill="white" />
+  <circle cx="130" cy="140" r="10" fill="white" />
+  <circle cx="150" cy="100" r="10" fill="white" />
+  <circle cx="50" cy="100" r="10" fill="white" />
+  <text x="100" y="180" font-family="Comic Sans MS, Arial" font-size="16" fill="#333" text-anchor="middle">Game Mode</text>
+</svg>

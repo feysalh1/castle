@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">
+  <rect width="150" height="150" fill="#f8f8f8" rx="10" ry="10"/>
+  
+  <!-- Sesame Street-inspired elements -->
+  <circle cx="75" cy="75" r="50" fill="#fff" stroke="#ED1C24" stroke-width="3"/>
+  
+  <!-- Cookie Monster-inspired eyes -->
+  <circle cx="60" cy="65" r="15" fill="#fff" stroke="#000" stroke-width="2"/>
+  <circle cx="90" cy="65" r="15" fill="#fff" stroke="#000" stroke-width="2"/>
+  <circle cx="55" cy="65" r="5" fill="#000"/>
+  <circle cx="95" cy="65" r="5" fill="#000"/>
+  
+  <!-- Cookie -->
+  <circle cx="75" cy="100" r="15" fill="#CC8E35"/>
+  <circle cx="70" cy="95" r="3" fill="#7F563B"/>
+  <circle cx="80" cy="95" r="3" fill="#7F563B"/>
+  <circle cx="75" cy="105" r="3" fill="#7F563B"/>
+  
+  <!-- Sesame Street text -->
+  <text x="75" y="40" font-family="Arial" font-size="12" font-weight="bold" fill="#ED1C24" text-anchor="middle">SESAME STREET</text>
+</svg>

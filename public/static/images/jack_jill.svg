@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <!-- Sky background -->
+  <rect width="300" height="200" fill="#bbdefb" />
+  
+  <!-- Ground -->
+  <rect x="0" y="200" width="300" height="100" fill="#81c784" />
+  
+  <!-- Sun -->
+  <circle cx="250" cy="50" r="20" fill="#ffeb3b" />
+  <line x1="250" y1="20" x2="250" y2="10" stroke="#ffeb3b" stroke-width="2" />
+  <line x1="250" y1="80" x2="250" y2="90" stroke="#ffeb3b" stroke-width="2" />
+  <line x1="220" y1="50" x2="210" y2="50" stroke="#ffeb3b" stroke-width="2" />
+  <line x1="280" y1="50" x2="290" y2="50" stroke="#ffeb3b" stroke-width="2" />
+  
+  <!-- Hill -->
+  <path d="M0,200 Q150,100 300,200" fill="#a5d6a7" />
+  
+  <!-- Pail with water -->
+  <path d="M150,150 L140,160 L160,160 Z" fill="#90caf9" />
+  <rect x="140" y="160" width="20" height="15" rx="2" fill="#90caf9" />
+  <path d="M140,165 L160,165" stroke="#64b5f6" stroke-width="2" />
+  <path d="M140,170" L160,170" stroke="#64b5f6" stroke-width="2" />
+  <path d="M139,175 L161,175" stroke="#2196f3" stroke-width="1" />
+  
+  <!-- Jack -->
+  <circle cx="120" cy="220" r="15" fill="#ffccbc" /> <!-- Head -->
+  <rect x="115" y="235" width="10" height="20" fill="#4fc3f7" /> <!-- Body -->
+  <rect x="110" y="255" width="5" height="15" fill="#ffccbc" /> <!-- Left leg -->
+  <rect x="125" y="255" width="5" height="15" fill="#ffccbc" /> <!-- Right leg -->
+  <circle cx="115" cy="215" r="2" fill="black" /> <!-- Left eye -->
+  <circle cx="125" cy="215" r="2" fill="black" /> <!-- Right eye -->
+  <path d="M115,225 Q120,228 125,225" fill="none" stroke="black" stroke-width="1" /> <!-- Smile -->
+  
+  <!-- Jack's bandage -->
+  <rect x="108" y="200" width="25" height="8" rx="4" fill="#ffecb3" />
+  <line x1="108" y1="204" x2="133" y2="204" stroke="#ffe082" stroke-width="1" />
+  
+  <!-- Jill -->
+  <circle cx="180" cy="225" r="15" fill="#ffccbc" /> <!-- Head -->
+  <path d="M170,240 L190,240 L193,260 L167,260 Z" fill="#f8bbd0" /> <!-- Dress -->
+  <rect x="175" y="260" width="5" height="15" fill="#ffccbc" /> <!-- Left leg -->
+  <rect x="185" y="260" width="5" height="15" fill="#ffccbc" /> <!-- Right leg -->
+  <circle cx="175" cy="220" r="2" fill="black" /> <!-- Left eye -->
+  <circle cx="185" cy="220" r="2" fill="black" /> <!-- Right eye -->
+  <path d="M180,232 A5,5 0 0,1 175,227 A5,5 0 0,1 185,227" fill="#ffccbc" /> <!-- Sad expression -->
+  
+  <!-- Falling Motion Lines -->
+  <path d="M100,180 L105,185" stroke="black" stroke-width="1" />
+  <path d="M110,170 L115,175" stroke="black" stroke-width="1" />
+  <path d="M120,160 L125,165" stroke="black" stroke-width="1" />
+  <path d="M130,150 L135,155" stroke="black" stroke-width="1" />
+  
+  <path d="M200,180 L195,185" stroke="black" stroke-width="1" />
+  <path d="M190,170 L185,175" stroke="black" stroke-width="1" />
+  <path d="M180,160 L175,165" stroke="black" stroke-width="1" />
+  <path d="M170,150 L165,155" stroke="black" stroke-width="1" />
+  
+  <!-- Old Dame Dob's house -->
+  <rect x="30" y="220" width="50" height="40" fill="#d7ccc8" />
+  <polygon points="30,220 55,190 80,220" fill="#a1887f" />
+  <rect x="45" y="240" width="20" height="20" fill="#8d6e63" />
+  <rect x="35" y="230" width="10" height="10" fill="#90caf9" />
+  <rect x="65" y="230" width="10" height="10" fill="#90caf9" />
+  
+  <!-- Brown paper -->
+  <rect x="20" y="270" width="15" height="20" fill="#8d6e63" />
+  <path d="M20,270 L35,270 L35,290 L20,290 Z" fill="none" stroke="#5d4037" stroke-width="1" />
+  
+  <!-- Vinegar bottle -->
+  <rect x="45" y="270" width="8" height="15" fill="#9575cd" />
+  <rect x="47" y="265" width="4" height="5" fill="#7e57c2" />
+  <ellipse cx="49" cy="265" rx="2" ry="1" fill="#673ab7" />
+  
+  <!-- Scene labels -->
+  <text x="150" y="30" font-family="Comic Sans MS, Arial" font-size="20" fill="#4527a0" text-anchor="middle">Jack and Jill</text>
+  <text x="60" y="215" font-family="Comic Sans MS, Arial" font-size="8" fill="#5d4037" text-anchor="middle">Dame Dob's House</text>
+</svg>

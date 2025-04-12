@@ -1,0 +1,65 @@
+{
+  "title": "The Little Fox",
+  "id": "little_fox",
+  "author": "Children's Castle",
+  "age_range": "3-5",
+  "theme": ["adventure", "friendship"],
+  "pages": [
+    {
+      "page_number": 1,
+      "title": "Meet Oliver the Fox",
+      "text": "Once upon a time, there was a little fox named Oliver. He lived in a cozy den at the edge of the forest with his family. Oliver was very curious and loved to explore the world around him.",
+      "image": "images/stories/little_fox_page1.svg",
+      "audio": "audio/stories/little_fox_page1.mp3",
+      "character": "narrator"
+    },
+    {
+      "page_number": 2,
+      "title": "The Adventure Begins",
+      "text": "One sunny morning, Oliver decided to go on an adventure. \"I'm going to explore the big meadow today!\" he said to his mother. \"Be careful and come home before sunset,\" his mother replied with a smile.",
+      "image": "images/stories/little_fox_page2.svg",
+      "audio": "audio/stories/little_fox_page2.mp3",
+      "character": "narrator",
+      "character_dialogue": {
+        "oliver": "I'm going to explore the big meadow today!",
+        "mother": "Be careful and come home before sunset."
+      }
+    },
+    {
+      "page_number": 3,
+      "title": "New Friends",
+      "text": "In the meadow, Oliver met a friendly rabbit named Lily and a wise old owl named Professor Hoot. \"Hello! Would you like to play with me?\" asked Oliver. Lily hopped with joy, \"Yes, let's play hide and seek!\"",
+      "image": "images/stories/little_fox_page3.svg",
+      "audio": "audio/stories/little_fox_page3.mp3",
+      "character": "narrator",
+      "character_dialogue": {
+        "oliver": "Hello! Would you like to play with me?",
+        "lily": "Yes, let's play hide and seek!"
+      }
+    },
+    {
+      "page_number": 4,
+      "title": "A Small Problem",
+      "text": "While playing, dark clouds gathered in the sky. It started to rain! \"Oh no, I need to find shelter,\" worried Oliver. Professor Hoot hooted softly, \"Follow me, little ones. I know a perfect place to stay dry.\"",
+      "image": "images/stories/little_fox_page4.svg",
+      "audio": "audio/stories/little_fox_page4.mp3",
+      "character": "narrator",
+      "character_dialogue": {
+        "oliver": "Oh no, I need to find shelter.",
+        "professor_hoot": "Follow me, little ones. I know a perfect place to stay dry."
+      }
+    },
+    {
+      "page_number": 5,
+      "title": "Safe and Sound",
+      "text": "Professor Hoot led them to a hollow tree with plenty of room inside. They stayed there, telling stories and laughing until the rain stopped. Oliver learned that adventures are even more fun with friends who help each other.",
+      "image": "images/stories/little_fox_page5.svg",
+      "audio": "audio/stories/little_fox_page5.mp3",
+      "character": "narrator"
+    }
+  ],
+  "moral": "Friends make adventures more fun, and helping each other makes everyone happy.",
+  "skills": ["empathy", "friendship", "problem-solving"],
+  "created_at": "2025-04-06T12:00:00Z",
+  "version": 1.0
+}

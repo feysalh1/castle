@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradientFill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6a11cb" />
+      <stop offset="100%" stop-color="#2575fc" />
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="white" stroke="url(#gradientFill)" stroke-width="4"/>
+  <circle cx="50" cy="50" r="42" fill="url(#gradientFill)" opacity="0.2"/>
+  
+  <!-- Robot/Assistant Face -->
+  <circle cx="50" cy="37" r="20" fill="url(#gradientFill)"/>
+  
+  <!-- Eyes -->
+  <circle cx="42" cy="33" r="4" fill="white"/>
+  <circle cx="58" cy="33" r="4" fill="white"/>
+  <circle cx="42" cy="33" r="2" fill="#333"/>
+  <circle cx="58" cy="33" r="2" fill="#333"/>
+  
+  <!-- Smile -->
+  <path d="M40,43 Q50,50 60,43" stroke="white" stroke-width="3" fill="none"/>
+  
+  <!-- Antenna -->
+  <line x1="50" y1="17" x2="50" y2="5" stroke="url(#gradientFill)" stroke-width="3"/>
+  <circle cx="50" cy="3" r="3" fill="url(#gradientFill)"/>
+  
+  <!-- Body/Neck -->
+  <path d="M35,57 L30,80 Q30,90 50,90 Q70,90 70,80 L65,57" fill="url(#gradientFill)"/>
+  <rect x="35" y="55" width="30" height="10" rx="5" fill="url(#gradientFill)"/>
+  
+  <!-- Body Details -->
+  <circle cx="50" cy="70" r="5" fill="white"/>
+  <circle cx="37" cy="65" r="3" fill="white"/>
+  <circle cx="63" cy="65" r="3" fill="white"/>
+  <circle cx="40" cy="78" r="3" fill="white"/>
+  <circle cx="60" cy="78" r="3" fill="white"/>
+</svg>

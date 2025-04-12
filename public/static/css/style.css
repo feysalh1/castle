@@ -1,0 +1,1024 @@
+/* Main styles for Children's Castle app */
+
+/* Base Styles */
+:root {
+    --primary-color: #1e3a5f;
+    --primary-light: #2c5999;
+    --primary-dark: #132742;
+    --secondary-color: #f8c630;
+    --secondary-light: #ffde76;
+    --secondary-dark: #d6a100;
+    --background-color: #0a1623;
+    --text-color: #333333;
+    --light-text: #ffffff;
+    --success-color: #4CAF50;
+    --warning-color: #FF9800;
+    --error-color: #F44336;
+    --border-radius: 10px;
+    --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    --transition-speed: 0.3s;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', sans-serif;
+}
+
+body {
+    color: var(--text-color);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: url('/static/images/background/night-castle-second.png') no-repeat center top fixed !important;
+    background-size: contain !important;
+    -webkit-background-size: contain !important;
+    -moz-background-size: contain !important;
+    -o-background-size: contain !important;
+    background-color: #071525 !important;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header Styles */
+header {
+    background-color: transparent !important;
+    color: var(--light-text);
+    padding: 15px 0;
+    position: relative;
+    z-index: 10;
+    box-shadow: none !important;
+}
+
+.logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo h1 {
+    font-size: 2rem;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Removed "Developed for Menira" small text */
+
+nav {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+nav a {
+    color: var(--light-text);
+    text-decoration: none;
+    margin: 0 15px;
+    padding: 5px 10px;
+    border-radius: var(--border-radius);
+    transition: background-color var(--transition-speed);
+}
+
+nav a:hover {
+    background-color: var(--primary-light);
+}
+
+/* Main Content Styles */
+main {
+    flex: 1;
+    padding: 20px;
+}
+
+.welcome {
+    text-align: center;
+    margin: 40px 0;
+}
+
+.welcome h2 {
+    font-size: 2.5rem;
+    color: #fff;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.welcome p {
+    font-size: 1.2rem;
+    max-width: 800px;
+    margin: 0 auto 20px;
+    color: #fff;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* Mode Selection */
+.mode-selection {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    margin: 40px 0;
+}
+
+.mode-card {
+    background-color: rgba(180, 220, 255, 0.9);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 20px;
+    width: 300px;
+    text-align: center;
+    transition: transform var(--transition-speed);
+    cursor: pointer;
+    border: 2px solid white;
+}
+
+.mode-card:hover {
+    transform: translateY(-10px);
+    background-color: rgba(190, 230, 255, 0.9);
+}
+
+.mode-icon {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 15px;
+}
+
+.mode-card h3 {
+    color: var(--primary-dark);
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+}
+
+.mode-card p {
+    color: #333333;
+    margin-bottom: 20px;
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    color: var(--light-text);
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: background-color var(--transition-speed);
+}
+
+.btn:hover {
+    background-color: var(--primary-light);
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn.secondary-btn {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+}
+
+.btn.secondary-btn:hover {
+    background-color: var(--secondary-light);
+}
+
+.btn.outline-btn {
+    background-color: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn.outline-btn:hover {
+    background-color: var(--primary-color);
+    color: var(--light-text);
+}
+
+.btn.large-btn {
+    font-size: 1.2rem;
+    padding: 12px 25px;
+}
+
+/* Footer Styles */
+footer {
+    background-color: transparent !important;
+    color: var(--light-text);
+    text-align: center;
+    padding: 10px;
+    margin-top: auto;
+    font-size: 0.8rem;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .logo h1 {
+        font-size: 1.7rem;
+    }
+    
+    .welcome h2 {
+        font-size: 2rem;
+    }
+    
+    .mode-selection {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .mode-card {
+        width: 100%;
+        max-width: 350px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        background-size: 200%, 200px;
+    }
+    
+    .logo h1 {
+        font-size: 1.5rem;
+    }
+    
+    nav {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    nav a {
+        margin: 5px 0;
+    }
+    
+    .welcome h2 {
+        font-size: 1.8rem;
+    }
+    
+    .btn {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Utility Classes */
+.text-center {
+    text-align: center;
+}
+
+.mb-1 {
+    margin-bottom: 10px;
+}
+
+.mb-2 {
+    margin-bottom: 20px;
+}
+
+.mt-1 {
+    margin-top: 10px;
+}
+
+.mt-2 {
+    margin-top: 20px;
+}
+
+/* Flash Messages */
+.flash-messages {
+    margin: 20px auto;
+    max-width: 800px;
+}
+
+.flash {
+    padding: 12px 20px;
+    border-radius: var(--border-radius);
+    margin-bottom: 15px;
+    box-shadow: var(--box-shadow);
+}
+
+.flash.success {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.flash.error {
+    background-color: var(--error-color);
+    color: white;
+}
+
+.flash.info {
+    background-color: var(--primary-light);
+    color: white;
+}
+
+.flash.warning {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+/* Authentication Pages Styles */
+.login-container {
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 100%;
+    max-width: 450px;
+    margin: 20px auto;
+}
+
+.login-header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2c5999 100%);
+    color: white;
+    padding: 25px 20px;
+    text-align: center;
+}
+
+.login-header h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.login-body {
+    padding: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d3e0f3;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border 0.3s ease;
+}
+
+.form-group input:focus {
+    border-color: #1e3a5f;
+    outline: none;
+}
+
+.form-actions {
+    margin-top: 30px;
+}
+
+.login-btn {
+    background-color: #1e3a5f;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s ease;
+}
+
+.login-btn:hover {
+    background-color: #132742;
+}
+
+.alt-actions {
+    margin-top: 20px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+}
+
+.alt-actions a {
+    color: #1e3a5f;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.alt-actions a:hover {
+    text-decoration: underline;
+}
+
+.info-text {
+    text-align: center;
+    color: #666;
+    margin-bottom: 25px;
+    font-size: 15px;
+}
+
+.password-rules {
+    background-color: #f8f9fa;
+    border-left: 4px solid #1e3a5f;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #555;
+}
+
+.password-rules ul {
+    margin-bottom: 0;
+    padding-left: 20px;
+}
+
+/* Body style for auth pages */
+.auth-body {
+    font-family: 'Nunito', sans-serif;
+    background-color: #f5f7fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+}
+
+/* AI Assistant Chat Styles */
+#assistant-section .dashboard-card {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.assistant-description {
+    margin-bottom: 20px;
+    line-height: 1.6;
+    color: #555;
+}
+
+.chat-container {
+    margin: 20px 0;
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+#chat-box {
+    max-height: 350px;
+    overflow-y: auto;
+    padding: 15px;
+    background-color: #f9f9f9;
+}
+
+.chat-messages {
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+    margin-bottom: 10px;
+    padding: 10px 15px;
+    border-radius: 18px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+
+
+.message.system {
+    background-color: #d6e7f5;
+    color: #0d47a1;
+    align-self: flex-start;
+    border-bottom-left-radius: 5px;
+}
+
+.message.user {
+    background-color: #f0f4c3;
+    color: #33691e;
+    align-self: flex-end;
+    border-bottom-right-radius: 5px;
+}
+
+.message.assistant {
+    background-color: #e8f5e9;
+    color: #1b5e20;
+    align-self: flex-start;
+    border-bottom-left-radius: 5px;
+}
+
+.chat-input {
+    display: flex;
+    padding: 10px;
+    background-color: white;
+    border-top: 1px solid #e1e1e1;
+}
+
+.chat-input input {
+    flex-grow: 1;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 10px 15px;
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+.chat-input button {
+    background-color: #1e3a5f;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.chat-input button:hover {
+    background-color: #132742;
+}
+
+.example-questions {
+    margin-top: 20px;
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.example-questions h5 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.example-questions ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.example-questions li {
+    margin-bottom: 8px;
+}
+
+.example-question {
+    color: #1e3a5f;
+    text-decoration: none;
+    cursor: pointer;
+    padding: 3px 5px;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+}
+
+.example-question:hover {
+    background-color: #e8eaf6;
+    text-decoration: underline;
+}
+
+/* Responsive adjustments for the chat */
+@media (max-width: 768px) {
+    .message {
+        max-width: 90%;
+    }
+    
+    .chat-input {
+        flex-direction: column;
+    }
+    
+    .chat-input input {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+}
+
+/* Authentication Pages Styles */
+.login-container {
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 100%;
+    max-width: 450px;
+    margin: 20px auto;
+}
+
+.login-header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2c5999 100%);
+    color: white;
+    padding: 25px 20px;
+    text-align: center;
+}
+
+.login-header h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.login-body {
+    padding: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d3e0f3;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border 0.3s ease;
+}
+
+.form-group input:focus {
+    border-color: #1e3a5f;
+    outline: none;
+}
+
+.form-actions {
+    margin-top: 30px;
+}
+
+.login-btn {
+    background-color: #1e3a5f;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s ease;
+}
+
+.login-btn:hover {
+    background-color: #132742;
+}
+
+.alt-actions {
+    margin-top: 20px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+}
+
+.alt-actions a {
+    color: #1e3a5f;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.alt-actions a:hover {
+    text-decoration: underline;
+}
+
+.info-text {
+    text-align: center;
+    color: #666;
+    margin-bottom: 25px;
+    font-size: 15px;
+}
+
+.password-rules {
+    background-color: #f8f9fa;
+    border-left: 4px solid #1e3a5f;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #555;
+}
+
+.password-rules ul {
+    margin-bottom: 0;
+    padding-left: 20px;
+}
+
+/* Body style for auth pages */
+.auth-body {
+    font-family: 'Nunito', sans-serif;
+    background-color: #f5f7fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+}
+
+/* Page Transition Effects */
+.page-transition {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+
+.page-transition.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.zoom-effect {
+    animation: zoomIn 1.5s forwards;
+}
+
+@keyframes zoomIn {
+    0% {
+        transform: scale(0.1);
+        opacity: 0;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Additional Authentication Styles */
+.checkbox {
+    display: flex;
+    align-items: center;
+}
+
+.checkbox input {
+    width: auto;
+    margin-right: 10px;
+}
+
+.forgot-password {
+    display: block;
+    text-align: right;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #1e3a5f;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+/* Child Login PIN Pad Styles */
+.pin-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.pin-pad {
+    display: grid;
+    grid-template-columns: repeat(3, 70px);
+    grid-gap: 15px;
+    margin-top: 20px;
+}
+
+.pin-button {
+    width: 70px;
+    height: 70px;
+    font-size: 1.5rem;
+    background-color: var(--primary-light);
+    border: 2px solid var(--primary-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.pin-button:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.pin-button:active {
+    transform: scale(0.95);
+}
+
+.pin-display {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.pin-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #ddd;
+    border: 1px solid #aaa;
+}
+
+.pin-dot.filled {
+    background-color: var(--primary-color);
+    border-color: var(--primary-dark);
+}
+
+.pin-actions {
+    display: flex;
+    justify-content: space-between;
+    width: 240px;
+    margin-top: 15px;
+}
+
+.pin-clear {
+    color: var(--warning-color);
+    cursor: pointer;
+}
+
+#pin {
+    display: none;
+}
+
+/* Approved Books Section Styles */
+.approved-books-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.approved-books-section h3 {
+  margin-bottom: 1rem;
+  color: #4A6FA5;
+}
+
+.approved-books-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.approved-books-controls select,
+.approved-books-controls button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+}
+
+.approved-books-controls select {
+  flex-grow: 1;
+  max-width: 300px;
+  border: 1px solid #ccc;
+}
+
+.approved-books-controls button {
+  background-color: #4A6FA5;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.approved-books-controls button:hover {
+  background-color: #3A5A8C;
+}
+
+.approved-books-controls button.unapprove {
+  background-color: #e74c3c;
+}
+
+.approved-books-controls button.unapprove:hover {
+  background-color: #c0392b;
+}
+
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.book-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background-color: #f9f9f9;
+  position: relative;
+}
+
+.book-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.book-card.approved {
+  border-color: #4CAF50;
+  background-color: #F1F8E9;
+}
+
+.book-selection {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+}
+
+.book-info {
+  padding: 1rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.book-info h4 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.book-description {
+  margin: 0 0 1rem 0;
+  color: #666;
+  flex-grow: 1;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.book-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.book-meta span {
+  background-color: #eee;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  color: #555;
+}
+
+.book-status {
+  margin-top: 0.5rem;
+}
+
+.approved-badge {
+  background-color: #4CAF50;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.not-approved-badge {
+  background-color: #F44336;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.loading-books,
+.empty-message,
+.error-message,
+.no-child-selected {
+  padding: 2rem;
+  text-align: center;
+  background-color: #f9f9f9;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+.loading-books {
+  color: #4A6FA5;
+}
+
+.error-message {
+  color: #F44336;
+}
+
+.empty-message {
+  color: #9E9E9E;
+}
+
+.book-select-checkbox {
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: pointer;
+}

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Children's Castle</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading-animations.css') }}">
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAPTQO3lnt0GSyDgVCZjtj4i3gk3Qi6Vyo",
+            authDomain: "story-time-fun.firebaseapp.com",
+            projectId: "story-time-fun",
+            storageBucket: "story-time-fun.appspot.com",
+            messagingSenderId: "225122848236",
+            appId: "1:952095451786:web:b3d6229418a1fd06972693",
+            measurementId: "G-RM452TNB0W"
+        };
+        
+        // Check if config is valid
+        const hasApiKey = firebaseConfig.apiKey && firebaseConfig.apiKey !== "None";
+        const hasProjectId = firebaseConfig.projectId && firebaseConfig.projectId !== "None";
+        const hasAppId = firebaseConfig.appId && firebaseConfig.appId !== "None";
+        
+        if (!hasApiKey || !hasProjectId || !hasAppId) {
+            console.warn("Firebase configuration is incomplete. Google Sign-in will be disabled.");
+            document.querySelectorAll('.google-btn').forEach(btn => {
+                btn.style.display = 'none';
+            });
+        } else {
+            console.log("Firebase initialized with project ID: " + firebaseConfig.projectId);
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            try {
+                const analytics = getAnalytics(app);
+            } catch (e) {
+                console.warn("Firebase analytics initialization failed:", e);
+            }
+            const auth = getAuth(app);
+            
+            // Make Firebase available globally
+            window.firebaseApp = app;
+            window.firebaseAuth = auth;
+            window.googleAuthProvider = new GoogleAuthProvider();
+            
+            // Function to handle Google Sign-in
+            window.signInWithGoogle = function() {
+                // Show loading animation
+                document.getElementById('loading-overlay').style.display = 'flex';
+                
+                signInWithPopup(auth, new GoogleAuthProvider())
+                    .then((result) => {
+                        // This gives you a Google Access Token
+                        const credential = GoogleAuthProvider.credentialFromResult(result);
+                        const token = credential ? credential.accessToken : null;
+                        
+                        // The signed-in user info
+                        const user = result.user;
+                        
+                        // Send token to backend to complete authentication
+                        return fetch('/firebase-auth/token', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                token: user.accessToken,
+                                uid: user.uid,
+                                name: user.displayName,
+                                email: user.email
+                            })
+                        });
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = data.redirect;
+                        } else {
+                            document.getElementById('loading-overlay').style.display = 'none';
+                            alert('Authentication failed: ' + data.message);
+                        }
+                    })
+                    .catch((error) => {
+                        // Hide loading animation
+                        document.getElementById('loading-overlay').style.display = 'none';
+                        
+                        // Handle Errors here
+                        const errorCode = error.code;
+                        const errorMessage = error.message;
+                        console.error('Google sign-in error:', errorMessage);
+                        
+                        // The email of the user's account used
+                        const email = error.customData ? error.customData.email : '';
+                        
+                        alert('Sign-in failed: ' + errorMessage);
+                    });
+            };
+        
+        }
+    </script>
+    <style>
+        /* Additional CSS for the login landing page */
+        .login-options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            margin: 40px 0;
+        }
+        
+        .login-card {
+            background-color: rgba(180, 220, 255, 0.8);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            width: 320px;
+            text-align: center;
+            border: 2px solid white;
+            transition: transform var(--transition-speed);
+        }
+        
+        .login-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .login-card h3 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        
+        .login-card p {
+            margin-bottom: 25px;
+            height: 60px;
+        }
+        
+        .login-card .btn {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .registration-link {
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .registration-link a {
+            color: var(--primary-dark);
+            font-weight: bold;
+        }
+        
+        .google-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            color: #444;
+            border: 1px solid #ddd;
+            gap: 10px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 10px 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .google-btn:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .google-btn img {
+            margin-right: 8px;
+        }
+        
+        /* Loading overlay styles */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loading-content {
+            background-color: rgba(180, 220, 255, 0.95);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .loading-spinner {
+            border: 5px solid rgba(0, 0, 0, 0.1);
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .login-card {
+                width: 100%;
+                max-width: 400px;
+            }
+            
+            .login-card p {
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>Signing in...</p>
+        </div>
+    </div>
+    
+    <header>
+        <div class="container">
+            <div class="logo">
+                <!-- Title removed -->
+            </div>
+        </div>
+    </header>
+    
+    <main>
+        <div class="container">
+            <!-- Flash Messages -->
+            <div class="flash-messages">
+                {% for message in get_flashed_messages(with_categories=true) %}
+                    <div class="flash {{ message[0] }}">
+                        {{ message[1] }}
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="welcome">
+                <h2>Welcome to Children's Castle!</h2>
+                <p>An interactive learning and entertainment platform for children.</p>
+            </div>
+            
+            <div class="login-options">
+                <div class="login-card parent-login">
+                    <h3>Parents</h3>
+                    <p>Access your account to manage settings and monitor your child's progress.</p>
+                    <a href="{{ url_for('parent_login') }}" class="btn large-btn">Parent Login</a>
+                    <button onclick="signInWithGoogle()" class="btn google-btn">
+                        <img src="{{ url_for('static', filename='images/google-logo.svg') }}" alt="Google" width="20" height="20">
+                        Sign in with Google
+                    </button>
+                    <div class="registration-link">
+                        <p>New to Children's Castle? <a href="{{ url_for('parent_register') }}">Register here</a></p>
+                    </div>
+                </div>
+                
+                <div class="login-card child-login">
+                    <h3>Children</h3>
+                    <p>Enter your special code to explore stories and play educational games!</p>
+                    <a href="{{ url_for('child_login') }}" class="btn large-btn secondary-btn">Child Login</a>
+                </div>
+                
+                <div class="login-card guest-login">
+                    <h3>Try as Guest</h3>
+                    <p>Explore the app features without creating an account</p>
+                    <form action="{{ url_for('guest_login') }}" method="POST">
+                        {{ form.hidden_tag() }}
+                        <button type="submit" class="btn large-btn tertiary-btn">Continue as Guest</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Children's Castle. All rights reserved.copy; 2025. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script src="{{ url_for('static', filename='js/loading-animations.js') }}"></script>
+</body>
+</html>

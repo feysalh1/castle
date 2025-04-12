@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200px" height="200px" viewBox="0 0 200 200" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g>
+    <!-- Monkey Body -->
+    <circle cx="100" cy="110" r="60" fill="#795548" />
+    
+    <!-- Monkey Face -->
+    <circle cx="100" cy="85" r="40" fill="#8d6e63" />
+    
+    <!-- Monkey Ears -->
+    <circle cx="65" cy="60" r="15" fill="#6d4c41" />
+    <circle cx="135" cy="60" r="15" fill="#6d4c41" />
+    <circle cx="65" cy="60" r="8" fill="#5d4037" />
+    <circle cx="135" cy="60" r="8" fill="#5d4037" />
+    
+    <!-- Face Features -->
+    <ellipse cx="100" cy="100" rx="25" ry="20" fill="#d7ccc8" />
+    
+    <!-- Eyes -->
+    <circle cx="85" cy="75" r="6" fill="#3e2723" />
+    <circle cx="115" cy="75" r="6" fill="#3e2723" />
+    <circle cx="87" cy="73" r="2" fill="white" />
+    <circle cx="117" cy="73" r="2" fill="white" />
+    
+    <!-- Nose and Mouth -->
+    <circle cx="100" cy="95" r="5" fill="#4e342e" />
+    <path d="M100 100 L100 110 M90 105 C95 115, 105 115, 110 105" stroke="#4e342e" stroke-width="2" fill="none" />
+    
+    <!-- Limbs -->
+    <path d="M50 100 C30 110, 20 130, 30 150" stroke="#795548" stroke-width="12" fill="none" stroke-linecap="round" />
+    <path d="M150 100 C170 110, 180 130, 170 150" stroke="#795548" stroke-width="12" fill="none" stroke-linecap="round" />
+    
+    <!-- Tail -->
+    <path d="M100 170 C90 180, 85 190, 90 195" stroke="#795548" stroke-width="10" fill="none" stroke-linecap="round" />
+  </g>
+</svg>

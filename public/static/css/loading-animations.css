@@ -1,0 +1,224 @@
+/* Loading Animations for Children's Castle */
+
+/* Main loading overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.92);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.3s ease;
+    opacity: 0; /* Hidden by default */
+    pointer-events: none; /* Don't block interactions when hidden */
+}
+
+.loading-overlay.visible {
+    opacity: 1; /* Show when visible class is added */
+    pointer-events: all; /* Allow interactions when visible */
+}
+
+/* Animal animations */
+.animal-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.animal {
+    width: 80px;
+    height: 80px;
+    margin: 0 15px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Individual animal animations */
+.fox {
+    background-image: url('../images/animals/fox.svg');
+    animation: bounce 1.2s infinite alternate ease-in-out;
+    animation-delay: 0s;
+}
+
+.bear {
+    background-image: url('../images/animals/bear.svg');
+    animation: bounce 1.2s infinite alternate ease-in-out;
+    animation-delay: 0.3s;
+}
+
+.pig {
+    background-image: url('../images/animals/pig.svg');
+    animation: bounce 1.2s infinite alternate ease-in-out;
+    animation-delay: 0.6s;
+}
+
+.monkey {
+    background-image: url('../images/animals/monkey.svg');
+    animation: bounce 1.2s infinite alternate ease-in-out;
+    animation-delay: 0.9s;
+}
+
+/* Bounce animation */
+@keyframes bounce {
+    0% {
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        transform: translateY(-25px) scale(1.1);
+    }
+}
+
+/* Loading Container (For story modal) */
+.loading-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1999; /* Higher than modal z-index */
+}
+
+.loading-content {
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+}
+
+.fox-animation {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 20px;
+    background-image: url('../images/animals/fox.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    animation: bounce 1.2s infinite alternate ease-in-out;
+}
+
+.loading-content p {
+    font-size: 1.5rem;
+    color: #5a208f;
+    font-weight: bold;
+    margin: 0;
+}
+
+/* Loading text */
+.loading-text {
+    font-size: 1.8rem;
+    color: #2a4c7d;
+    font-weight: bold;
+    text-align: center;
+    animation: pulse 1.5s infinite alternate;
+}
+
+/* Pulse animation for text */
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Page transition animations */
+.page-transition {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.95);
+    z-index: 9998;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+
+.page-transition.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.transition-content {
+    text-align: center;
+    transform: scale(0.8);
+    transition: transform 0.5s ease;
+}
+
+.page-transition.active .transition-content {
+    transform: scale(1);
+}
+
+/* Zoom effect */
+.zoom-effect {
+    animation: zoom-in-out 1.2s ease forwards;
+}
+
+@keyframes zoom-in-out {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* For loading placeholders */
+.loading-placeholder {
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    animation: pulse-bg 1.5s infinite alternate;
+}
+
+@keyframes pulse-bg {
+    0% {
+        opacity: 0.4;
+    }
+    100% {
+        opacity: 0.8;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .animal {
+        width: 60px;
+        height: 60px;
+        margin: 0 10px;
+    }
+    
+    .loading-text {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .animal {
+        width: 50px;
+        height: 50px;
+        margin: 0 8px;
+    }
+    
+    .loading-text {
+        font-size: 1.2rem;
+    }
+}
