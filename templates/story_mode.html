@@ -324,11 +324,17 @@
     </main>
     
     <script src="{{ url_for('static', filename='js/story-reader.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/story_mode.js') }}"></script>
     <div id="loading-animation" class="loading-container" style="display: none;">
         <div class="loading-content">
             <div class="fox-animation"></div>
             <p>Loading your adventure...</p>
         </div>
     </div>
+    
+    <!-- Add console debugging -->
+    <script>
+        console.log('Story mode template loaded');
+    </script>
 </body>
 </html>

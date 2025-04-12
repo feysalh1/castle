@@ -1,0 +1,104 @@
+/**
+ * Story Mode JavaScript
+ * Handles story selection and loading.
+ */
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Story mode script loaded');
+    
+    // Set up click event listeners for the "Read Book" buttons
+    const readBookButtons = document.querySelectorAll('.read-book-btn');
+    
+    if (readBookButtons.length > 0) {
+        console.log(`Found ${readBookButtons.length} read book buttons`);
+        
+        readBookButtons.forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                
+                const bookId = this.getAttribute('data-book-id');
+                console.log(`Book button clicked: ${bookId}`);
+                
+                if (bookId) {
+                    // Show loading animation if available
+                    if (typeof showLoading === 'function') {
+                        showLoading(true);
+                    } else if (document.getElementById('loading-animation')) {
+                        document.getElementById('loading-animation').style.display = 'flex';
+                    }
+                    
+                    // Load the story content
+                    fetch(`/api/story/${bookId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Story data loaded:', data);
+                            
+                            if (data.success) {
+                                // If we have an enhanced story with pages data, 
+                                // let the story-reader.js handle it
+                                // Otherwise, we might need to manually display the content
+                                
+                                // Hide loading if necessary
+                                if (typeof hideLoading === 'function') {
+                                    hideLoading();
+                                } else if (document.getElementById('loading-animation')) {
+                                    document.getElementById('loading-animation').style.display = 'none';
+                                }
+                            } else {
+                                console.error('Error loading story:', data.message);
+                                alert('Sorry, there was a problem loading the story. Please try again.');
+                                
+                                // Hide loading if necessary
+                                if (typeof hideLoading === 'function') {
+                                    hideLoading();
+                                } else if (document.getElementById('loading-animation')) {
+                                    document.getElementById('loading-animation').style.display = 'none';
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching story:', error);
+                            alert('Sorry, there was a problem loading the story. Please try again.');
+                            
+                            // Hide loading if necessary
+                            if (typeof hideLoading === 'function') {
+                                hideLoading();
+                            } else if (document.getElementById('loading-animation')) {
+                                document.getElementById('loading-animation').style.display = 'none';
+                            }
+                        });
+                }
+            });
+        });
+    } else {
+        console.log('No read book buttons found');
+    }
+    
+    // Set up age group filter functionality
+    const ageFilter = document.getElementById('age-filter');
+    
+    if (ageFilter) {
+        ageFilter.addEventListener('change', function() {
+            const selectedAgeGroup = this.value;
+            
+            // Get all age group sections
+            const ageGroupSections = document.querySelectorAll('.age-group-section');
+            
+            if (selectedAgeGroup === 'all') {
+                // Show all sections
+                ageGroupSections.forEach(section => {
+                    section.style.display = 'block';
+                });
+            } else {
+                // Show only selected age group
+                ageGroupSections.forEach(section => {
+                    if (section.getAttribute('data-age-group') === selectedAgeGroup) {
+                        section.style.display = 'block';
+                    } else {
+                        section.style.display = 'none';
+                    }
+                });
+            }
+        });
+    }
+});
