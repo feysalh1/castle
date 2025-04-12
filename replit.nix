@@ -1,5 +1,6 @@
 {pkgs}: {
   deps = [
+    pkgs.firebase-tools
     pkgs.zlib
     pkgs.tk
     pkgs.tcl
