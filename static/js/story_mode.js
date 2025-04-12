@@ -41,9 +41,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                         loadStoryById(bookId);
                     }, 1500);
-                            showLoading(true);
-                        } else if (document.getElementById('loading-animation')) {
-                            document.getElementById('loading-animation').style.display = 'flex';
                         }
                     }, 1000);
 

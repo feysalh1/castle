@@ -311,10 +311,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Track progress in the story
     function trackProgress(storyId, storyTitle, completed) {
-        // Check if we have a valid child ID to prevent database errors
+        // Check if we have a valid child ID and are not in guest mode
         const childIdElement = document.getElementById('child-id');
-        if (!childIdElement) {
-            console.log('No child ID element found, skipping progress tracking');
+        const isGuest = document.body.classList.contains('guest-mode');
+
+        if (isGuest || !childIdElement || !childIdElement.value) {
+            console.log('Guest mode or no valid child ID, skipping progress tracking');
             return;
         }
 
