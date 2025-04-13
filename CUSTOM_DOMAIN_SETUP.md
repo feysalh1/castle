@@ -70,6 +70,20 @@ Once the setup is complete, test your custom domain by navigating to:
 - https://childrencastles.com
 - https://www.childrencastles.com (if you set up the www subdomain)
 
+### 7. Update Firebase Authentication Settings
+
+After connecting your custom domain, you need to authorize it for Firebase Authentication:
+
+1. Go to the Firebase Console and select your project
+2. In the left sidebar, navigate to **Authentication**
+3. Select the **Settings** tab
+4. In the **Authorized domains** section, click **Add domain**
+5. Enter your custom domain: `childrencastles.com` (without "https://")
+6. If you're using the "www" subdomain, also add `www.childrencastles.com`
+7. Click **Add** to save
+
+This step is crucial for authentication flows (login, signup, password reset) to work properly on your custom domain.
+
 ### Troubleshooting
 
 If you encounter issues:
@@ -79,17 +93,14 @@ If you encounter issues:
 3. **SSL Certificate Issues**: If your site shows as "Not Secure," wait longer for SSL provisioning to complete.
 4. **Firebase Console Errors**: Check the error messages in Firebase Console for specific guidance.
 
-### Using Firebase CLI for Custom Domain Management
+### Important Note About Firebase CLI
 
-You can also manage your custom domain through the Firebase CLI:
+Custom domain management is primarily done through the Firebase Console UI. While the Firebase CLI has many hosting management features, adding custom domains must be done through the Firebase Console.
 
-```bash
-# Add a custom domain
-firebase hosting:sites:update story-time-fun --add=childrencastles.com
-
-# Delete a custom domain
-firebase hosting:sites:update story-time-fun --delete=childrencastles.com
-```
+Follow these steps in the Firebase Console:
+1. Go to Hosting in the left sidebar
+2. Click "Add custom domain" button
+3. Follow the guided process to connect your domain
 
 ### Contact Firebase Support
 

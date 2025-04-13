@@ -1,6 +1,6 @@
 # Firebase GitHub Integration Guide
 
-This guide explains how to set up continuous deployment from GitHub to Firebase Hosting for your "story-time-fun-1" project.
+This guide explains how to set up continuous deployment from GitHub to Firebase Hosting for your "story-time-fun" project.
 
 ## Prerequisites
 
