@@ -9,83 +9,89 @@
 
 {% block content %}
 <div class="photo-gallery-container">
-    <h1 class="gallery-title">My Photo Gallery</h1>
+    <h1 class="gallery-title">Photo Gallery</h1>
     
     <div class="gallery-actions">
         <a href="{{ url_for('photos.upload_photo') }}" class="upload-btn">
-            <i class="fas fa-upload"></i> Upload Photo
+            <i class="fas fa-plus"></i> Upload New Photo
         </a>
         
         <div class="view-options">
-            <button class="view-btn grid-view active" data-view="grid">
+            <button class="view-btn grid-view active" title="Grid View">
                 <i class="fas fa-th"></i>
             </button>
-            <button class="view-btn list-view" data-view="list">
+            <button class="view-btn list-view" title="List View">
                 <i class="fas fa-list"></i>
             </button>
         </div>
     </div>
     
     <div class="filters">
-        <select id="filter-type" class="filter-select">
-            <option value="all">All Photos</option>
-            <option value="favorites">Favorites</option>
-            {% if user_type == 'parent' %}
-            <option value="my-photos">My Photos</option>
-            <option value="children-photos">Children's Photos</option>
-            {% endif %}
-        </select>
+        <div class="filter-group">
+            <select class="filter-select" id="owner-filter">
+                <option value="all" {% if owner_filter == 'all' %}selected{% endif %}>All Photos</option>
+                <option value="mine" {% if owner_filter == 'mine' %}selected{% endif %}>My Photos</option>
+                <option value="family" {% if owner_filter == 'family' %}selected{% endif %}>Family Photos</option>
+            </select>
+            
+            <select class="filter-select" id="privacy-filter">
+                <option value="all" {% if privacy_filter == 'all' %}selected{% endif %}>All Privacy</option>
+                <option value="private" {% if privacy_filter == 'private' %}selected{% endif %}>Private Only</option>
+                <option value="shared" {% if privacy_filter == 'shared' %}selected{% endif %}>Shared Only</option>
+            </select>
+            
+            <select class="filter-select" id="sort-by">
+                <option value="date_desc" {% if sort_by == 'date_desc' %}selected{% endif %}>Newest First</option>
+                <option value="date_asc" {% if sort_by == 'date_asc' %}selected{% endif %}>Oldest First</option>
+                <option value="title_asc" {% if sort_by == 'title_asc' %}selected{% endif %}>Title A-Z</option>
+                <option value="title_desc" {% if sort_by == 'title_desc' %}selected{% endif %}>Title Z-A</option>
+                <option value="favorites" {% if sort_by == 'favorites' %}selected{% endif %}>Favorites</option>
+            </select>
+        </div>
         
         <div class="search-bar">
-            <input type="text" id="photo-search" placeholder="Search by title, tags...">
+            <input type="text" id="search-input" placeholder="Search photos..." value="{{ search_query }}">
             <button id="search-btn"><i class="fas fa-search"></i></button>
         </div>
     </div>
     
     {% if photos %}
-        <div class="photo-grid" id="photo-container">
+        <div class="photo-grid" id="photos-container">
             {% for photo in photos %}
-                <div class="photo-item" 
-                     data-id="{{ photo.id }}" 
-                     data-title="{{ photo.title or 'Untitled' }}" 
-                     data-tags="{{ photo.tags or '' }}"
-                     data-owner="{{ 'parent' if photo.parent_id else 'child' }}"
-                     data-favorite="{{ 'true' if photo.is_favorite else 'false' }}">
+                <div class="photo-item">
                     <div class="photo-wrapper">
-                        <img src="{{ url_for('photos.get_raw_photo', photo_id=photo.id) }}" 
-                             alt="{{ photo.title or 'Photo' }}"
-                             loading="lazy">
-                        
+                        <img src="{{ url_for('photos.get_raw_photo', photo_id=photo.id, thumbnail='true') }}" alt="{{ photo.title or 'Photo' }}">
                         <div class="photo-overlay">
-                            <button class="favorite-btn {% if photo.is_favorite %}active{% endif %}" 
-                                    data-id="{{ photo.id }}">
-                                <i class="{% if photo.is_favorite %}fas{% else %}far{% endif %} fa-heart"></i>
-                            </button>
-                            
-                            <a href="{{ url_for('photos.view_photo', photo_id=photo.id) }}" class="view-btn">
+                            <a href="{{ url_for('photos.view_photo', photo_id=photo.id) }}" class="view-btn" title="View">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            
-                            <button class="delete-btn" data-id="{{ photo.id }}">
-                                <i class="fas fa-trash"></i>
+                            <button class="favorite-btn {% if photo.is_favorite %}active{% endif %}" title="Favorite" data-id="{{ photo.id }}">
+                                <i class="{% if photo.is_favorite %}fas{% else %}far{% endif %} fa-heart"></i>
                             </button>
+                            {% if (photo.parent_id and photo.parent_id == current_user.id) or (photo.child_id and photo.child_id == current_user.id) %}
+                                <button class="delete-btn" title="Delete" data-id="{{ photo.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            {% endif %}
                         </div>
                     </div>
-                    
                     <div class="photo-info">
                         <h3 class="photo-title">{{ photo.title or 'Untitled' }}</h3>
                         <div class="photo-meta">
-                            {% if photo.child_id %}
-                                <span class="owner-badge child">Child's Photo</span>
-                            {% else %}
-                                <span class="owner-badge parent">Parent's Photo</span>
-                            {% endif %}
-                            
-                            {% if photo.is_private %}
-                                <span class="privacy-badge private">Private</span>
-                            {% else %}
-                                <span class="privacy-badge shared">Shared</span>
-                            {% endif %}
+                            <div class="photo-date">{{ photo.uploaded_at.strftime('%b %d, %Y') }}</div>
+                            <div class="photo-badges">
+                                {% if photo.child_id %}
+                                    <span class="owner-badge child">Child</span>
+                                {% else %}
+                                    <span class="owner-badge parent">Parent</span>
+                                {% endif %}
+                                
+                                {% if photo.is_private %}
+                                    <span class="privacy-badge private">Private</span>
+                                {% else %}
+                                    <span class="privacy-badge shared">Shared</span>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -93,13 +99,10 @@
         </div>
     {% else %}
         <div class="empty-state">
-            <img src="{{ url_for('static', filename='images/icons/photos-empty.svg') }}" 
-                 alt="No photos" class="empty-icon">
-            <h2>No Photos Yet</h2>
-            <p>Upload your first photo to start your collection!</p>
-            <a href="{{ url_for('photos.upload_photo') }}" class="btn primary-btn">
-                <i class="fas fa-upload"></i> Upload Photo
-            </a>
+            <img src="{{ url_for('static', filename='images/icons/photos-empty.svg') }}" alt="No photos" class="empty-icon">
+            <h2>No Photos Found</h2>
+            <p>Upload your first photo to start building your family gallery.</p>
+            <a href="{{ url_for('photos.upload_photo') }}" class="btn primary-btn">Upload Photo</a>
         </div>
     {% endif %}
 </div>
@@ -115,83 +118,89 @@
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block scripts %}
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // View options (grid/list)
-    const viewBtns = document.querySelectorAll('.view-btn');
-    const photoContainer = document.getElementById('photo-container');
+    // View toggle
+    const gridViewBtn = document.querySelector('.grid-view');
+    const listViewBtn = document.querySelector('.list-view');
+    const photosContainer = document.getElementById('photos-container');
     
-    viewBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const viewType = this.dataset.view;
-            
-            // Remove active class from all buttons
-            viewBtns.forEach(b => b.classList.remove('active'));
-            
-            // Add active class to clicked button
-            this.classList.add('active');
-            
-            // Update container class
-            photoContainer.className = viewType === 'grid' ? 'photo-grid' : 'photo-list';
+    if (gridViewBtn && listViewBtn && photosContainer) {
+        gridViewBtn.addEventListener('click', function() {
+            photosContainer.className = 'photo-grid';
+            gridViewBtn.classList.add('active');
+            listViewBtn.classList.remove('active');
+            localStorage.setItem('photoViewPreference', 'grid');
         });
-    });
+        
+        listViewBtn.addEventListener('click', function() {
+            photosContainer.className = 'photo-list';
+            listViewBtn.classList.add('active');
+            gridViewBtn.classList.remove('active');
+            localStorage.setItem('photoViewPreference', 'list');
+        });
+        
+        // Load saved preference
+        const savedView = localStorage.getItem('photoViewPreference');
+        if (savedView === 'list') {
+            listViewBtn.click();
+        }
+    }
     
-    // Filtering
-    const filterSelect = document.getElementById('filter-type');
-    const searchInput = document.getElementById('photo-search');
+    // Filters
+    const ownerFilter = document.getElementById('owner-filter');
+    const privacyFilter = document.getElementById('privacy-filter');
+    const sortBy = document.getElementById('sort-by');
+    const searchInput = document.getElementById('search-input');
     const searchBtn = document.getElementById('search-btn');
     
-    function filterPhotos() {
-        const filterValue = filterSelect.value;
-        const searchValue = searchInput.value.toLowerCase();
-        const photoItems = document.querySelectorAll('.photo-item');
+    // Apply filters function
+    function applyFilters() {
+        const owner = ownerFilter.value;
+        const privacy = privacyFilter.value;
+        const sort = sortBy.value;
+        const search = searchInput.value.trim();
         
-        photoItems.forEach(item => {
-            let showItem = true;
-            
-            // Filter by type
-            if (filterValue === 'favorites' && item.dataset.favorite !== 'true') {
-                showItem = false;
-            } else if (filterValue === 'my-photos' && item.dataset.owner !== 'parent') {
-                showItem = false;
-            } else if (filterValue === 'children-photos' && item.dataset.owner !== 'child') {
-                showItem = false;
+        // Build URL with query parameters
+        let url = '{{ url_for("photos.photos_dashboard") }}?';
+        url += `owner=${owner}&privacy=${privacy}&sort=${sort}`;
+        
+        if (search) {
+            url += `&search=${encodeURIComponent(search)}`;
+        }
+        
+        // Navigate to filtered URL
+        window.location.href = url;
+    }
+    
+    // Add event listeners to filter elements
+    if (ownerFilter) ownerFilter.addEventListener('change', applyFilters);
+    if (privacyFilter) privacyFilter.addEventListener('change', applyFilters);
+    if (sortBy) sortBy.addEventListener('change', applyFilters);
+    
+    // Search button
+    if (searchBtn) {
+        searchBtn.addEventListener('click', applyFilters);
+    }
+    
+    // Search input - enter key
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                applyFilters();
             }
-            
-            // Filter by search
-            if (searchValue && showItem) {
-                const title = item.dataset.title.toLowerCase();
-                const tags = item.dataset.tags.toLowerCase();
-                
-                if (!title.includes(searchValue) && !tags.includes(searchValue)) {
-                    showItem = false;
-                }
-            }
-            
-            // Show or hide the item
-            item.style.display = showItem ? 'block' : 'none';
         });
     }
     
-    filterSelect.addEventListener('change', filterPhotos);
-    searchBtn.addEventListener('click', filterPhotos);
-    searchInput.addEventListener('keyup', function(event) {
-        if (event.key === 'Enter') {
-            filterPhotos();
-        }
-    });
+    // Favorite buttons
+    const favoriteButtons = document.querySelectorAll('.favorite-btn');
     
-    // Favorite button functionality
-    const favoriteBtns = document.querySelectorAll('.favorite-btn');
-    
-    favoriteBtns.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
+    favoriteButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
             const photoId = this.dataset.id;
             
             fetch(`/photos/toggle-favorite/${photoId}`, {
@@ -216,8 +225,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         icon.classList.add('far');
                     }
                     
-                    // Update the data attribute for filtering
-                    this.closest('.photo-item').dataset.favorite = data.is_favorite;
+                    // If we're on the favorites view, we might need to refresh
+                    if (sortBy.value === 'favorites' && !data.is_favorite) {
+                        // Refresh after a delay so the user can see the change
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 500);
+                    }
                 }
             })
             .catch(error => {
@@ -227,57 +241,48 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Delete functionality
-    const deleteBtns = document.querySelectorAll('.delete-btn');
+    const deleteButtons = document.querySelectorAll('.delete-btn');
     const deleteModal = document.getElementById('delete-confirm-modal');
     const cancelDeleteBtn = document.getElementById('cancel-delete');
     const confirmDeleteBtn = document.getElementById('confirm-delete');
     let currentPhotoId = null;
     
-    deleteBtns.forEach(btn => {
+    deleteButtons.forEach(btn => {
         btn.addEventListener('click', function() {
             currentPhotoId = this.dataset.id;
             deleteModal.style.display = 'flex';
         });
     });
     
-    cancelDeleteBtn.addEventListener('click', function() {
-        deleteModal.style.display = 'none';
-        currentPhotoId = null;
-    });
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', function() {
+            deleteModal.style.display = 'none';
+            currentPhotoId = null;
+        });
+    }
     
-    confirmDeleteBtn.addEventListener('click', function() {
-        if (currentPhotoId) {
-            fetch(`/photos/delete/${currentPhotoId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Remove the photo element from the DOM
-                    const photoElement = document.querySelector(`.photo-item[data-id="${currentPhotoId}"]`);
-                    if (photoElement) {
-                        photoElement.remove();
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function() {
+            if (currentPhotoId) {
+                fetch(`/photos/delete/${currentPhotoId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
                     }
-                    
-                    // Close the modal
-                    deleteModal.style.display = 'none';
-                    currentPhotoId = null;
-                    
-                    // Show empty state if no photos left
-                    const remainingPhotos = document.querySelectorAll('.photo-item');
-                    if (remainingPhotos.length === 0) {
-                        location.reload(); // Reload to show empty state
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Refresh the page to show updated gallery
+                        window.location.reload();
                     }
-                }
-            })
-            .catch(error => {
-                console.error('Error deleting photo:', error);
-            });
-        }
-    });
+                })
+                .catch(error => {
+                    console.error('Error deleting photo:', error);
+                });
+            }
+        });
+    }
     
     // Close modal if clicked outside
     window.addEventListener('click', function(event) {

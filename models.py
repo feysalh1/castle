@@ -756,10 +756,10 @@ class Photo(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(256), nullable=False)
+    thumbnail_filename = db.Column(db.String(256), nullable=True)
     original_filename = db.Column(db.String(256), nullable=True)
-    file_path = db.Column(db.String(512), nullable=False)
     file_size = db.Column(db.Integer, nullable=False)  # Size in bytes
-    mime_type = db.Column(db.String(128), nullable=False)
+    file_type = db.Column(db.String(10), nullable=False)  # jpg, png, etc.
     
     # Security and access control
     child_id = db.Column(db.Integer, db.ForeignKey('children.id'), nullable=True)

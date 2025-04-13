@@ -160,11 +160,13 @@ def load_user(user_id):
 from chatgpt_routes import chatgpt_bp
 from story_enhancement_routes import story_enhancement
 from firebase_auth import firebase_auth
+from photo_routes import photo_routes
 
 # Register blueprints
 app.register_blueprint(chatgpt_bp)
 app.register_blueprint(story_enhancement)
 app.register_blueprint(firebase_auth)
+app.register_blueprint(photo_routes)
 
 # Create forms
 class EmptyForm(FlaskForm):

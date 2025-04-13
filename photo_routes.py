@@ -1,381 +1,373 @@
 """
-Photo management routes for Children's Castle
-Allows secure photo uploads, viewing, and sharing between children and parents.
+Photo management routes for Children's Castle application.
+This module provides routes for uploading, viewing, and managing photos.
 """
 import os
+import uuid
+import datetime
 import secrets
-from datetime import datetime
 from PIL import Image
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, send_file
-from flask import current_app as app
+from io import BytesIO
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, send_file, abort
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-import jwt
+from sqlalchemy import desc
+from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileRequired, FileAllowed
+from wtforms import StringField, TextAreaField, BooleanField, SubmitField
+from wtforms.validators import DataRequired, Length, Optional
 
 from models import db, Photo, Parent, Child
-from app import csrf
 
-# Create blueprint
-photo_routes = Blueprint('photos', __name__)
+# Create a blueprint for photos
+photo_routes = Blueprint('photos', __name__, url_prefix='/photos')
 
+# Constants
+UPLOAD_FOLDER = 'static/uploads/photos'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
+# Create upload directory if it doesn't exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Forms
+class PhotoUploadForm(FlaskForm):
+    """Form for uploading a photo"""
+    photo = FileField('Photo', validators=[
+        FileRequired(),
+        FileAllowed(list(ALLOWED_EXTENSIONS), 'Images only!')
+    ])
+    title = StringField('Title', validators=[DataRequired(), Length(max=100)])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
+    tags = StringField('Tags', validators=[Optional(), Length(max=200)])
+    is_private = BooleanField('Private', default=True)
+    submit = SubmitField('Upload')
+
+
 def allowed_file(filename):
-    """Check if file extension is allowed"""
+    """Check if filename has an allowed extension"""
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def generate_unique_filename(original_filename):
-    """Generate a secure, unique filename"""
-    # First secure the filename to remove potentially dangerous characters
-    filename = secure_filename(original_filename)
-    # Add timestamp and random token to make it unique
-    random_hex = secrets.token_hex(8)
-    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-    _, file_ext = os.path.splitext(filename)
-    return f"{timestamp}_{random_hex}{file_ext}"
 
-def save_and_resize_image(file, filename, max_size=(1200, 1200)):
-    """
-    Save the uploaded image and create a thumbnail version
-    Returns file path and size
-    """
-    # Create upload directory if it doesn't exist
-    upload_folder = os.path.join(app.static_folder, 'uploads', 'photos')
-    os.makedirs(upload_folder, exist_ok=True)
+def has_access_to_photo(photo):
+    """Check if current user has access to a photo"""
+    # Admin access (for future use)
+    if hasattr(current_user, 'is_admin') and current_user.is_admin:
+        return True
     
-    # Generate path for the full-size image
-    file_path = os.path.join(upload_folder, filename)
+    # Parent access to their own photos
+    if hasattr(current_user, 'type') and current_user.type == 'parent':
+        # Parent's own photos
+        if photo.parent_id == current_user.id:
+            return True
+        
+        # Photos from their children
+        if photo.child_id and Child.query.filter_by(id=photo.child_id, parent_id=current_user.id).first():
+            return True
     
-    # Save the original file
-    file.save(file_path)
-    file_size = os.path.getsize(file_path)
+    # Child access to their own photos and parent's photos
+    if hasattr(current_user, 'type') and current_user.type == 'child':
+        # Child's own photos
+        if photo.child_id == current_user.id:
+            return True
+        
+        # Photos from their parent
+        if photo.parent_id == current_user.parent_id:
+            return True
     
-    # Create a thumbnail
-    try:
-        with Image.open(file_path) as img:
-            # Resize if needed
-            if img.height > max_size[1] or img.width > max_size[0]:
-                img.thumbnail(max_size)
-                img.save(file_path)
-    except Exception as e:
-        app.logger.error(f"Error resizing image: {str(e)}")
+    # Private photos are restricted to owner and linked parent/child
+    if photo.is_private:
+        if photo.parent_id and photo.parent_id == current_user.id:
+            return True
+        if photo.child_id and photo.child_id == current_user.id:
+            return True
+        if hasattr(current_user, 'parent_id') and photo.parent_id == current_user.parent_id:
+            return True
+        if hasattr(current_user, 'type') and current_user.type == 'parent':
+            # Check if photo belongs to one of the parent's children
+            if photo.child_id and Child.query.filter_by(id=photo.child_id, parent_id=current_user.id).first():
+                return True
+    else:
+        # Non-private photos are visible to family members
+        # For a future family sharing model
+        return True
     
-    return file_path, file_size
+    return False
 
-@photo_routes.route('/photos')
+
+@photo_routes.route('/')
 @login_required
 def photos_dashboard():
-    """Main photos dashboard"""
-    user_type = getattr(current_user, 'role', None)
+    """Photo gallery dashboard"""
+    # Get filters from query parameters
+    owner_filter = request.args.get('owner', 'all')
+    privacy_filter = request.args.get('privacy', 'all')
+    sort_by = request.args.get('sort', 'date_desc')
+    search_query = request.args.get('search', '')
     
-    # Get photos based on user type
-    if user_type == 'parent':
-        # For parents, show their photos and all photos from their children
-        parent_photos = Photo.query.filter_by(parent_id=current_user.id).all()
-        
-        # Get all children for this parent
-        children = Child.query.filter_by(parent_id=current_user.id).all()
-        child_ids = [child.id for child in children]
-        
-        # Get photos from all children
-        children_photos = Photo.query.filter(Photo.child_id.in_(child_ids)).all()
-        
-        # Combine the two lists
-        photos = parent_photos + children_photos
-        
-    elif user_type == 'child':
-        # For children, show only their photos
-        photos = Photo.query.filter_by(child_id=current_user.id).all()
-        
-        # Also get parent's photos, but only if they're marked as shared
-        parent = Parent.query.get(current_user.parent_id)
-        if parent:
-            parent_photos = Photo.query.filter_by(
-                parent_id=parent.id, 
-                is_private=False
-            ).all()
-            photos += parent_photos
-    else:
-        # Guest users or unrecognized roles get an empty list
-        photos = []
+    # Base query
+    query = Photo.query
     
+    # Owner filter
+    if owner_filter == 'mine':
+        if hasattr(current_user, 'type') and current_user.type == 'parent':
+            query = query.filter(Photo.parent_id == current_user.id)
+        else:
+            query = query.filter(Photo.child_id == current_user.id)
+    elif owner_filter == 'family':
+        if hasattr(current_user, 'type') and current_user.type == 'parent':
+            # Get all children IDs for this parent
+            child_ids = [child.id for child in Child.query.filter_by(parent_id=current_user.id).all()]
+            query = query.filter((Photo.parent_id == current_user.id) | 
+                                (Photo.child_id.in_(child_ids)))
+        else:
+            # Child viewing family photos (their own and parent's)
+            query = query.filter((Photo.child_id == current_user.id) | 
+                                (Photo.parent_id == current_user.parent_id))
+    
+    # Privacy filter
+    if privacy_filter == 'private':
+        query = query.filter(Photo.is_private == True)
+    elif privacy_filter == 'shared':
+        query = query.filter(Photo.is_private == False)
+    
+    # Search by title, description or tags
+    if search_query:
+        search_terms = f"%{search_query}%"
+        query = query.filter((Photo.title.ilike(search_terms)) | 
+                            (Photo.description.ilike(search_terms)) | 
+                            (Photo.tags.ilike(search_terms)))
+    
+    # Apply sorting
+    if sort_by == 'date_asc':
+        query = query.order_by(Photo.uploaded_at.asc())
+    elif sort_by == 'date_desc':
+        query = query.order_by(Photo.uploaded_at.desc())
+    elif sort_by == 'title_asc':
+        query = query.order_by(Photo.title.asc())
+    elif sort_by == 'title_desc':
+        query = query.order_by(Photo.title.desc())
+    elif sort_by == 'favorites':
+        query = query.filter(Photo.is_favorite == True).order_by(Photo.uploaded_at.desc())
+    
+    # Get photos
+    photos = query.all()
+    
+    # Filter by access permission (security layer)
+    photos = [photo for photo in photos if has_access_to_photo(photo)]
+    
+    # Render template
     return render_template('photos/dashboard.html', 
-                          photos=photos, 
-                          user_type=user_type)
+                          photos=photos,
+                          owner_filter=owner_filter,
+                          privacy_filter=privacy_filter,
+                          sort_by=sort_by,
+                          search_query=search_query)
 
-@photo_routes.route('/photos/upload', methods=['GET', 'POST'])
+
+@photo_routes.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload_photo():
     """Upload a new photo"""
-    if request.method == 'POST':
-        # Check if a file was uploaded
-        if 'photo' not in request.files:
-            flash('No file part', 'error')
-            return redirect(request.url)
+    form = PhotoUploadForm()
+    
+    if form.validate_on_submit():
+        photo_file = form.photo.data
         
-        file = request.files['photo']
-        
-        # Check if the filename is empty
-        if file.filename == '':
-            flash('No selected file', 'error')
-            return redirect(request.url)
-        
-        # Check file type
-        if not allowed_file(file.filename):
-            flash(f'File type not allowed. Please upload: {", ".join(ALLOWED_EXTENSIONS)}', 'error')
+        # Check if file is allowed
+        if not allowed_file(photo_file.filename):
+            flash('File type not allowed. Please upload a JPG, PNG, or GIF image.', 'error')
             return redirect(request.url)
         
         # Check file size
-        file.seek(0, os.SEEK_END)
-        file_size = file.tell()
-        file.seek(0)
-        
-        if file_size > MAX_FILE_SIZE:
-            flash(f'File too large. Maximum size is {MAX_FILE_SIZE/1024/1024}MB', 'error')
+        if len(photo_file.read()) > MAX_FILE_SIZE:
+            photo_file.seek(0)  # Reset file pointer
+            flash('File is too large. Maximum size is 10MB.', 'error')
             return redirect(request.url)
         
-        # Generate a secure filename
-        filename = generate_unique_filename(file.filename)
+        # Reset file pointer
+        photo_file.seek(0)
         
-        # Save and resize the image
-        file_path, file_size = save_and_resize_image(file, filename)
+        # Generate a secure filename with UUID
+        original_filename = secure_filename(photo_file.filename)
+        file_ext = original_filename.rsplit('.', 1)[1].lower()
+        unique_filename = f"{uuid.uuid4().hex}.{file_ext}"
         
-        # Create the database record
+        # Create file path
+        filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
+        
+        # Get file size
+        photo_file.seek(0, os.SEEK_END)
+        file_size = photo_file.tell()
+        photo_file.seek(0)
+        
+        # Save the file
+        photo_file.save(filepath)
+        
+        # Create thumbnail
+        try:
+            with Image.open(filepath) as img:
+                img.thumbnail((300, 300))
+                thumb_filename = f"thumb_{unique_filename}"
+                thumb_path = os.path.join(UPLOAD_FOLDER, thumb_filename)
+                img.save(thumb_path)
+        except Exception as e:
+            # If thumbnail creation fails, continue without it
+            thumb_filename = None
+            print(f"Error creating thumbnail: {e}")
+        
+        # Create database entry
         photo = Photo(
-            filename=filename,
-            original_filename=file.filename,
-            file_path=file_path,
+            filename=unique_filename,
+            thumbnail_filename=thumb_filename,
+            original_filename=original_filename,
             file_size=file_size,
-            mime_type=file.content_type,
-            title=request.form.get('title', ''),
-            description=request.form.get('description', ''),
-            tags=request.form.get('tags', ''),
-            is_private=request.form.get('is_private', 'true') == 'true'
+            file_type=file_ext,
+            title=form.title.data,
+            description=form.description.data,
+            tags=form.tags.data,
+            is_private=form.is_private.data
         )
         
-        # Set the owner based on user type
-        if getattr(current_user, 'role', None) == 'parent':
+        # Set owner based on user type
+        if hasattr(current_user, 'type') and current_user.type == 'parent':
             photo.parent_id = current_user.id
         else:
             photo.child_id = current_user.id
         
+        # Save to database
         db.session.add(photo)
         db.session.commit()
         
         flash('Photo uploaded successfully!', 'success')
         return redirect(url_for('photos.photos_dashboard'))
     
-    return render_template('photos/upload.html')
+    return render_template('photos/upload.html', form=form)
 
-@photo_routes.route('/photos/view/<int:photo_id>')
+
+@photo_routes.route('/view/<int:photo_id>')
 @login_required
 def view_photo(photo_id):
-    """View a single photo with secure access control"""
-    # Get the photo
+    """View a single photo"""
     photo = Photo.query.get_or_404(photo_id)
     
-    # Check if the user has permission to view this photo
-    user_type = getattr(current_user, 'role', None)
-    
-    has_permission = False
-    
-    if user_type == 'parent':
-        # Parents can view their own photos
-        if photo.parent_id == current_user.id:
-            has_permission = True
-        # Parents can also view photos from their children
-        elif photo.child_id:
-            child = Child.query.get(photo.child_id)
-            if child and child.parent_id == current_user.id:
-                has_permission = True
-    
-    elif user_type == 'child':
-        # Children can view their own photos
-        if photo.child_id == current_user.id:
-            has_permission = True
-        # Children can view their parent's photos if they're not private
-        elif photo.parent_id:
-            parent = Parent.query.get(photo.parent_id)
-            if parent and parent.id == current_user.parent_id and not photo.is_private:
-                has_permission = True
-    
-    if not has_permission:
-        flash('You do not have permission to view this photo', 'error')
+    # Check access permission
+    if not has_access_to_photo(photo):
+        flash('You do not have permission to view this photo.', 'error')
         return redirect(url_for('photos.photos_dashboard'))
     
-    # Serve the actual photo file
     return render_template('photos/view.html', photo=photo)
 
-@photo_routes.route('/photos/raw/<int:photo_id>')
+
+@photo_routes.route('/get-photo/<int:photo_id>')
 @login_required
 def get_raw_photo(photo_id):
-    """Serve the actual photo file with security checks"""
-    # Get the photo
+    """Get the raw photo file (with proper access control)"""
     photo = Photo.query.get_or_404(photo_id)
     
-    # Check if the user has permission to view this photo
-    user_type = getattr(current_user, 'role', None)
+    # Check access permission
+    if not has_access_to_photo(photo):
+        abort(403)
     
-    has_permission = False
+    # Full-size image by default, thumbnail if requested
+    use_thumbnail = request.args.get('thumbnail', '').lower() == 'true'
     
-    if user_type == 'parent':
-        # Parents can view their own photos
-        if photo.parent_id == current_user.id:
-            has_permission = True
-        # Parents can also view photos from their children
-        elif photo.child_id:
-            child = Child.query.get(photo.child_id)
-            if child and child.parent_id == current_user.id:
-                has_permission = True
+    # Determine file path
+    if use_thumbnail and photo.thumbnail_filename:
+        filepath = os.path.join(UPLOAD_FOLDER, photo.thumbnail_filename)
+    else:
+        filepath = os.path.join(UPLOAD_FOLDER, photo.filename)
     
-    elif user_type == 'child':
-        # Children can view their own photos
-        if photo.child_id == current_user.id:
-            has_permission = True
-        # Children can view their parent's photos if they're not private
-        elif photo.parent_id:
-            parent = Parent.query.get(photo.parent_id)
-            if parent and parent.id == current_user.parent_id and not photo.is_private:
-                has_permission = True
+    # Check if file exists
+    if not os.path.isfile(filepath):
+        abort(404)
     
-    if not has_permission:
-        return jsonify({'error': 'Permission denied'}), 403
-    
-    # Serve the actual photo file
-    return send_file(photo.file_path, mimetype=photo.mime_type)
+    # Send the file
+    return send_file(filepath, mimetype=f'image/{photo.file_type}')
 
-@photo_routes.route('/photos/delete/<int:photo_id>', methods=['POST'])
+
+@photo_routes.route('/update/<int:photo_id>', methods=['POST'])
 @login_required
-@csrf.exempt
-def delete_photo(photo_id):
-    """Delete a photo"""
+def update_photo(photo_id):
+    """Update photo details"""
     photo = Photo.query.get_or_404(photo_id)
     
-    # Check if the user has permission to delete this photo
-    user_type = getattr(current_user, 'role', None)
+    # Check ownership
+    if (photo.parent_id and photo.parent_id != current_user.id) and \
+       (photo.child_id and photo.child_id != current_user.id):
+        return jsonify({'success': False, 'error': 'You do not have permission to edit this photo.'}), 403
     
-    has_permission = False
+    # Get data from request
+    data = request.json
     
-    if user_type == 'parent':
-        # Parents can delete their own photos
-        if photo.parent_id == current_user.id:
-            has_permission = True
-        # Parents can also delete photos from their children
-        elif photo.child_id:
-            child = Child.query.get(photo.child_id)
-            if child and child.parent_id == current_user.id:
-                has_permission = True
+    # Update fields
+    if 'title' in data:
+        photo.title = data['title']
     
-    elif user_type == 'child':
-        # Children can only delete their own photos
-        if photo.child_id == current_user.id:
-            has_permission = True
+    if 'description' in data:
+        photo.description = data['description']
     
-    if not has_permission:
-        return jsonify({'success': False, 'message': 'Permission denied'}), 403
+    if 'tags' in data:
+        photo.tags = data['tags']
     
-    # Delete the actual file
-    try:
-        if os.path.exists(photo.file_path):
-            os.remove(photo.file_path)
-    except Exception as e:
-        app.logger.error(f"Error deleting photo file: {str(e)}")
+    if 'is_private' in data:
+        photo.is_private = data['is_private']
     
-    # Delete from database
-    db.session.delete(photo)
+    # Save changes
     db.session.commit()
     
-    return jsonify({'success': True, 'message': 'Photo deleted successfully'})
+    return jsonify({'success': True})
 
-@photo_routes.route('/photos/toggle-favorite/<int:photo_id>', methods=['POST'])
+
+@photo_routes.route('/toggle-favorite/<int:photo_id>', methods=['POST'])
 @login_required
-@csrf.exempt
 def toggle_favorite(photo_id):
     """Toggle favorite status for a photo"""
     photo = Photo.query.get_or_404(photo_id)
     
-    # Check if the user has permission
-    user_type = getattr(current_user, 'role', None)
-    
-    has_permission = False
-    
-    if user_type == 'parent':
-        # Parents can favorite their own photos
-        if photo.parent_id == current_user.id:
-            has_permission = True
-        # Parents can also favorite photos from their children
-        elif photo.child_id:
-            child = Child.query.get(photo.child_id)
-            if child and child.parent_id == current_user.id:
-                has_permission = True
-    
-    elif user_type == 'child':
-        # Children can only favorite their own photos
-        if photo.child_id == current_user.id:
-            has_permission = True
-    
-    if not has_permission:
-        return jsonify({'success': False, 'message': 'Permission denied'}), 403
+    # Check access permission
+    if not has_access_to_photo(photo):
+        return jsonify({'success': False, 'error': 'You do not have permission to access this photo.'}), 403
     
     # Toggle favorite status
     photo.is_favorite = not photo.is_favorite
     db.session.commit()
     
     return jsonify({
-        'success': True, 
-        'is_favorite': photo.is_favorite,
-        'message': f"Photo {'added to' if photo.is_favorite else 'removed from'} favorites"
+        'success': True,
+        'is_favorite': photo.is_favorite
     })
 
-@photo_routes.route('/photos/update/<int:photo_id>', methods=['POST'])
+
+@photo_routes.route('/delete/<int:photo_id>', methods=['POST'])
 @login_required
-@csrf.exempt
-def update_photo(photo_id):
-    """Update photo metadata"""
+def delete_photo(photo_id):
+    """Delete a photo"""
     photo = Photo.query.get_or_404(photo_id)
     
-    # Check if the user has permission
-    user_type = getattr(current_user, 'role', None)
+    # Check ownership (only owner can delete)
+    if (photo.parent_id and photo.parent_id != current_user.id) and \
+       (photo.child_id and photo.child_id != current_user.id):
+        return jsonify({'success': False, 'error': 'You do not have permission to delete this photo.'}), 403
     
-    has_permission = False
+    # Delete files
+    try:
+        # Delete main file
+        filepath = os.path.join(UPLOAD_FOLDER, photo.filename)
+        if os.path.isfile(filepath):
+            os.remove(filepath)
+        
+        # Delete thumbnail if it exists
+        if photo.thumbnail_filename:
+            thumb_path = os.path.join(UPLOAD_FOLDER, photo.thumbnail_filename)
+            if os.path.isfile(thumb_path):
+                os.remove(thumb_path)
+    except Exception as e:
+        print(f"Error deleting files: {e}")
     
-    if user_type == 'parent':
-        # Parents can update their own photos
-        if photo.parent_id == current_user.id:
-            has_permission = True
-        # Parents can also update photos from their children
-        elif photo.child_id:
-            child = Child.query.get(photo.child_id)
-            if child and child.parent_id == current_user.id:
-                has_permission = True
-    
-    elif user_type == 'child':
-        # Children can only update their own photos
-        if photo.child_id == current_user.id:
-            has_permission = True
-    
-    if not has_permission:
-        return jsonify({'success': False, 'message': 'Permission denied'}), 403
-    
-    # Update photo data
-    if 'title' in request.form:
-        photo.title = request.form['title']
-    
-    if 'description' in request.form:
-        photo.description = request.form['description']
-    
-    if 'tags' in request.form:
-        photo.tags = request.form['tags']
-    
-    if 'is_private' in request.form:
-        photo.is_private = request.form['is_private'] == 'true'
-    
-    photo.updated_at = datetime.utcnow()
+    # Delete database entry
+    db.session.delete(photo)
     db.session.commit()
     
-    return jsonify({
-        'success': True,
-        'message': 'Photo updated successfully'
-    })
+    return jsonify({'success': True})
