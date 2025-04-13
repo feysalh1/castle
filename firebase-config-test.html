@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Configuration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .warning {
+            color: orange;
+            font-weight: bold;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #333;
+            margin-top: 30px;
+        }
+        button {
+            background-color: #4a6da7;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #3a5a8f;
+        }
+        #logs {
+            margin-top: 20px;
+            font-family: monospace;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #f8f8f8;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .log-entry {
+            margin-bottom: 4px;
+            padding: 2px 0;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <h1>Firebase Configuration Test</h1>
+    <p>This page tests your Firebase configuration for the Children's Castle application.</p>
+    
+    <div class="container">
+        <h2>Connection Status</h2>
+        <div id="status">Testing Firebase connection...</div>
+    </div>
+
+    <div class="container">
+        <h2>Project Configuration</h2>
+        <div id="config-display"></div>
+    </div>
+
+    <div class="container">
+        <h2>Firebase Project ID Test</h2>
+        <p>Expected project ID: <strong>story-time-fun</strong></p>
+        <div id="project-id-test">Checking project ID...</div>
+        <button id="reload-btn">Reload Test</button>
+    </div>
+
+    <div class="container">
+        <h2>Debug Logs</h2>
+        <div id="logs"></div>
+    </div>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script type="module">
+        // Helper function to log messages
+        function logMessage(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry ' + type;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logs.appendChild(entry);
+            console.log(message);
+        }
+
+        // Set up reload button
+        document.getElementById('reload-btn').addEventListener('click', () => {
+            logMessage('Reloading test...');
+            location.reload();
+        });
+
+        logMessage('Starting Firebase test...');
+
+        try {
+            // Import the functions from Firebase
+            logMessage('Importing Firebase modules...');
+            const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+            const { getAnalytics } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js");
+            
+            logMessage('Firebase modules imported successfully');
+            
+            // Your Firebase configuration - To be updated with valid API key
+            const firebaseConfig = {
+              apiKey: ""AIzaSyAPTQO3lnt0GSyDgVCZjtj4i3gk3Qi6Vyo""AIzaSyAPTQO3lnt0GSyDgVCZjtj4i3gk3Qi6Vyo"", // Will be replaced with the correct API key
+              authDomain: "story-time-fun.firebaseapp.com",
+              projectId: "story-time-fun",
+              storageBucket: "story-time-fun.appspot.com",
+              messagingSenderId: "225122848236",
+              appId: "1:225122848236:web:5c0cd7632ce0f09973c4c9",
+              measurementId: "G-TW65TD3GJ5"
+            };
+            
+            // Display the config (with API key partially hidden)
+            const configDisplay = document.getElementById('config-display');
+            const displayConfig = {...firebaseConfig};
+            if (displayConfig.apiKey) {
+                // Only show first and last 4 characters of API key
+                const keyLength = displayConfig.apiKey.length;
+                displayConfig.apiKey = 
+                    displayConfig.apiKey.substring(0, 4) + 
+                    '...' + 
+                    displayConfig.apiKey.substring(keyLength - 4);
+            }
+            
+            configDisplay.innerHTML = '<pre>' + 
+                JSON.stringify(displayConfig, null, 2) + '</pre>';
+
+            // Test project ID
+            const projectIdTest = document.getElementById('project-id-test');
+            if (firebaseConfig.projectId === 'story-time-fun') {
+                projectIdTest.innerHTML = '<p class="success">✓ Project ID matches expected value: story-time-fun</p>';
+                logMessage('Project ID verification successful', 'success');
+            } else {
+                projectIdTest.innerHTML = '<p class="error">✗ Project ID mismatch. Found: ' + 
+                    firebaseConfig.projectId + ', Expected: story-time-fun</p>';
+                logMessage('Project ID verification failed', 'error');
+            }
+
+            // Initialize Firebase
+            logMessage('Initializing Firebase...');
+            try {
+                const app = initializeApp(firebaseConfig);
+                logMessage('Firebase core initialized', 'success');
+                
+                try {
+                    const analytics = getAnalytics(app);
+                    logMessage('Firebase analytics initialized', 'success');
+                    document.getElementById('status').innerHTML = 
+                        '<p class="success">✓ Firebase initialized successfully!</p>';
+                } catch (analyticsError) {
+                    logMessage('Firebase analytics error: ' + analyticsError.message, 'warning');
+                    document.getElementById('status').innerHTML = 
+                        '<p class="warning">⚠️ Firebase core initialized, but analytics failed: ' + 
+                        analyticsError.message + '</p>';
+                }
+            } catch (initError) {
+                document.getElementById('status').innerHTML = 
+                    '<p class="error">✗ Firebase initialization error: ' + initError.message + '</p>';
+                logMessage('Firebase initialization error: ' + initError.message, 'error');
+                
+                // Specific error handling
+                if (initError.message.includes('API key')) {
+                    logMessage('This appears to be an API key issue. Please update with the correct API key.', 'error');
+                }
+            }
+        } catch (importError) {
+            document.getElementById('status').innerHTML = 
+                '<p class="error">✗ Failed to import Firebase modules: ' + importError.message + '</p>';
+            logMessage('Module import error: ' + importError.message, 'error');
+        }
+    </script>
+</body>
+</html>

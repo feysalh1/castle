@@ -200,6 +200,11 @@ class ResetPasswordForm(FlaskForm):
 # Database tables are created in main.py
 
 
+@app.route('/firebase-config-test.html')
+def firebase_test_page():
+    """Serve the Firebase configuration test page"""
+    return send_file('public/firebase-config-test.html')
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def index(path):
