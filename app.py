@@ -3030,6 +3030,32 @@ def api_unapprove_books():
         })
 
 # Admin routes
+@app.route('/api/diagnostics')
+def system_diagnostics():
+    """API endpoint for system diagnostics"""
+    try:
+        import psutil
+        diagnostics = {
+            'database': {
+                'status': True,
+                'size_mb': get_database_size(),
+                'connection': 'Connected'
+            },
+            'system': {
+                'cpu_usage': round(psutil.cpu_percent(), 1),
+                'memory_usage': round(psutil.virtual_memory().percent, 1),
+                'disk_usage': round(psutil.disk_usage('/').percent, 1)
+            },
+            'apis': {
+                'firebase': True,
+                'openai': bool(os.environ.get('OPENAI_API_KEY')),
+                'elevenlabs': bool(os.environ.get('ELEVENLABS_API_KEY'))
+            }
+        }
+        return jsonify(diagnostics), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/admin/dashboard')
 @login_required
 def admin_dashboard():
