@@ -213,22 +213,47 @@ def firebase_test_improved_page():
 @app.route('/js/firebase-config.js')
 def firebase_config_js():
     """Serve the Firebase configuration JavaScript file"""
-    # Process the template on the fly to inject environment variables
-    template_path = 'static/js/firebase-config.js'
-    with open(template_path, 'r') as file:
-        content = file.read()
-    
-    # Replace environment variables
-    content = content.replace('${FIREBASE_API_KEY}', os.environ.get('FIREBASE_API_KEY', ''))
-    content = content.replace('${FIREBASE_AUTH_DOMAIN}', os.environ.get('FIREBASE_AUTH_DOMAIN', ''))
-    content = content.replace('${FIREBASE_PROJECT_ID}', os.environ.get('FIREBASE_PROJECT_ID', ''))
-    content = content.replace('${FIREBASE_STORAGE_BUCKET}', os.environ.get('FIREBASE_STORAGE_BUCKET', ''))
-    content = content.replace('${FIREBASE_MESSAGING_SENDER_ID}', os.environ.get('FIREBASE_MESSAGING_SENDER_ID', ''))
-    content = content.replace('${FIREBASE_APP_ID}', os.environ.get('FIREBASE_APP_ID', ''))
-    content = content.replace('${FIREBASE_MEASUREMENT_ID}', os.environ.get('FIREBASE_MEASUREMENT_ID', ''))
-    
-    # Return as JavaScript
-    return Response(content, mimetype='application/javascript')
+    try:
+        # Create a proper Firebase config object with actual values
+        firebase_config = {
+            "apiKey": os.environ.get('FIREBASE_API_KEY', ''),
+            "authDomain": os.environ.get('FIREBASE_AUTH_DOMAIN', ''),
+            "projectId": os.environ.get('FIREBASE_PROJECT_ID', ''),
+            "storageBucket": os.environ.get('FIREBASE_STORAGE_BUCKET', ''),
+            "messagingSenderId": os.environ.get('FIREBASE_MESSAGING_SENDER_ID', ''),
+            "appId": os.environ.get('FIREBASE_APP_ID', ''),
+            "measurementId": os.environ.get('FIREBASE_MEASUREMENT_ID', '')
+        }
+        
+        # Convert to JSON string
+        config_json = json.dumps(firebase_config, indent=2)
+        
+        # Create JavaScript content
+        js_content = f"""// Firebase configuration for Children's Castle
+// Generated on: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+// This file is dynamically generated - do not edit manually
+
+const firebaseConfig = {config_json};
+
+// Initialize Firebase
+try {{
+    const app = firebase.initializeApp(firebaseConfig);
+    console.log("Firebase initialized with project ID:", firebaseConfig.projectId);
+    console.log("Loading system initialized");
+}} catch (error) {{
+    console.error("Firebase initialization error:", error);
+}}
+"""
+        
+        # Return as JavaScript
+        return Response(js_content, mimetype='application/javascript')
+    except Exception as e:
+        logging.error(f"Error generating Firebase config: {str(e)}")
+        # Return error but still as JavaScript
+        return Response(
+            f"console.error('Error generating Firebase config: {str(e)}');", 
+            mimetype='application/javascript'
+        )
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
