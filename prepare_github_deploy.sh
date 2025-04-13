@@ -58,7 +58,7 @@ if [ ! -f .firebaserc ]; then
   cat > .firebaserc << EOL
 {
   "projects": {
-    "default": "story-time-fun-1"
+    "default": "story-time-fun"
   }
 }
 EOL

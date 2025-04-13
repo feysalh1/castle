@@ -31,10 +31,10 @@ jobs:
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
-          projectId: story-time-fun-1
+          projectId: story-time-fun
           channelId: live
           target: hosting
-          firebaseHostingSite: story-time-fun-1
+          firebaseHostingSite: story-time-fun
 
   deploy_preview:
     if: github.event_name == 'pull_request'
@@ -60,7 +60,7 @@ jobs:
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
-          projectId: story-time-fun-1
+          projectId: story-time-fun
           channelId: 'pr-${{ github.event.number }}'
-          firebaseHostingSite: story-time-fun-1
+          firebaseHostingSite: story-time-fun
           expires: '7d'
