@@ -334,6 +334,24 @@ def upload_photo():
     """Upload a new photo"""
     form = PhotoUploadForm()
     
+    # Get available albums for the current user
+    if hasattr(current_user, 'type') and current_user.type == 'parent':
+        # Parent's own albums and children's albums
+        child_ids = [child.id for child in Child.query.filter_by(parent_id=current_user.id).all()]
+        albums = PhotoAlbum.query.filter(
+            (PhotoAlbum.parent_id == current_user.id) | 
+            (PhotoAlbum.child_id.in_(child_ids))
+        ).all()
+    else:
+        # Child's own albums and parent's albums
+        albums = PhotoAlbum.query.filter(
+            (PhotoAlbum.child_id == current_user.id) | 
+            (PhotoAlbum.parent_id == current_user.parent_id)
+        ).all()
+    
+    # Get today's date for the journal date field
+    today_date = datetime.now().strftime('%Y-%m-%d')
+    
     if form.validate_on_submit():
         photo_file = form.photo.data
         
@@ -464,7 +482,7 @@ def upload_photo():
         flash('Photo uploaded successfully!', 'success')
         return redirect(url_for('photos.photos_dashboard'))
     
-    return render_template('photos/upload.html', form=form)
+    return render_template('photos/upload.html', form=form, albums=albums, today_date=today_date)
 
 
 @photo_routes.route('/view/<int:photo_id>')
@@ -592,3 +610,167 @@ def delete_photo(photo_id):
     db.session.commit()
     
     return jsonify({'success': True})
+
+
+# Album routes
+
+@photo_routes.route('/albums')
+@login_required
+def list_albums():
+    """List albums for the current user"""
+    # Get albums
+    if hasattr(current_user, 'type') and current_user.type == 'parent':
+        # Parent's own albums and children's albums
+        child_ids = [child.id for child in Child.query.filter_by(parent_id=current_user.id).all()]
+        albums = PhotoAlbum.query.filter(
+            (PhotoAlbum.parent_id == current_user.id) | 
+            (PhotoAlbum.child_id.in_(child_ids))
+        ).all()
+    else:
+        # Child's own albums and parent's albums
+        albums = PhotoAlbum.query.filter(
+            (PhotoAlbum.child_id == current_user.id) | 
+            (PhotoAlbum.parent_id == current_user.parent_id)
+        ).all()
+    
+    # Filter by access
+    albums = [album for album in albums if has_access_to_album(album)]
+    
+    return render_template('photos/albums.html', albums=albums)
+
+
+@photo_routes.route('/albums/create', methods=['GET', 'POST'])
+@login_required
+def create_album():
+    """Create a new album"""
+    form = AlbumForm()
+    
+    if form.validate_on_submit():
+        album = PhotoAlbum(
+            name=form.name.data,
+            description=form.description.data,
+            is_private=form.is_private.data
+        )
+        
+        # Set owner based on user type
+        if hasattr(current_user, 'type') and current_user.type == 'parent':
+            album.parent_id = current_user.id
+        else:
+            album.child_id = current_user.id
+        
+        db.session.add(album)
+        db.session.commit()
+        
+        flash('Album created successfully!', 'success')
+        return redirect(url_for('photos.list_albums'))
+    
+    return render_template('photos/create_album.html', form=form)
+
+
+@photo_routes.route('/albums/<int:album_id>')
+@login_required
+def view_album(album_id):
+    """View an album"""
+    album = PhotoAlbum.query.get_or_404(album_id)
+    
+    # Check access
+    if not has_access_to_album(album):
+        flash('You do not have permission to view this album.', 'error')
+        return redirect(url_for('photos.list_albums'))
+    
+    # Get photos in this album
+    photo_items = PhotoAlbumItem.query.filter_by(album_id=album.id).order_by(PhotoAlbumItem.position).all()
+    photos = []
+    
+    for item in photo_items:
+        photo = Photo.query.get(item.photo_id)
+        if photo and has_access_to_photo(photo):
+            photos.append(photo)
+    
+    return render_template('photos/view_album.html', album=album, photos=photos)
+
+
+@photo_routes.route('/albums/<int:album_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_album(album_id):
+    """Edit an album"""
+    album = PhotoAlbum.query.get_or_404(album_id)
+    
+    # Check ownership
+    if (album.parent_id and album.parent_id != current_user.id) and \
+       (album.child_id and album.child_id != current_user.id):
+        flash('You do not have permission to edit this album.', 'error')
+        return redirect(url_for('photos.list_albums'))
+    
+    form = AlbumForm(obj=album)
+    
+    if form.validate_on_submit():
+        album.name = form.name.data
+        album.description = form.description.data
+        album.is_private = form.is_private.data
+        
+        db.session.commit()
+        
+        flash('Album updated successfully!', 'success')
+        return redirect(url_for('photos.view_album', album_id=album.id))
+    
+    return render_template('photos/edit_album.html', form=form, album=album)
+
+
+@photo_routes.route('/albums/<int:album_id>/delete', methods=['POST'])
+@login_required
+def delete_album(album_id):
+    """Delete an album"""
+    album = PhotoAlbum.query.get_or_404(album_id)
+    
+    # Check ownership
+    if (album.parent_id and album.parent_id != current_user.id) and \
+       (album.child_id and album.child_id != current_user.id):
+        return jsonify({'success': False, 'error': 'You do not have permission to delete this album.'}), 403
+    
+    # Delete album items
+    PhotoAlbumItem.query.filter_by(album_id=album.id).delete()
+    
+    # Delete album
+    db.session.delete(album)
+    db.session.commit()
+    
+    return jsonify({'success': True})
+
+
+@photo_routes.route('/journal')
+@login_required
+def journal():
+    """Journal view (photos with journal entries)"""
+    # Get photos with journal entries
+    if hasattr(current_user, 'type') and current_user.type == 'parent':
+        # Parent's own photos and children's photos
+        child_ids = [child.id for child in Child.query.filter_by(parent_id=current_user.id).all()]
+        photos = Photo.query.filter(
+            ((Photo.parent_id == current_user.id) | (Photo.child_id.in_(child_ids))) &
+            ((Photo.journal_entry != None) & (Photo.journal_entry != ''))
+        ).order_by(Photo.journal_date.desc() if Photo.journal_date else Photo.uploaded_at.desc()).all()
+    else:
+        # Child's own photos and parent's photos
+        photos = Photo.query.filter(
+            ((Photo.child_id == current_user.id) | (Photo.parent_id == current_user.parent_id)) &
+            ((Photo.journal_entry != None) & (Photo.journal_entry != ''))
+        ).order_by(Photo.journal_date.desc() if Photo.journal_date else Photo.uploaded_at.desc()).all()
+    
+    # Filter by access
+    photos = [photo for photo in photos if has_access_to_photo(photo)]
+    
+    # Group by date
+    photos_by_date = {}
+    for photo in photos:
+        date_key = photo.journal_date if photo.journal_date else photo.uploaded_at.date()
+        
+        if date_key not in photos_by_date:
+            photos_by_date[date_key] = []
+        
+        photos_by_date[date_key].append(photo)
+    
+    # Sort dates (most recent first)
+    photos_by_date = {k: photos_by_date[k] for k in sorted(photos_by_date.keys(), reverse=True)}
+    
+    return render_template('photos/journal.html', photos_by_date=photos_by_date)

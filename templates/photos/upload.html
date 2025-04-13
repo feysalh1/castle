@@ -46,6 +46,86 @@
                     <input type="text" name="tags" id="tags" placeholder="vacation, family, summer">
                 </div>
                 
+                <!-- Journal features -->
+                <div class="form-section-title">
+                    <button type="button" class="btn toggle-section" id="toggle-journal">
+                        <i class="fas fa-book"></i> Journal Entry <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                
+                <div class="journal-section" id="journal-section" style="display: none;">
+                    <div class="form-group">
+                        <label for="journal_entry">Journal Entry</label>
+                        <textarea name="journal_entry" id="journal_entry" rows="4" placeholder="Write your thoughts, feelings, or memories about this photo..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="journal_date">Date</label>
+                        <input type="date" name="journal_date" id="journal_date" value="{{ today_date }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="mood">Mood</label>
+                        <select name="mood" id="mood">
+                            <option value="">-- Select a mood --</option>
+                            <option value="happy">😊 Happy</option>
+                            <option value="excited">🤩 Excited</option>
+                            <option value="calm">😌 Calm</option>
+                            <option value="thoughtful">🤔 Thoughtful</option>
+                            <option value="sad">😢 Sad</option>
+                            <option value="anxious">😰 Anxious</option>
+                            <option value="sleepy">😴 Sleepy</option>
+                            <option value="proud">🥰 Proud</option>
+                            <option value="inspired">✨ Inspired</option>
+                            <option value="curious">🧐 Curious</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Album selection -->
+                <div class="form-section-title">
+                    <button type="button" class="btn toggle-section" id="toggle-album">
+                        <i class="fas fa-images"></i> Album <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                
+                <div class="album-section" id="album-section" style="display: none;">
+                    <div class="form-group">
+                        <div class="radio-options">
+                            <div class="radio-option">
+                                <input type="radio" name="album_option" id="no_album" value="none" checked>
+                                <label for="no_album">Don't add to an album</label>
+                            </div>
+                            
+                            {% if albums %}
+                            <div class="radio-option">
+                                <input type="radio" name="album_option" id="existing_album" value="existing">
+                                <label for="existing_album">Add to existing album</label>
+                                
+                                <div class="album-select" id="album-select" style="display: none;">
+                                    <select name="album_id" id="album_id">
+                                        <option value="">-- Select an album --</option>
+                                        {% for album in albums %}
+                                        <option value="{{ album.id }}">{{ album.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="radio-option">
+                                <input type="radio" name="album_option" id="new_album" value="new">
+                                <label for="new_album">Create new album</label>
+                                
+                                <div class="new-album-input" id="new-album-input" style="display: none;">
+                                    <input type="text" name="new_album_name" id="new_album_name" placeholder="Album name">
+                                    <input type="hidden" name="create_new_album" id="create_new_album" value="false">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="form-group privacy-setting">
                     <label>Privacy</label>
                     <div class="radio-options">
@@ -213,11 +293,78 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Toggle sections (journal and album)
+    const toggleJournal = document.getElementById('toggle-journal');
+    const journalSection = document.getElementById('journal-section');
+    const toggleAlbum = document.getElementById('toggle-album');
+    const albumSection = document.getElementById('album-section');
+    
+    toggleJournal.addEventListener('click', function() {
+        if (journalSection.style.display === 'none') {
+            journalSection.style.display = 'block';
+            toggleJournal.querySelector('.fa-chevron-down').classList.replace('fa-chevron-down', 'fa-chevron-up');
+        } else {
+            journalSection.style.display = 'none';
+            toggleJournal.querySelector('.fa-chevron-up').classList.replace('fa-chevron-up', 'fa-chevron-down');
+        }
+    });
+    
+    toggleAlbum.addEventListener('click', function() {
+        if (albumSection.style.display === 'none') {
+            albumSection.style.display = 'block';
+            toggleAlbum.querySelector('.fa-chevron-down').classList.replace('fa-chevron-down', 'fa-chevron-up');
+        } else {
+            albumSection.style.display = 'none';
+            toggleAlbum.querySelector('.fa-chevron-up').classList.replace('fa-chevron-up', 'fa-chevron-down');
+        }
+    });
+    
+    // Album selection handling
+    const noAlbumRadio = document.getElementById('no_album');
+    const existingAlbumRadio = document.getElementById('existing_album');
+    const newAlbumRadio = document.getElementById('new_album');
+    const albumSelect = document.getElementById('album-select');
+    const newAlbumInput = document.getElementById('new-album-input');
+    const createNewAlbumField = document.getElementById('create_new_album');
+    
+    if (existingAlbumRadio) {
+        existingAlbumRadio.addEventListener('change', function() {
+            albumSelect.style.display = 'block';
+            newAlbumInput.style.display = 'none';
+            createNewAlbumField.value = 'false';
+        });
+    }
+    
+    newAlbumRadio.addEventListener('change', function() {
+        if (albumSelect) albumSelect.style.display = 'none';
+        newAlbumInput.style.display = 'block';
+        createNewAlbumField.value = 'true';
+    });
+    
+    noAlbumRadio.addEventListener('change', function() {
+        if (albumSelect) albumSelect.style.display = 'none';
+        newAlbumInput.style.display = 'none';
+        createNewAlbumField.value = 'false';
+    });
+
     // Form submission
     uploadForm.addEventListener('submit', function(e) {
         if (fileInput.files.length === 0) {
             e.preventDefault();
             alert('Please select a file to upload');
+            return;
+        }
+        
+        // Handle album selection
+        if (newAlbumRadio.checked && !document.getElementById('new_album_name').value.trim()) {
+            e.preventDefault();
+            alert('Please enter a name for the new album');
+            return;
+        }
+        
+        if (existingAlbumRadio && existingAlbumRadio.checked && !document.getElementById('album_id').value) {
+            e.preventDefault();
+            alert('Please select an album');
             return;
         }
         
