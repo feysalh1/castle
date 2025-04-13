@@ -68,10 +68,36 @@
                         </span>
                     </div>
                     
+                    {% if photo.journal_date %}
+                    <div class="meta-item">
+                        <span class="meta-label">Journal date:</span>
+                        <span class="meta-value">{{ photo.journal_date.strftime('%B %d, %Y') }}</span>
+                    </div>
+                    {% endif %}
+                    
                     <div class="meta-item">
                         <span class="meta-label">Uploaded on:</span>
                         <span class="meta-value">{{ photo.uploaded_at.strftime('%B %d, %Y') }}</span>
                     </div>
+                    
+                    {% if photo.mood %}
+                    <div class="meta-item">
+                        <span class="meta-label">Mood:</span>
+                        <span class="meta-value mood-badge">
+                            {% if photo.mood == 'happy' %}😊 Happy
+                            {% elif photo.mood == 'excited' %}🤩 Excited
+                            {% elif photo.mood == 'calm' %}😌 Calm
+                            {% elif photo.mood == 'thoughtful' %}🤔 Thoughtful
+                            {% elif photo.mood == 'sad' %}😢 Sad
+                            {% elif photo.mood == 'anxious' %}😰 Anxious
+                            {% elif photo.mood == 'sleepy' %}😴 Sleepy
+                            {% elif photo.mood == 'proud' %}🥰 Proud
+                            {% elif photo.mood == 'inspired' %}✨ Inspired
+                            {% elif photo.mood == 'curious' %}🧐 Curious
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endif %}
                     
                     <div class="meta-item">
                         <span class="meta-label">File size:</span>
@@ -111,6 +137,29 @@
                         </div>
                     </div>
                 </div>
+                
+                {% if photo.journal_entry %}
+                <div class="photo-journal-section">
+                    <div class="section-header">
+                        <h3>Journal Entry</h3>
+                        <button id="edit-journal-btn" class="edit-btn">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="journal-content">
+                        <p id="display-journal">{{ photo.journal_entry }}</p>
+                    </div>
+                    
+                    <div class="photo-edit-form" id="journal-edit-form" style="display: none;">
+                        <textarea id="journal-input" rows="6" placeholder="Write your journal entry...">{{ photo.journal_entry or '' }}</textarea>
+                        <div class="edit-actions">
+                            <button id="cancel-journal-edit" class="cancel-edit-btn">Cancel</button>
+                            <button id="save-journal-edit" class="save-edit-btn">Save</button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
                 
                 <div class="photo-tags-section">
                     <div class="section-header">
@@ -323,6 +372,43 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     });
     
+    // Journal entry editing
+    {% if photo.journal_entry %}
+    const editJournalBtn = document.getElementById('edit-journal-btn');
+    const journalEditForm = document.getElementById('journal-edit-form');
+    const displayJournal = document.getElementById('display-journal');
+    const journalInput = document.getElementById('journal-input');
+    const saveJournalBtn = document.getElementById('save-journal-edit');
+    const cancelJournalBtn = document.getElementById('cancel-journal-edit');
+    
+    editJournalBtn.addEventListener('click', function() {
+        displayJournal.style.display = 'none';
+        editJournalBtn.style.display = 'none';
+        journalEditForm.style.display = 'block';
+        journalInput.focus();
+    });
+    
+    cancelJournalBtn.addEventListener('click', function() {
+        journalEditForm.style.display = 'none';
+        displayJournal.style.display = 'block';
+        editJournalBtn.style.display = 'inline-block';
+    });
+    
+    saveJournalBtn.addEventListener('click', function() {
+        const newJournalEntry = journalInput.value.trim();
+        
+        updatePhotoDetails({journal_entry: newJournalEntry})
+            .then(data => {
+                if (data.success) {
+                    displayJournal.textContent = newJournalEntry || 'No journal entry provided.';
+                    journalEditForm.style.display = 'none';
+                    displayJournal.style.display = 'block';
+                    editJournalBtn.style.display = 'inline-block';
+                }
+            });
+    });
+    {% endif %}
+
     // Tags editing
     const editTagsBtn = document.getElementById('edit-tags-btn');
     const tagsEditForm = document.getElementById('tags-edit-form');

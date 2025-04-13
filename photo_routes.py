@@ -48,7 +48,7 @@ class PhotoUploadForm(FlaskForm):
     mood = StringField('Mood', validators=[Optional(), Length(max=50)])
     journal_date = StringField('Journal Date', validators=[Optional()])
     
-    # Album selection
+    # Album fields
     album_id = StringField('Album', validators=[Optional()])
     create_new_album = BooleanField('Create New Album', default=False)
     new_album_name = StringField('New Album Name', validators=[Optional(), Length(max=100)])
@@ -552,6 +552,20 @@ def update_photo(photo_id):
     
     if 'is_private' in data:
         photo.is_private = data['is_private']
+        
+    # Journal fields
+    if 'journal_entry' in data:
+        photo.journal_entry = data['journal_entry']
+        
+    if 'journal_date' in data:
+        try:
+            journal_date = datetime.strptime(data['journal_date'], '%Y-%m-%d').date()
+            photo.journal_date = journal_date
+        except ValueError:
+            pass
+            
+    if 'mood' in data:
+        photo.mood = data['mood']
     
     # Save changes
     db.session.commit()
