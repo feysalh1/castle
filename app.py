@@ -200,8 +200,9 @@ class ResetPasswordForm(FlaskForm):
 # Database tables are created in main.py
 
 
-@app.route('/')
-def index():
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def index(path):
     """Render the homepage of the Children's Castle app."""
     if current_user.is_authenticated:
         if session.get('user_type') == 'parent':
