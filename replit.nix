@@ -1,5 +1,6 @@
 {pkgs}: {
   deps = [
+    pkgs.whois
     pkgs.xcodebuild
     pkgs.glibcLocales
     pkgs.libffi

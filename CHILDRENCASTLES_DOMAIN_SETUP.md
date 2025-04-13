@@ -1,138 +1,131 @@
-# Connecting "childrencastles.com" to Firebase Hosting
+# Setting Up childrencastles.com with Firebase Hosting
 
-This guide will walk you through the exact steps needed to connect your custom domain "childrencastles.com" to your Firebase hosted application.
+This guide provides step-by-step instructions for connecting the childrencastles.com domain to your Firebase hosted Children's Castle application.
 
 ## Prerequisites
 
-- You have ownership of the domain "childrencastles.com"
-- You have access to modify DNS settings at your domain registrar
-- Your Firebase project "story-time-fun" is already set up with hosting
+- Ownership of the childrencastles.com domain
+- Access to the domain's DNS settings (through your domain registrar like GoDaddy, Namecheap, etc.)
+- Firebase project with Hosting enabled
 
-## Step 1: Prepare Your Firebase Project
+## Step 1: Connect Domain in Firebase Console
 
-Before connecting your custom domain, make sure your Firebase project and hosting are properly set up:
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Select your Children's Castle project
+3. In the left sidebar, click on "Hosting"
+4. Click on "Add custom domain"
+5. Enter "childrencastles.com" and click "Continue"
 
-1. Ensure the `.firebaserc` file has the correct project ID:
-   ```json
-   {
-     "projects": {
-       "default": "story-time-fun"
-     }
-   }
+## Step 2: Verify Domain Ownership
+
+Firebase will provide a TXT record for domain verification:
+
+1. Go to your domain registrar's website and log in to your account
+2. Find the DNS management or DNS settings section for childrencastles.com
+3. Add the TXT record provided by Firebase:
    ```
-
-2. Verify that your `firebase.json` file has proper hosting configuration:
-   ```json
-   {
-     "hosting": {
-       "public": "public",
-       "ignore": [
-         "firebase.json",
-         "**/.*",
-         "**/node_modules/**"
-       ],
-       "rewrites": [
-         {
-           "source": "**",
-           "destination": "/index.html"
-         }
-       ]
-     }
-   }
+   Type: TXT
+   Host/Name: @ (or blank, depending on your registrar)
+   Value: [Firebase verification value]
+   TTL: 3600 (or 1 hour)
    ```
-
-3. Deploy your application to Firebase hosting at least once:
-   ```bash
-   ./deploy.sh
-   ```
-
-## Step 2: Add Custom Domain in Firebase Console
-
-1. Go to the [Firebase Console](https://console.firebase.google.com/)
-2. Select your project "story-time-fun"
-3. In the left sidebar, navigate to **Hosting**
-4. Click on **Add custom domain** button
-5. Enter your domain name: `childrencastles.com`
-6. Click **Continue**
-7. Choose "Verify ownership with TXT record"
-8. Firebase will provide you with a TXT record that looks like:
-   ```
-   _firebase=your-verification-code
-   ```
-9. **Important:** Copy this verification code
-
-## Step 3: Add Verification TXT Record at Your Domain Registrar
-
-1. Log in to your domain registrar's website where childrencastles.com is registered
-2. Navigate to DNS settings or domain management
-3. Add a new TXT record with these values:
-   - **Type**: TXT
-   - **Host/Name**: @ (or leave blank, depending on your registrar)
-   - **Value**: The verification code from Firebase (including the `_firebase=` part)
-   - **TTL**: 3600 (or 1 hour)
 4. Save the changes
-5. Return to the Firebase Console and click **Verify**
-6. Wait for verification to complete (typically a few minutes)
+5. Return to Firebase Console and click "Verify"
 
-## Step 4: Add DNS Records for Domain Connection
+## Step 3: Add DNS Records
 
-After verification, Firebase will show you the required A and AAAA records to add:
+After verification, Firebase will provide A records for the apex domain and a CNAME record for the www subdomain:
 
-1. Add these records at your domain registrar:
+### A Records for childrencastles.com
 
-   **For the root domain (childrencastles.com):**
-   - **Type**: A
-   - **Host/Name**: @ (or leave blank)
-   - **Value**: The IP address provided by Firebase (typically 151.101.1.195)
-   - **TTL**: 3600 (or 1 hour)
+Add the following A records:
+```
+Type: A
+Host/Name: @ (or blank)
+Value: 199.36.158.100
+TTL: 3600 (or 1 hour)
+```
 
-   - **Type**: AAAA
-   - **Host/Name**: @ (or leave blank)
-   - **Value**: The IPv6 address provided by Firebase
-   - **TTL**: 3600 (or 1 hour)
+You may need to add multiple A records if Firebase provides multiple IP addresses.
 
-   **For the www subdomain (www.childrencastles.com):**
-   - **Type**: CNAME
-   - **Host/Name**: www
-   - **Value**: story-time-fun.web.app
-   - **TTL**: 3600 (or 1 hour)
+### CNAME Record for www.childrencastles.com
 
-2. Save all changes at your domain registrar
+Add the following CNAME record:
+```
+Type: CNAME
+Host/Name: www
+Value: [Your Firebase app].web.app
+TTL: 3600 (or 1 hour)
+```
 
-## Step 5: Wait for DNS Propagation
+Replace `[Your Firebase app]` with your actual Firebase app name (e.g., story-time-fun).
 
-DNS changes typically take 15 minutes to 48 hours to fully propagate. During this time:
+## Step 4: Set Up www Redirect (Recommended)
 
-1. Firebase will automatically provision SSL certificates for your domain
-2. The status in Firebase Console will update as the process completes
+For better user experience, set up a redirect from www to non-www (or vice versa):
 
-## Step 6: Update Firebase Authentication Settings
+1. In your Firebase project directory, update your `firebase.json` file:
 
-After your domain is connected, you need to add it to the allowed authentication domains:
+```json
+{
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "redirects": [
+      {
+        "source": "https://www.childrencastles.com/:path*",
+        "destination": "https://childrencastles.com/:path",
+        "type": 301
+      }
+    ]
+  }
+}
+```
 
-1. In Firebase Console, go to **Authentication** > **Settings**
-2. Scroll to the **Authorized domains** section
-3. Click **Add domain**
-4. Add both:
-   - childrencastles.com
-   - www.childrencastles.com
-5. Click **Add**
+2. Deploy the changes with:
+```bash
+firebase deploy --only hosting
+```
 
-## Step 7: Test Your Custom Domain
+## Step 5: Wait for DNS Propagation and SSL Certificate
 
-After DNS propagation (wait at least 15-30 minutes):
+1. DNS changes can take up to 24 hours to propagate globally
+2. Firebase will automatically provision an SSL certificate for your domain
+3. The SSL certificate process may take a few hours
 
-1. Visit https://childrencastles.com in your browser
-2. Verify that your site loads correctly with HTTPS
-3. Check that the Firebase authentication works
+## Step 6: Verify the Setup
+
+1. Once DNS propagation and SSL certification are complete, visit https://childrencastles.com
+2. Verify that your Children's Castle application loads correctly
+3. Check that HTTPS is working properly (look for the padlock icon in the browser)
+4. Test the www redirect by visiting https://www.childrencastles.com
 
 ## Troubleshooting
 
-If you encounter issues:
+### Domain Not Connecting
 
-1. **Verification Fails**: Double-check the TXT record for typos and ensure it's set at the root domain level (@)
-2. **Domain Not Connecting**: Verify A and AAAA records match exactly what Firebase provided
-3. **SSL Certificate Issues**: It can take several hours for SSL certificates to be fully provisioned
-4. **Authentication Problems**: Ensure both root domain and www subdomain are added to authorized domains in Firebase Authentication settings
+If childrencastles.com doesn't connect to your Firebase app:
 
-For detailed help, refer to the [Firebase Hosting documentation](https://firebase.google.com/docs/hosting/custom-domain).
+1. Verify your DNS records match exactly what Firebase provided
+2. Use online tools like [DNS Checker](https://dnschecker.org/) to confirm DNS propagation
+3. Make sure there are no conflicting DNS records
+
+### SSL Certificate Issues
+
+If you see SSL certificate warnings:
+
+1. Make sure you've waited long enough for Firebase to provision the certificate (up to 24 hours)
+2. Verify that your domain properly resolves to the Firebase hosting IPs
+3. Check that both www and non-www versions of the domain are properly configured
+
+### For Additional Help
+
+If you're still having issues connecting the domain:
+
+1. Review the [Firebase Custom Domain Documentation](https://firebase.google.com/docs/hosting/custom-domain)
+2. Contact your domain registrar for help with DNS configuration
+3. Check Firebase Console for any specific error messages related to your domain setup
