@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}{{ album.name }} - Album - Children's Castle{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photos.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="photo-album-view-container">
+    <div class="album-header">
+        <div class="album-breadcrumb">
+            <a href="{{ url_for('photos.photos_dashboard') }}">Photos</a> &gt; 
+            <a href="{{ url_for('photos.list_albums') }}">Albums</a> &gt; 
+            <span>{{ album.name }}</span>
+        </div>
+        
+        <div class="album-title-section">
+            <h1>{{ album.name }}</h1>
+            {% if album.is_private %}
+            <span class="privacy-badge">
+                <i class="fas fa-lock"></i> Private
+            </span>
+            {% endif %}
+        </div>
+        
+        {% if album.description %}
+        <p class="album-description">{{ album.description }}</p>
+        {% endif %}
+        
+        <div class="album-meta">
+            <span class="photo-count">{{ photos|length }} photo{% if photos|length != 1 %}s{% endif %}</span>
+            {% if album.created_at %}
+            <span class="album-date">Created on {{ album.created_at.strftime('%B %d, %Y') }}</span>
+            {% endif %}
+        </div>
+        
+        {% if (album.parent_id and album.parent_id == current_user.id) or (album.child_id and album.child_id == current_user.id) %}
+        <div class="album-actions">
+            <a href="{{ url_for('photos.edit_album', album_id=album.id) }}" class="btn btn-edit">
+                <i class="fas fa-edit"></i> Edit Album
+            </a>
+            <button type="button" class="btn btn-delete" onclick="deleteAlbum({{ album.id }})">
+                <i class="fas fa-trash-alt"></i> Delete Album
+            </button>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="photo-grid">
+        {% if photos %}
+            {% for photo in photos %}
+            <div class="photo-card" data-photo-id="{{ photo.id }}">
+                <a href="{{ url_for('photos.view_photo', photo_id=photo.id) }}" class="photo-link">
+                    <div class="photo-thumbnail">
+                        {% if photo.thumbnail_filename %}
+                        <img src="{{ url_for('photos.get_raw_photo', photo_id=photo.id, thumbnail='true') }}" alt="{{ photo.title or 'Photo' }}">
+                        {% else %}
+                        <img src="{{ url_for('photos.get_raw_photo', photo_id=photo.id) }}" alt="{{ photo.title or 'Photo' }}">
+                        {% endif %}
+                    </div>
+                    <div class="photo-info">
+                        <h3 class="photo-title">{{ photo.title or 'Untitled Photo' }}</h3>
+                        
+                        <div class="photo-meta">
+                            {% if photo.journal_date %}
+                            <span class="photo-date">{{ photo.journal_date.strftime('%b %d, %Y') }}</span>
+                            {% elif photo.uploaded_at %}
+                            <span class="photo-date">{{ photo.uploaded_at.strftime('%b %d, %Y') }}</span>
+                            {% endif %}
+                            
+                            {% if photo.mood %}
+                            <span class="photo-mood">
+                                {% if photo.mood == 'happy' %}😊
+                                {% elif photo.mood == 'excited' %}🤩
+                                {% elif photo.mood == 'calm' %}😌
+                                {% elif photo.mood == 'thoughtful' %}🤔
+                                {% elif photo.mood == 'sad' %}😢
+                                {% elif photo.mood == 'anxious' %}😰
+                                {% elif photo.mood == 'sleepy' %}😴
+                                {% elif photo.mood == 'proud' %}🥰
+                                {% elif photo.mood == 'inspired' %}✨
+                                {% elif photo.mood == 'curious' %}🧐
+                                {% endif %}
+                            </span>
+                            {% endif %}
+                            
+                            {% if photo.is_private %}
+                            <span class="photo-privacy">
+                                <i class="fas fa-lock" title="Private"></i>
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+                
+                {% if (photo.parent_id and photo.parent_id == current_user.id) or (photo.child_id and photo.child_id == current_user.id) %}
+                <div class="photo-actions">
+                    <button type="button" class="btn btn-sm btn-favorite {% if photo.is_favorite %}favorited{% endif %}" 
+                            onclick="toggleFavorite({{ photo.id }})" 
+                            title="{% if photo.is_favorite %}Remove from favorites{% else %}Add to favorites{% endif %}">
+                        <i class="{% if photo.is_favorite %}fas{% else %}far{% endif %} fa-heart"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-delete" 
+                            onclick="deletePhoto({{ photo.id }})" 
+                            title="Delete photo">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <img src="{{ url_for('static', filename='images/icons/photos-empty.svg') }}" alt="No photos" class="empty-icon">
+                <h2>No Photos in This Album</h2>
+                <p>Upload photos and add them to this album!</p>
+                <a href="{{ url_for('photos.upload_photo') }}" class="btn upload-photo-btn">
+                    <i class="fas fa-upload"></i> Upload Photos
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script>
+    function toggleFavorite(photoId) {
+        fetch(`/photos/toggle-favorite/${photoId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const btn = document.querySelector(`.photo-card[data-photo-id="${photoId}"] .btn-favorite`);
+                const icon = btn.querySelector('i');
+                
+                if (data.is_favorite) {
+                    btn.classList.add('favorited');
+                    icon.classList.replace('far', 'fas');
+                    btn.title = 'Remove from favorites';
+                } else {
+                    btn.classList.remove('favorited');
+                    icon.classList.replace('fas', 'far');
+                    btn.title = 'Add to favorites';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    
+    function deletePhoto(photoId) {
+        if (confirm('Are you sure you want to delete this photo? This cannot be undone.')) {
+            fetch(`/photos/delete/${photoId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove the photo card
+                    const photoCard = document.querySelector(`.photo-card[data-photo-id="${photoId}"]`);
+                    if (photoCard) {
+                        photoCard.remove();
+                    }
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the photo.');
+            });
+        }
+    }
+    
+    function deleteAlbum(albumId) {
+        if (confirm('Are you sure you want to delete this album? This cannot be undone.\n\nNote: The photos in this album will not be deleted, only the album itself.')) {
+            fetch(`/photos/albums/${albumId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirect to albums page
+                    window.location.href = "{{ url_for('photos.list_albums') }}";
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the album.');
+            });
+        }
+    }
+</script>
+{% endblock %}

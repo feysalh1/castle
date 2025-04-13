@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Photo Albums - Children's Castle{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photos.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="photo-albums-container">
+    <div class="albums-header">
+        <h1>Photo Albums</h1>
+        <a href="{{ url_for('photos.create_album') }}" class="btn create-album-btn">
+            <i class="fas fa-plus"></i> Create New Album
+        </a>
+    </div>
+    
+    <div class="albums-gallery">
+        {% if albums %}
+            {% for album in albums %}
+            <div class="album-card">
+                <a href="{{ url_for('photos.view_album', album_id=album.id) }}" class="album-link">
+                    <div class="album-thumbnail">
+                        {% if album.cover_photo_id %}
+                        <img src="{{ url_for('photos.get_raw_photo', photo_id=album.cover_photo_id, thumbnail='true') }}" alt="{{ album.name }}">
+                        {% else %}
+                        <div class="empty-album">
+                            <i class="far fa-images"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="album-info">
+                        <h3 class="album-title">{{ album.name }}</h3>
+                        <div class="album-meta">
+                            <span class="photo-count">
+                                {% if album.photo_count %}
+                                {{ album.photo_count }} photo{% if album.photo_count != 1 %}s{% endif %}
+                                {% else %}
+                                Empty album
+                                {% endif %}
+                            </span>
+                            {% if album.is_private %}
+                            <span class="album-privacy">
+                                <i class="fas fa-lock" title="Private"></i>
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% if album.description %}
+                        <p class="album-description">{{ album.description }}</p>
+                        {% endif %}
+                    </div>
+                </a>
+                
+                {% if (album.parent_id and album.parent_id == current_user.id) or (album.child_id and album.child_id == current_user.id) %}
+                <div class="album-actions">
+                    <a href="{{ url_for('photos.edit_album', album_id=album.id) }}" class="btn btn-sm btn-edit" title="Edit album">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <button type="button" class="btn btn-sm btn-delete" 
+                            onclick="deleteAlbum({{ album.id }})" title="Delete album">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <img src="{{ url_for('static', filename='images/icons/photos-empty.svg') }}" alt="No albums" class="empty-icon">
+                <h2>No Albums Yet</h2>
+                <p>Create your first album to organize your photos!</p>
+                <a href="{{ url_for('photos.create_album') }}" class="btn create-first-album-btn">
+                    <i class="fas fa-plus"></i> Create First Album
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script>
+    function deleteAlbum(albumId) {
+        if (confirm('Are you sure you want to delete this album? This cannot be undone.')) {
+            fetch(`/photos/albums/${albumId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove the album card
+                    const albumCard = document.querySelector(`.album-card[data-album-id="${albumId}"]`);
+                    if (albumCard) {
+                        albumCard.remove();
+                    } else {
+                        // Reload the page
+                        window.location.reload();
+                    }
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the album.');
+            });
+        }
+    }
+</script>
+{% endblock %}
