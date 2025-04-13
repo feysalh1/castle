@@ -34,7 +34,8 @@ from db import db
 from models import (
     Parent, Child, ParentSettings, Progress, Reward, Session,
     LearningGoal, StoryQueue, SkillProgress, WeeklyReport, DevicePairing,
-    DailyReport, Milestone, Event, ErrorLog, AgeGroup, Book, ApprovedBooks
+    DailyReport, Milestone, Event, ErrorLog, AgeGroup, Book, ApprovedBooks,
+    StoryMood
 )
 from reports import generate_daily_report, generate_weekly_report, get_report_data_for_period, generate_chart_data
 
