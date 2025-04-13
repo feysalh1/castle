@@ -5,7 +5,7 @@
 set -e
 
 echo "=== Children's Castle Firebase Deployment ==="
-echo "Deploying to Firebase project: story-time-fun-1"
+echo "Deploying to Firebase project: story-time-fun"
 
 # Make sure the public directory exists
 if [ ! -d "public" ]; then
@@ -38,7 +38,7 @@ echo "Creating simplified firebase.json..."
 cat > firebase.json << EOL
 {
   "hosting": {
-    "site": "story-time-fun-1",
+    "site": "story-time-fun",
     "public": "public",
     "ignore": [
       "firebase.json",
@@ -49,19 +49,9 @@ cat > firebase.json << EOL
 }
 EOL
 
-# Make sure .firebaserc exists
-echo "Creating .firebaserc..."
-cat > .firebaserc << EOL
-{
-  "projects": {
-    "default": "story-time-fun-1"
-  }
-}
-EOL
-
 # Run the deploy command
 echo "Deploying to Firebase..."
-firebase deploy --only hosting:story-time-fun-1
+firebase deploy --only hosting --project story-time-fun
 
 echo "=== Deployment completed ==="
-echo "Your site should be available at: https://story-time-fun-1.web.app"
+echo "Your site should be available at: https://story-time-fun.web.app"
