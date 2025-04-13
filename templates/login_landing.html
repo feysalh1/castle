@@ -17,12 +17,12 @@
         
         // Your web app's Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyAPTQO3lnt0GSyDgVCZjtj4i3gk3Qi6Vyo",
-            authDomain: "story-time-fun.firebaseapp.com",
-            projectId: "story-time-fun",
-            storageBucket: "story-time-fun.appspot.com",
-            messagingSenderId: "225122848236",
-            appId: "1:225122848236:web:b52d382202a2ce6a73c4c9"
+            apiKey: "{{ firebase_api_key }}",
+            authDomain: "{{ firebase_project_id }}.firebaseapp.com",
+            projectId: "{{ firebase_project_id }}",
+            storageBucket: "{{ firebase_project_id }}.appspot.com",
+            messagingSenderId: "{{ firebase_messaging_sender_id }}",
+            appId: "{{ firebase_app_id }}"
         };
         
         // Check if config is valid
