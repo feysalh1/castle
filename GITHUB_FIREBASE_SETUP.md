@@ -38,8 +38,8 @@ By default, the GitHub Actions workflow is configured to deploy on pushes to the
 2. Commit and push the change to your main branch
 3. Go to GitHub Actions tab in your repository to monitor the deployment
 4. Once complete, your app will be available at:
-   - https://childrencastles.web.app
-   - https://childrencastles.com (if custom domain is configured)
+   - https://story-time-fun.web.app
+   - https://childrencastles.com (once custom domain is configured)
 
 ## Troubleshooting
 
