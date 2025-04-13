@@ -96,4 +96,4 @@ All rights reserved. This project is proprietary.
 
 ## Support
 
-For support, contact the development team or submit an issue in the project repository.
+For support, contact the development team or submit an issue in the project repository.# Children's Castle
