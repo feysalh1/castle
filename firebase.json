@@ -1,14 +1,17 @@
-
 {
   "hosting": {
-    "site": "story-time-fun-1",
+    "site": "story-time-fun",
     "public": "public",
-    "cleanUrls": true,
-    "trailingSlash": false,
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
     ],
     "headers": [
       {
@@ -16,77 +19,21 @@
         "headers": [
           {
             "key": "Cache-Control",
-            "value": "max-age=31536000"
+            "value": "max-age=604800"
           }
         ]
       },
       {
-        "source": "**/*.@(jpg|jpeg)",
+        "source": "**/*.@(html|json)",
         "headers": [
           {
-            "key": "Content-Type",
-            "value": "image/jpeg"
-          }
-        ]
-      },
-      {
-        "source": "**/*.png",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "image/png"
-          }
-        ]
-      },
-      {
-        "source": "**/*.gif",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "image/gif"
-          }
-        ]
-      },
-      {
-        "source": "**/*.svg",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "image/svg+xml"
-          }
-        ]
-      },
-      {
-        "source": "**",
-        "headers": [
-          {
-            "key": "Access-Control-Allow-Origin",
-            "value": "*"
+            "key": "Cache-Control",
+            "value": "max-age=0, no-cache"
           }
         ]
       }
     ],
-    "rewrites": [
-      {
-        "source": "**",
-        "run": {
-          "serviceId": "childrens-castle",
-          "region": "us-central1"
-        }
-      }
-    ],
-    "redirects": [
-      {
-        "source": "https://story-time-fun-1.web.app/**",
-        "destination": "https://childrencastles.com/:1",
-        "type": 301
-      },
-      {
-        "source": "https://story-time-fun-1.firebaseapp.com/**",
-        "destination": "https://childrencastles.com/:1",
-        "type": 301
-      }
-    ],
-    "appAssociation": "AUTO"
+    "cleanUrls": true,
+    "trailingSlash": false
   }
 }
