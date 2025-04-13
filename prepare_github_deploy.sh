@@ -130,7 +130,7 @@ cat > public/index.html << EOL
 EOL
 echo "index.html created in public directory"
 
-# Step 5: Create a Firebase configuration file
+# Step 5: Create a Firebase configuration file with the correct project ID
 cat > .firebaserc << EOL
 {
   "projects": {
@@ -212,7 +212,7 @@ cat > public/firebase-config-test.html << EOL
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
     
     <script>
-        // Your Firebase configuration - copied directly from Firebase Console
+        // Your Firebase configuration - copied directly from Firebase Console for story-time-fun project
         const firebaseConfig = {
           apiKey: "AIzaSyAPTQO3lnt0GSyDgVCZjtj4i3gk3Qi6Vyo",
           authDomain: "story-time-fun.firebaseapp.com",

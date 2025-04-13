@@ -1,5 +1,15 @@
+
 {
   "projects": {
     "default": "story-time-fun"
+  },
+  "targets": {
+    "story-time-fun": {
+      "hosting": {
+        "main": [
+          "story-time-fun"
+        ]
+      }
+    }
   }
 }
