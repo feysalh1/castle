@@ -1,127 +1,330 @@
-# Full Deployment Guide for Children's Castle Application
+# Full Deployment Guide for Children's Castle
 
-This guide will help you deploy the complete Children's Castle application with a functioning backend to handle login, user data, and all interactive features.
+This comprehensive guide explains how to deploy the complete Children's Castle application using Firebase Hosting for the frontend and Google Cloud Run for the Flask backend, with GitHub Actions for continuous deployment.
 
-## Problem Identified
+## Architecture Overview
 
-We've identified that our current deployment method creates a static site that doesn't support:
-- Login functionality
-- User data persistence
-- Interactive features that require backend processing
+The Children's Castle application uses a hybrid cloud architecture:
 
-## Solution: Deploy with Cloud Run Backend
+1. **Static Content**: Firebase Hosting
+   - Landing page
+   - Images, CSS, JS files
+   - Firebase config files
 
-To fix this issue, we need to deploy the Flask application to Cloud Run and connect it to Firebase Hosting.
+2. **Dynamic Application**: Google Cloud Run
+   - Flask backend
+   - Database interactions
+   - Authentication logic
+   - API endpoints
 
-## Step 1: Set Up Google Cloud Project
+3. **Continuous Deployment**: GitHub Actions
+   - Automated testing
+   - Containerization
+   - Deployment to both services
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select your existing project
-3. Enable the following APIs:
-   - Cloud Run API
-   - Cloud Build API
-   - Container Registry API
+## Prerequisites
 
-## Step 2: Build and Deploy the Container
+- GitHub repository with your code
+- Firebase project: `story-time-fun`
+- Google Cloud project (same project or linked)
+- Domain name (optional): `childrencastles.com`
+- Docker installed for local testing
+- Firebase CLI, Google Cloud SDK installed
 
-There are two ways to do this:
+## Step 1: Prepare Your Application
 
-### Option A: Using Cloud Build (Recommended)
+### Configure Flask Application
 
-1. Update the cloudbuild.yaml file with your environment variables if needed
-
-2. Run the following commands:
-   ```bash
-   # Authenticate with Google Cloud
-   gcloud auth login
-
-   # Set your project ID
-   gcloud config set project YOUR_PROJECT_ID
-
-   # Submit the build
-   gcloud builds submit
+1. Ensure your Flask app binds to the correct port:
+   ```python
+   if __name__ == "__main__":
+       port = int(os.environ.get("PORT", 8080))
+       app.run(host="0.0.0.0", port=port)
    ```
 
-### Option B: Manual Build and Deploy
+2. Set up environment variables:
+   - Create `.env.example` with variables needed
+   - Document how to set these in Cloud Run
 
-1. Build the Docker container locally:
-   ```bash
-   docker build -t gcr.io/YOUR_PROJECT_ID/childrens-castle .
+### Configure Firebase Files
+
+1. Ensure `firebase.json` has rewrites for Cloud Run:
+   ```json
+   "rewrites": [
+     {
+       "source": "/app/**",
+       "run": {
+         "serviceId": "children-castle-app",
+         "region": "us-central1"
+       }
+     },
+     {
+       "source": "**",
+       "destination": "/index.html"
+     }
+   ]
    ```
 
-2. Push to Google Container Registry:
-   ```bash
-   docker push gcr.io/YOUR_PROJECT_ID/childrens-castle
+2. Verify `.firebaserc` has the correct project:
+   ```json
+   {
+     "projects": {
+       "default": "story-time-fun"
+     }
+   }
    ```
 
-3. Deploy to Cloud Run:
-   ```bash
-   gcloud run deploy childrens-castle \
-     --image gcr.io/YOUR_PROJECT_ID/childrens-castle \
-     --platform managed \
-     --region us-central1 \
-     --allow-unauthenticated
-   ```
+### Create or Update Dockerfile
 
-## Step 3: Set Up Environment Variables
+```Dockerfile
+FROM python:3.11-slim
 
-Set up your environment variables in Cloud Run:
+WORKDIR /app
 
-```bash
-gcloud run services update childrens-castle \
-  --set-env-vars="DATABASE_URL=YOUR_DATABASE_URL" \
-  --set-env-vars="OPENAI_API_KEY=YOUR_OPENAI_KEY" \
-  --set-env-vars="FIREBASE_API_KEY=YOUR_FIREBASE_KEY" \
-  --set-env-vars="FIREBASE_PROJECT_ID=YOUR_PROJECT_ID" \
-  --set-env-vars="FIREBASE_APP_ID=YOUR_APP_ID" \
-  --set-env-vars="ELEVENLABS_API_KEY=YOUR_ELEVENLABS_KEY"
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+ENV PORT 8080
+ENV PYTHONUNBUFFERED 1
+
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 main:app
 ```
 
-Replace the placeholders with your actual values.
+## Step 2: Create GitHub Actions Workflow
 
-## Step 4: Deploy to Firebase Hosting
+Create a comprehensive workflow file at `.github/workflows/deploy.yml`:
 
-1. Update the firebase.json file (already done) to use Cloud Run as a backend
-2. Deploy to Firebase Hosting:
-   ```bash
-   firebase deploy --only hosting
-   ```
+```yaml
+name: Build and Deploy
 
-## Step 5: Set Up Custom Domain (Optional)
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
 
-1. If using your own domain (childrencastles.com):
-   ```bash
-   firebase hosting:channel:deploy --expires 30d live
-   ```
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install pytest
+      - name: Run tests
+        run: |
+          pytest
 
-2. Add your custom domain in the Firebase Console:
-   - Go to Hosting → Add custom domain
-   - Follow the instructions to verify domain ownership and set up DNS records
+  build-and-deploy-cloud-run:
+    needs: test
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: story-time-fun
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          
+      - name: Configure Docker
+        run: |
+          gcloud auth configure-docker
+          
+      - name: Build and push Docker image
+        run: |
+          docker build -t gcr.io/story-time-fun/children-castle-app:${{ github.sha }} .
+          docker push gcr.io/story-time-fun/children-castle-app:${{ github.sha }}
+          
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy children-castle-app \
+            --image gcr.io/story-time-fun/children-castle-app:${{ github.sha }} \
+            --platform managed \
+            --region us-central1 \
+            --allow-unauthenticated
 
-## Checking Deployment
+  deploy-firebase-hosting:
+    needs: [test]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+        
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          projectId: story-time-fun
+          channelId: live
+          firebaseHostingSite: story-time-fun
 
-After deployment, you can check the status of your services:
-
-```bash
-# Check Cloud Run status
-gcloud run services describe childrens-castle
-
-# Check Firebase Hosting status
-firebase hosting:sites:list
+  deploy-preview:
+    needs: [test]
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+        
+      - name: Create preview channel
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          projectId: story-time-fun
+          channelId: 'pr-${{ github.event.number }}'
+          firebaseHostingSite: story-time-fun
+          expires: '7d'
 ```
+
+## Step 3: Set Up GitHub Secrets
+
+In your GitHub repository, add these secrets:
+
+1. `FIREBASE_SERVICE_ACCOUNT`: Firebase service account JSON
+2. `GCP_SA_KEY`: Google Cloud service account key (with Cloud Run deploy permissions)
+
+## Step 4: Deploy Process Flow
+
+### Development to Production Flow
+
+1. **Local Development**:
+   - Run Flask app locally
+   - Test features in development environment
+
+2. **Create Feature Branch**:
+   - Create a branch for your feature
+   - Implement changes and commit
+
+3. **Pull Request**:
+   - Create PR to main branch
+   - GitHub Actions creates preview deployment
+   - Review preview URLs and make adjustments
+
+4. **Merge and Deploy**:
+   - After approval, merge PR to main
+   - GitHub Actions deploys to:
+     - Google Cloud Run (backend)
+     - Firebase Hosting (frontend)
+
+5. **Post-Deployment Verification**:
+   - Test deployed application
+   - Monitor for errors
+
+## Step 5: Custom Domain Setup (Optional)
+
+1. **Set Up Domain in Firebase**:
+   - Follow instructions in `CUSTOM_DOMAIN_SETUP.md`
+
+2. **Set Up Domain Mapping in Cloud Run**:
+   - Map your domain to the Cloud Run service
+   - Configure path patterns (`/app/*`)
 
 ## Troubleshooting
 
-If you encounter issues:
+### Common Issues and Solutions
 
-1. Check Cloud Run logs:
+1. **Deployment Fails**:
+   - Check GitHub Actions logs
+   - Verify secrets are correctly set
+   - Check Docker build process for errors
+
+2. **App Not Accessible**:
+   - Verify Cloud Run service is public
+   - Check Firebase rewrite rules
+   - Inspect network requests for routing issues
+
+3. **Environment Variables Missing**:
+   - Check that all required env vars are set in Cloud Run
+   - Verify secrets management
+
+## Maintenance and Monitoring
+
+### Regular Maintenance Tasks
+
+1. **Update Dependencies**:
+   - Regularly update Python packages
+   - Keep Docker base image current
+
+2. **Security Scanning**:
+   - Use GitHub Security scanning
+   - Implement Container scanning
+
+### Monitoring
+
+1. **Set Up Monitoring**:
+   - Cloud Run metrics
+   - Firebase Hosting analytics
+   - Error logging to Cloud Logging
+
+2. **Set Up Alerts**:
+   - Error rate thresholds
+   - Performance degradation
+   - Cost anomalies
+
+## Resources
+
+- [Firebase Hosting Documentation](https://firebase.google.com/docs/hosting)
+- [Cloud Run Documentation](https://cloud.google.com/run/docs)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [Firebase GitHub Integration](https://firebase.google.com/docs/hosting/github-integration)
+
+## Additional Configuration
+
+### Setup CORS for API Access
+
+```python
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app, resources={r"/api/*": {"origins": [
+    "https://story-time-fun.web.app",
+    "https://childrencastles.com"
+]}})
+```
+
+### Configure PostgreSQL Connection
+
+Ensure your Cloud Run service has the appropriate environment variables for database connection:
+
+1. Set these in the Cloud Run console:
+   - `DATABASE_URL`
+   - `PGUSER`
+   - `PGPASSWORD`
+   - `PGDATABASE`
+   - `PGHOST`
+   - `PGPORT`
+
+2. Or set them in the deployment command:
    ```bash
-   gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=childrens-castle"
+   gcloud run deploy children-castle-app \
+     --image gcr.io/story-time-fun/children-castle-app:latest \
+     --set-env-vars="DATABASE_URL=postgresql://..."
    ```
-
-2. Verify environment variables:
-   ```bash
-   gcloud run services describe childrens-castle --format="value(spec.template.spec.containers[0].env)"
-   ```
-
-3. Test the Cloud Run service directly using its URL before testing via Firebase Hosting
