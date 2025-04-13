@@ -16,8 +16,12 @@
         }
       },
       {
+        "source": "/",
+        "destination": "/index-firebase.html"
+      },
+      {
         "source": "**",
-        "destination": "/index.html"
+        "destination": "/index-firebase.html"
       }
     ],
     "redirects": [

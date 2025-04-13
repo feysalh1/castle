@@ -1,9 +1,7 @@
-name: Firebase Deploy
+name: Deploy to Firebase Hosting
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
     branches: [ main ]
   workflow_dispatch:
 
@@ -12,55 +10,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Set up Node.js
+      
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          
-      - name: Prepare for deployment
-        run: |
-          chmod +x ./prepare_github_deploy.sh
-          ./prepare_github_deploy.sh
-        
+      
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
-
+      
+      - name: Set up environment variables
+        run: |
+          echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> $GITHUB_ENV
+          echo "FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_AUTH_DOMAIN }}" >> $GITHUB_ENV
+          echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_STORAGE_BUCKET }}" >> $GITHUB_ENV
+          echo "FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_MEASUREMENT_ID=${{ secrets.FIREBASE_MEASUREMENT_ID }}" >> $GITHUB_ENV
+      
+      - name: Prepare for deployment
+        run: |
+          chmod +x ./prepare_for_deploy.sh
+          ./prepare_for_deploy.sh
+      
       - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
-          projectId: story-time-fun
+          firebaseServiceAccount: '${{ secrets.FIREBASE_TOKEN }}'
+          projectId: '${{ secrets.FIREBASE_PROJECT_ID }}'
           channelId: live
-          target: hosting
-          firebaseHostingSite: story-time-fun
-
-  deploy_preview:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          
-      - name: Prepare for deployment
-        run: |
-          chmod +x ./prepare_github_deploy.sh
-          ./prepare_github_deploy.sh
-          
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
-        
-      - name: Create preview channel
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
-          projectId: story-time-fun
-          channelId: 'pr-${{ github.event.number }}'
-          firebaseHostingSite: story-time-fun
-          expires: '7d'
