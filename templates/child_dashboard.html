@@ -21,6 +21,7 @@
         </div>
         <div class="nav-buttons">
             <a href="{{ url_for('rewards') }}" class="btn">My Rewards</a>
+            <a href="{{ url_for('photos.photos_dashboard') }}" class="btn">Photos</a>
             <a href="{{ url_for('link_to_parent') }}" class="btn">Link to Parent</a>
             <a href="{{ url_for('logout') }}" class="btn">Sign Out</a>
         </div>
@@ -64,12 +65,12 @@
 
             
             <div class="mode-card">
-                <div class="mode-card-bg" style="background-image: url('/static/images/assistant-icon.svg')"></div>
+                <div class="mode-card-bg" style="background-image: url('{{ url_for('static', filename='images/icons/photos-empty.svg') }}')"></div>
                 <div class="mode-card-content">
-                    <img src="/static/images/assistant-icon.svg" alt="AI Assistant" class="mode-icon">
-                    <h3>AI Assistant</h3>
-                    <p>Ask questions & get stories!</p>
-                    <a href="{{ url_for('chatgpt.ai_assistant') }}" class="btn">Chat Now</a>
+                    <img src="{{ url_for('static', filename='images/icons/photos-empty.svg') }}" alt="Photos" class="mode-icon">
+                    <h3>Photos</h3>
+                    <p>Share special moments!</p>
+                    <a href="{{ url_for('photos.photos_dashboard') }}" class="btn">View Photos</a>
                 </div>
             </div>
         </div>
