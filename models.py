@@ -750,6 +750,45 @@ class EducationalGame(db.Model):
         return f'<EducationalGame {self.title}>'
 
 
+class PhotoAlbum(db.Model):
+    """Album/collection for organizing photos"""
+    __tablename__ = 'photo_albums'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    cover_photo_id = db.Column(db.Integer, db.ForeignKey('photos.id', ondelete='SET NULL'), nullable=True)
+    
+    # Security and access control
+    child_id = db.Column(db.Integer, db.ForeignKey('children.id'), nullable=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey('parents.id'), nullable=True)
+    
+    # Only one of child_id or parent_id should be filled
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Access control
+    is_private = db.Column(db.Boolean, default=True)
+    
+    # Relationships
+    photos = db.relationship('Photo', secondary='photo_album_items', 
+                            backref=db.backref('albums', lazy='dynamic'))
+    
+    def __repr__(self):
+        owner = f"child:{self.child_id}" if self.child_id else f"parent:{self.parent_id}"
+        return f'<PhotoAlbum {self.id} by {owner}: {self.name}>'
+
+
+class PhotoAlbumItem(db.Model):
+    """Join table for photos and albums"""
+    __tablename__ = 'photo_album_items'
+    
+    photo_id = db.Column(db.Integer, db.ForeignKey('photos.id', ondelete='CASCADE'), primary_key=True)
+    album_id = db.Column(db.Integer, db.ForeignKey('photo_albums.id', ondelete='CASCADE'), primary_key=True)
+    added_at = db.Column(db.DateTime, default=datetime.utcnow)
+    position = db.Column(db.Integer, default=0)  # For ordering photos in album
+
+
 class Photo(db.Model):
     """Secure photo storage for children and parents"""
     __tablename__ = 'photos'
@@ -774,6 +813,11 @@ class Photo(db.Model):
     description = db.Column(db.Text, nullable=True)
     tags = db.Column(db.String(512), nullable=True)  # Comma-separated tags
     is_favorite = db.Column(db.Boolean, default=False)
+    
+    # Journal entry content
+    journal_entry = db.Column(db.Text, nullable=True)  # Additional text for journal entries
+    mood = db.Column(db.String(50), nullable=True)  # happy, sad, excited, etc.
+    journal_date = db.Column(db.Date, nullable=True)  # Specific date for the journal entry
     
     # Timestamps
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)

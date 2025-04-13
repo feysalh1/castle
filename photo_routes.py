@@ -5,19 +5,20 @@ This module provides routes for uploading, viewing, and managing photos.
 import os
 import uuid
 import datetime
+from datetime import datetime
 import secrets
 from PIL import Image
 from io import BytesIO
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, send_file, abort
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from sqlalchemy import desc
+from sqlalchemy import desc, func, extract
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from wtforms import StringField, TextAreaField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Length, Optional
 
-from models import db, Photo, Parent, Child
+from models import db, Photo, Parent, Child, PhotoAlbum, PhotoAlbumItem
 
 # Create a blueprint for photos
 photo_routes = Blueprint('photos', __name__, url_prefix='/photos')
@@ -41,7 +42,25 @@ class PhotoUploadForm(FlaskForm):
     description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
     tags = StringField('Tags', validators=[Optional(), Length(max=200)])
     is_private = BooleanField('Private', default=True)
+    
+    # Journal features
+    journal_entry = TextAreaField('Journal Entry', validators=[Optional(), Length(max=2000)])
+    mood = StringField('Mood', validators=[Optional(), Length(max=50)])
+    journal_date = StringField('Journal Date', validators=[Optional()])
+    
+    # Album selection
+    album_id = StringField('Album', validators=[Optional()])
+    create_new_album = BooleanField('Create New Album', default=False)
+    new_album_name = StringField('New Album Name', validators=[Optional(), Length(max=100)])
+    
     submit = SubmitField('Upload')
+
+class AlbumForm(FlaskForm):
+    """Form for creating/editing an album"""
+    name = StringField('Album Name', validators=[DataRequired(), Length(max=100)])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
+    is_private = BooleanField('Private', default=True)
+    submit = SubmitField('Save Album')
 
 
 def allowed_file(filename):
@@ -105,6 +124,10 @@ def photos_dashboard():
     privacy_filter = request.args.get('privacy', 'all')
     sort_by = request.args.get('sort', 'date_desc')
     search_query = request.args.get('search', '')
+    view_type = request.args.get('view', 'photos')  # 'photos', 'albums', 'journal', 'calendar'
+    mood_filter = request.args.get('mood', 'all')
+    date_filter = request.args.get('date', '')
+    album_id = request.args.get('album', '')
     
     # Base query
     query = Photo.query
@@ -132,12 +155,54 @@ def photos_dashboard():
     elif privacy_filter == 'shared':
         query = query.filter(Photo.is_private == False)
     
+    # Mood filter
+    if mood_filter != 'all':
+        query = query.filter(Photo.mood == mood_filter)
+    
+    # Date filter (for journal or calendar view)
+    if date_filter:
+        try:
+            # Parse YYYY-MM format for month view
+            if len(date_filter) == 7:
+                year, month = map(int, date_filter.split('-'))
+                start_date = datetime(year, month, 1)
+                # Get end of month
+                if month == 12:
+                    end_date = datetime(year + 1, 1, 1)
+                else:
+                    end_date = datetime(year, month + 1, 1)
+                
+                # Filter by month
+                query = query.filter(
+                    (extract('year', Photo.uploaded_at) == year) &
+                    (extract('month', Photo.uploaded_at) == month)
+                )
+            # Parse YYYY-MM-DD format for day view
+            elif len(date_filter) == 10:
+                date_obj = datetime.strptime(date_filter, '%Y-%m-%d').date()
+                query = query.filter(
+                    (func.date(Photo.uploaded_at) == date_obj) |
+                    (Photo.journal_date == date_obj)
+                )
+        except (ValueError, TypeError):
+            # Invalid date format, ignore filter
+            pass
+    
+    # Album filter
+    if album_id and album_id.isdigit():
+        album = PhotoAlbum.query.get(int(album_id))
+        if album and has_access_to_album(album):
+            # Get photos from this album
+            photos_in_album = [item.photo_id for item in PhotoAlbumItem.query.filter_by(album_id=album.id).all()]
+            query = query.filter(Photo.id.in_(photos_in_album))
+    
     # Search by title, description or tags
     if search_query:
         search_terms = f"%{search_query}%"
         query = query.filter((Photo.title.ilike(search_terms)) | 
                             (Photo.description.ilike(search_terms)) | 
-                            (Photo.tags.ilike(search_terms)))
+                            (Photo.tags.ilike(search_terms)) |
+                            (Photo.journal_entry.ilike(search_terms)))
     
     # Apply sorting
     if sort_by == 'date_asc':
@@ -157,13 +222,110 @@ def photos_dashboard():
     # Filter by access permission (security layer)
     photos = [photo for photo in photos if has_access_to_photo(photo)]
     
+    # Get albums for album view or selection
+    albums = []
+    if view_type == 'albums' or view_type == 'photos':
+        albums_query = PhotoAlbum.query
+        
+        # Filter albums by owner
+        if hasattr(current_user, 'type') and current_user.type == 'parent':
+            # Parent can see their own albums and their children's albums
+            child_ids = [child.id for child in Child.query.filter_by(parent_id=current_user.id).all()]
+            albums_query = albums_query.filter((PhotoAlbum.parent_id == current_user.id) | 
+                                            (PhotoAlbum.child_id.in_(child_ids)))
+        else:
+            # Child can see their own albums and their parent's albums
+            albums_query = albums_query.filter((PhotoAlbum.child_id == current_user.id) | 
+                                             (PhotoAlbum.parent_id == current_user.parent_id))
+        
+        # Get albums
+        albums = albums_query.all()
+        
+        # Filter by access permission
+        albums = [album for album in albums if has_access_to_album(album)]
+    
+    # Get available moods for the filter
+    available_moods = db.session.query(Photo.mood).filter(
+        Photo.mood != None, 
+        Photo.mood != ''
+    ).distinct().all()
+    available_moods = [mood[0] for mood in available_moods]
+    
+    # Organize photos by date for calendar/journal view
+    photos_by_date = {}
+    if view_type in ['calendar', 'journal']:
+        for photo in photos:
+            # Use journal_date if available, otherwise use uploaded_at
+            date_key = photo.journal_date if photo.journal_date else photo.uploaded_at.date()
+            
+            if date_key not in photos_by_date:
+                photos_by_date[date_key] = []
+            
+            photos_by_date[date_key].append(photo)
+        
+        # Sort dates
+        photos_by_date = {k: photos_by_date[k] for k in sorted(photos_by_date.keys(), reverse=True)}
+    
     # Render template
     return render_template('photos/dashboard.html', 
                           photos=photos,
+                          albums=albums,
                           owner_filter=owner_filter,
                           privacy_filter=privacy_filter,
                           sort_by=sort_by,
-                          search_query=search_query)
+                          search_query=search_query,
+                          view_type=view_type,
+                          mood_filter=mood_filter,
+                          date_filter=date_filter,
+                          album_id=album_id,
+                          available_moods=available_moods,
+                          photos_by_date=photos_by_date)
+                          
+                          
+def has_access_to_album(album):
+    """Check if current user has access to an album"""
+    # Admin access (for future use)
+    if hasattr(current_user, 'is_admin') and current_user.is_admin:
+        return True
+    
+    # Parent access to their own albums
+    if hasattr(current_user, 'type') and current_user.type == 'parent':
+        # Parent's own albums
+        if album.parent_id == current_user.id:
+            return True
+        
+        # Albums from their children
+        if album.child_id and Child.query.filter_by(id=album.child_id, parent_id=current_user.id).first():
+            return True
+    
+    # Child access to their own albums and parent's albums
+    if hasattr(current_user, 'type') and current_user.type == 'child':
+        # Child's own albums
+        if album.child_id == current_user.id:
+            return True
+        
+        # Albums from their parent
+        if album.parent_id == current_user.parent_id:
+            return True
+    
+    # Private albums are restricted to owner and linked parent/child
+    if album.is_private:
+        if album.parent_id and album.parent_id == current_user.id:
+            return True
+        if album.child_id and album.child_id == current_user.id:
+            return True
+        if hasattr(current_user, 'parent_id') and album.parent_id == current_user.parent_id:
+            return True
+        if hasattr(current_user, 'type') and current_user.type == 'parent':
+            # Check if album belongs to one of the parent's children
+            if album.child_id and Child.query.filter_by(id=album.child_id, parent_id=current_user.id).first():
+                return True
+    else:
+        # Non-private albums are visible to family members
+        # For a future family sharing model
+        return True
+    
+    return False
 
 
 @photo_routes.route('/upload', methods=['GET', 'POST'])
@@ -227,8 +389,20 @@ def upload_photo():
             title=form.title.data,
             description=form.description.data,
             tags=form.tags.data,
-            is_private=form.is_private.data
+            is_private=form.is_private.data,
+            # Journal features
+            journal_entry=form.journal_entry.data,
+            mood=form.mood.data
         )
+        
+        # Handle journal date if provided
+        if form.journal_date.data:
+            try:
+                journal_date = datetime.strptime(form.journal_date.data, '%Y-%m-%d').date()
+                photo.journal_date = journal_date
+            except ValueError:
+                # If date format is invalid, use today's date
+                photo.journal_date = datetime.now().date()
         
         # Set owner based on user type
         if hasattr(current_user, 'type') and current_user.type == 'parent':
@@ -239,6 +413,53 @@ def upload_photo():
         # Save to database
         db.session.add(photo)
         db.session.commit()
+        
+        # Handle album selection or creation
+        if form.create_new_album.data and form.new_album_name.data:
+            # Create a new album
+            album = PhotoAlbum(
+                name=form.new_album_name.data,
+                description=f"Album created from photo: {photo.title}",
+                is_private=form.is_private.data,
+                cover_photo_id=photo.id
+            )
+            
+            # Set owner based on user type
+            if hasattr(current_user, 'type') and current_user.type == 'parent':
+                album.parent_id = current_user.id
+            else:
+                album.child_id = current_user.id
+                
+            db.session.add(album)
+            db.session.commit()
+            
+            # Add photo to album
+            album_item = PhotoAlbumItem(
+                photo_id=photo.id,
+                album_id=album.id,
+                position=0
+            )
+            
+            db.session.add(album_item)
+            db.session.commit()
+        elif form.album_id.data and form.album_id.data.isdigit():
+            # Add to existing album
+            album_id = int(form.album_id.data)
+            album = PhotoAlbum.query.get(album_id)
+            
+            if album and has_access_to_album(album):
+                # Get the highest position in the album
+                max_position = db.session.query(func.max(PhotoAlbumItem.position)).filter_by(album_id=album.id).scalar() or 0
+                
+                # Add photo to album
+                album_item = PhotoAlbumItem(
+                    photo_id=photo.id,
+                    album_id=album.id,
+                    position=max_position + 1
+                )
+                
+                db.session.add(album_item)
+                db.session.commit()
         
         flash('Photo uploaded successfully!', 'success')
         return redirect(url_for('photos.photos_dashboard'))
