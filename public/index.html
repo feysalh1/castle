@@ -5,12 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Children's Castle</title>
   <script>
-    // Check if we're on Firebase hosting domain and redirect to custom domain when available
+    // Don't redirect automatically - show the landing page with links
+    // The commented code below will be active once the custom domain is fully set up
+    /*
     if (window.location.hostname === 'story-time-fun.web.app' || 
         window.location.hostname === 'story-time-fun.firebaseapp.com') {
-      // Custom domain is now connected, redirect to it
       window.location.href = 'https://childrencastles.com' + window.location.pathname;
     }
+    */
   </script>
   <style>
     body {
@@ -68,15 +70,29 @@
   <div class="container">
     <h1>Children's Castle</h1>
     <p>An interactive learning and entertainment platform for children</p>
-    <div class="spinner"></div>
-    <p>Redirecting to application...</p>
-    <a href="/" class="btn">Click here if not redirected automatically</a>
+    
+    <div style="margin-top: 30px;">
+      <h2>Welcome to Children's Castle!</h2>
+      <p>Your child's adventure into interactive learning and storytelling begins here.</p>
+      <p>Our application is available at:</p>
+      
+      <div style="margin: 25px 0; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto;">
+        <p><strong>Firebase Hosting:</strong> <a href="https://story-time-fun.web.app" class="link">story-time-fun.web.app</a></p>
+        <p><strong>Future Domain:</strong> <a href="#" class="link">childrencastles.com</a> (coming soon)</p>
+      </div>
+      
+      <p>This is our landing page for search engines and informational purposes.</p>
+      <p>We're excited for you to experience our interactive stories and games!</p>
+      
+      <a href="https://story-time-fun.web.app" class="btn">Enter Children's Castle</a>
+    </div>
   </div>
-  <script>
-    // Redirect to application root after a short delay
-    setTimeout(function() {
-      window.location.href = '/';
-    }, 2000);
-  </script>
+  <style>
+    .link {
+      color: #4a6cbf;
+      text-decoration: underline;
+      font-weight: bold;
+    }
+  </style>
 </body>
 </html>
