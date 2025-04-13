@@ -1,12 +1,6 @@
 #!/bin/bash
-# Enhanced Deployment script for Children's Castle application
-
-# Make script executable with: chmod +x deploy.sh
-# Run with: ./deploy.sh
-
-# Set variables for better error handling
-set -e  # Exit on any error
-FIREBASE_PROJECT="story-time-fun"
+# Script to deploy Children's Castle to Firebase Hosting
+# This script handles the entire deployment process
 
 # Color output for better readability
 RED='\033[0;31m'
@@ -15,152 +9,155 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Show header
 echo -e "${BLUE}====================================================${NC}"
-echo -e "${BLUE}       Children's Castle Deployment Script          ${NC}"
+echo -e "${BLUE}       Deploying Children's Castle to Firebase      ${NC}"
 echo -e "${BLUE}====================================================${NC}"
 echo
 
-# Step 1: Verify environment variables
-echo -e "${YELLOW}Step 1: Verifying Firebase environment variables...${NC}"
-if [ -z "$FIREBASE_API_KEY" ]; then
-    echo -e "${RED}Error: FIREBASE_API_KEY is not set in environment variables.${NC}"
-    echo -e "Please check your .env file and make sure it's being loaded properly."
+# Step 1: Check if Firebase CLI is installed
+echo -e "${YELLOW}Checking for Firebase CLI...${NC}"
+if ! command -v firebase &> /dev/null; then
+    echo -e "${RED}Firebase CLI not found. Installing...${NC}"
+    npm install -g firebase-tools
+    
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Failed to install Firebase CLI. Please install it manually:${NC}"
+        echo -e "${YELLOW}npm install -g firebase-tools${NC}"
+        exit 1
+    fi
+fi
+echo -e "${GREEN}Firebase CLI is installed.${NC}"
+
+# Step 2: Run the preparation script
+echo -e "${YELLOW}Running preparation script...${NC}"
+chmod +x ./prepare_for_deploy.sh
+./prepare_for_deploy.sh
+
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Preparation script failed. Aborting deployment.${NC}"
     exit 1
 fi
 
-if [ -z "$FIREBASE_PROJECT_ID" ]; then
-    echo -e "${YELLOW}Warning: FIREBASE_PROJECT_ID not found in environment. Using default: $FIREBASE_PROJECT${NC}"
-else
-    FIREBASE_PROJECT="$FIREBASE_PROJECT_ID"
-    echo -e "${GREEN}Using Firebase project ID from environment: $FIREBASE_PROJECT${NC}"
-fi
-
-echo -e "${GREEN}Environment variables verified!${NC}"
-echo
-
-# Step 2: Ensure Firebase tools are installed
-echo -e "${YELLOW}Step 2: Checking Firebase tools...${NC}"
-if ! command -v firebase &> /dev/null; then
-    echo -e "${BLUE}Firebase CLI not found. Installing...${NC}"
-    npm install -g firebase-tools
-else
-    echo -e "${GREEN}Firebase CLI is already installed.${NC}"
-fi
-echo
-
-# Step 3: Make sure .firebaserc exists with correct project
-echo -e "${YELLOW}Step 3: Configuring Firebase project...${NC}"
-cat > .firebaserc << EOL
-{
-  "projects": {
-    "default": "${FIREBASE_PROJECT}"
-  },
-  "targets": {
-    "${FIREBASE_PROJECT}": {
-      "hosting": {
-        "main": [
-          "${FIREBASE_PROJECT}"
-        ]
-      }
-    }
-  }
-}
-EOL
-echo -e "${GREEN}.firebaserc file created/updated with project: ${FIREBASE_PROJECT}${NC}"
-echo
-
-# Step 4: Create a public/404.html file to handle missing routes
-echo -e "${YELLOW}Step 4: Setting up 404 page...${NC}"
-if [ ! -f "public/404.html" ]; then
-    cat > public/404.html << EOL
+# Step 3: Make sure the public directory has the necessary files
+echo -e "${YELLOW}Checking for required files...${NC}"
+if [ ! -f "public/index-firebase.html" ]; then
+    echo -e "${RED}Error: public/index-firebase.html not found${NC}"
+    echo -e "${YELLOW}Creating a simple redirect page...${NC}"
+    
+    # Create a simple redirect page
+    mkdir -p public
+    cat > public/index-firebase.html << EOL
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Page Not Found | Children's Castle</title>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Children's Castle - Redirecting...</title>
     <style>
-      body { 
-        font-family: 'Arial', sans-serif; 
-        text-align: center; 
-        padding: 40px;
-        background-color: #f0f8ff;
-      }
-      h1 { color: #4a6da7; }
-      .container {
-        max-width: 600px;
-        margin: 0 auto;
-        background: white;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      }
-      .btn {
-        display: inline-block;
-        background-color: #4a6da7;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 5px;
-        text-decoration: none;
-        margin-top: 20px;
-      }
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #4a6da7;
+            margin-bottom: 10px;
+        }
+        
+        p {
+            margin: 15px 0;
+            line-height: 1.5;
+        }
+        
+        .loading {
+            margin: 20px auto;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f0f8ff;
+            border-top: 5px solid #4a6da7;
+            border-radius: 50%;
+            animation: spin 2s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div class="container">
-      <h1>Page Not Found</h1>
-      <p>The page you're looking for doesn't exist.</p>
-      <a href="/" class="btn">Return to Home</a>
+        <h1>Children's Castle</h1>
+        <p>Welcome to Children's Castle! The application is loading...</p>
+        <div class="loading"></div>
+        <p>If you are not redirected automatically, please <a href="/app">click here</a>.</p>
     </div>
 
     <script>
-      // Redirect to the home page for SPA routing
-      document.addEventListener('DOMContentLoaded', function() {
-        // You might want to send to the main app
-        // window.location.href = '/';
-      });
+        // Redirect to app after a short delay
+        setTimeout(function() {
+            window.location.href = "/app";
+        }, 2000);
     </script>
-  </body>
+</body>
 </html>
 EOL
-    echo -e "${GREEN}404 page created!${NC}"
-else
-    echo -e "${GREEN}404 page already exists.${NC}"
 fi
-echo
 
-# Step 5: Login to Firebase
-echo -e "${YELLOW}Step 5: Logging in to Firebase...${NC}"
-firebase login
-echo
+echo -e "${GREEN}Required files are present.${NC}"
 
-# Step 6: Make sure we're using the right project
-echo -e "${YELLOW}Step 6: Setting active Firebase project...${NC}"
-firebase use "$FIREBASE_PROJECT" || firebase use --add
-echo
+# Step 4: Check Firebase login status
+echo -e "${YELLOW}Checking Firebase login status...${NC}"
+firebase login:list &> /dev/null
 
-# Step 7: Process Firebase configuration
-echo -e "${YELLOW}Step 7: Processing Firebase configuration...${NC}"
-chmod +x ./process_firebase_config.sh
-./process_firebase_config.sh
-echo -e "${GREEN}Firebase configuration processed.${NC}"
-echo
+if [ $? -ne 0 ]; then
+    echo -e "${YELLOW}You are not logged in to Firebase. Please log in:${NC}"
+    firebase login
+    
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Failed to log in to Firebase. Aborting deployment.${NC}"
+        exit 1
+    fi
+fi
 
-# Step 8: Deploy the application
-echo -e "${YELLOW}Step 8: Deploying to Firebase Hosting...${NC}"
+echo -e "${GREEN}Firebase login confirmed.${NC}"
+
+# Step 5: Deploy to Firebase Hosting
+echo -e "${YELLOW}Deploying to Firebase Hosting...${NC}"
 firebase deploy --only hosting
-echo
 
-# Step 8: Success message
-echo -e "${GREEN}==================================================${NC}"
-echo -e "${GREEN} Deployment complete! Your application is now live.${NC}"
-echo -e "${GREEN} You can access it at:${NC}"
-echo -e "${BLUE} https://${FIREBASE_PROJECT}.web.app${NC}"
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Deployment failed. Please check the error messages above.${NC}"
+    exit 1
+fi
+
+# Step 6: Display success message with the URLs
+echo -e "${GREEN}====================================================${NC}"
+echo -e "${GREEN}       Deployment Completed Successfully!           ${NC}"
+echo -e "${GREEN}====================================================${NC}"
+echo -e "${BLUE}Your site is now live at:${NC}"
+echo -e "${YELLOW}https://${FIREBASE_PROJECT_ID}.web.app${NC}"
+echo -e "${YELLOW}https://${FIREBASE_PROJECT_ID}.firebaseapp.com${NC}"
 echo
-echo -e "${YELLOW}=== CUSTOM DOMAIN REMINDER ===${NC}"
-echo -e "${YELLOW}If you want to set up your custom domain 'childrencastles.com':${NC}"
-echo -e "${YELLOW}1. Go to the Firebase Console > Hosting > Add custom domain${NC}"
-echo -e "${YELLOW}2. Follow the instructions in CUSTOM_DOMAIN_SETUP.md${NC}"
-echo -e "${YELLOW}3. After setup, your site will be available at https://childrencastles.com${NC}"
-echo -e "${GREEN}==================================================${NC}"
+echo -e "${BLUE}If you've set up a custom domain, your site will also be available at:${NC}"
+echo -e "${YELLOW}https://childrencastles.com${NC} (Once DNS propagation is complete)"
+echo
+echo -e "${BLUE}To set up a custom domain, follow the instructions in:${NC}"
+echo -e "${YELLOW}CUSTOM_DOMAIN_SETUP.md${NC}"
