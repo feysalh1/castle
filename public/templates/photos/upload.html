@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Photo - Children's Castle{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photos.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="photo-upload-container">
+    <h1 class="upload-title">Upload a Photo</h1>
+    
+    <div class="upload-card">
+        <form action="{{ url_for('photos.upload_photo') }}" method="POST" enctype="multipart/form-data" id="upload-form">
+            {{ form.csrf_token }}
+            
+            <div class="drop-area" id="drop-area">
+                <div class="drop-area-content">
+                    <img src="{{ url_for('static', filename='images/icons/upload.svg') }}" alt="Upload" class="upload-icon">
+                    <p>Drag & Drop your photo here</p>
+                    <p class="drag-text">or</p>
+                    <button type="button" class="btn select-file-btn" id="select-file-btn">Select File</button>
+                    <input type="file" name="photo" id="file-input" accept=".jpg,.jpeg,.png,.gif" hidden>
+                </div>
+                
+                <div class="preview-area" id="preview-area" style="display: none;">
+                    <img src="" alt="Preview" id="image-preview">
+                    <button type="button" class="btn change-file-btn" id="change-file-btn">Change Photo</button>
+                </div>
+            </div>
+            
+            <div class="upload-fields">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" name="title" id="title" placeholder="Give your photo a title">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea name="description" id="description" rows="3" placeholder="Add a description (optional)"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tags">Tags (comma separated)</label>
+                    <input type="text" name="tags" id="tags" placeholder="vacation, family, summer">
+                </div>
+                
+                <!-- Journal features -->
+                <div class="form-section-title">
+                    <button type="button" class="btn toggle-section" id="toggle-journal">
+                        <i class="fas fa-book"></i> Journal Entry <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                
+                <div class="journal-section" id="journal-section" style="display: none;">
+                    <div class="form-group">
+                        <label for="journal_entry">Journal Entry</label>
+                        <textarea name="journal_entry" id="journal_entry" rows="4" placeholder="Write your thoughts, feelings, or memories about this photo..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="journal_date">Date</label>
+                        <input type="date" name="journal_date" id="journal_date" value="{{ today_date }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="mood">Mood</label>
+                        <select name="mood" id="mood">
+                            <option value="">-- Select a mood --</option>
+                            <option value="happy">😊 Happy</option>
+                            <option value="excited">🤩 Excited</option>
+                            <option value="calm">😌 Calm</option>
+                            <option value="thoughtful">🤔 Thoughtful</option>
+                            <option value="sad">😢 Sad</option>
+                            <option value="anxious">😰 Anxious</option>
+                            <option value="sleepy">😴 Sleepy</option>
+                            <option value="proud">🥰 Proud</option>
+                            <option value="inspired">✨ Inspired</option>
+                            <option value="curious">🧐 Curious</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Album selection -->
+                <div class="form-section-title">
+                    <button type="button" class="btn toggle-section" id="toggle-album">
+                        <i class="fas fa-images"></i> Album <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                
+                <div class="album-section" id="album-section" style="display: none;">
+                    <div class="form-group">
+                        <div class="radio-options">
+                            <div class="radio-option">
+                                <input type="radio" name="album_option" id="no_album" value="none" checked>
+                                <label for="no_album">Don't add to an album</label>
+                            </div>
+                            
+                            {% if albums %}
+                            <div class="radio-option">
+                                <input type="radio" name="album_option" id="existing_album" value="existing">
+                                <label for="existing_album">Add to existing album</label>
+                                
+                                <div class="album-select" id="album-select" style="display: none;">
+                                    <select name="album_id" id="album_id">
+                                        <option value="">-- Select an album --</option>
+                                        {% for album in albums %}
+                                        <option value="{{ album.id }}">{{ album.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="radio-option">
+                                <input type="radio" name="album_option" id="new_album" value="new">
+                                <label for="new_album">Create new album</label>
+                                
+                                <div class="new-album-input" id="new-album-input" style="display: none;">
+                                    <input type="text" name="new_album_name" id="new_album_name" placeholder="Album name">
+                                    <input type="hidden" name="create_new_album" id="create_new_album" value="false">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group privacy-setting">
+                    <label>Privacy</label>
+                    <div class="radio-options">
+                        <div class="radio-option">
+                            <input type="radio" name="is_private" id="private" value="true" checked>
+                            <label for="private">
+                                <i class="fas fa-lock"></i> Private
+                                <span class="option-desc">Only visible to you and your parent/child</span>
+                            </label>
+                        </div>
+                        
+                        <div class="radio-option">
+                            <input type="radio" name="is_private" id="shared" value="false">
+                            <label for="shared">
+                                <i class="fas fa-users"></i> Shared
+                                <span class="option-desc">Visible to your family</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="file-info" id="file-info" style="display: none;">
+                    <div class="file-details">
+                        <span id="file-name"></span>
+                        <span id="file-size"></span>
+                    </div>
+                    <div class="file-type-icon">
+                        <i class="far fa-file-image"></i>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <a href="{{ url_for('photos.photos_dashboard') }}" class="btn cancel-btn">Cancel</a>
+                    <button type="submit" class="btn upload-submit-btn" id="upload-btn" disabled>Upload Photo</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Upload in progress overlay -->
+<div class="upload-overlay" id="upload-overlay" style="display: none;">
+    <div class="upload-progress">
+        <div class="spinner"></div>
+        <h3>Uploading Photo...</h3>
+        <p>Please wait while your photo is being uploaded.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropArea = document.getElementById('drop-area');
+    const fileInput = document.getElementById('file-input');
+    const selectFileBtn = document.getElementById('select-file-btn');
+    const changeFileBtn = document.getElementById('change-file-btn');
+    const previewArea = document.getElementById('preview-area');
+    const imagePreview = document.getElementById('image-preview');
+    const fileInfo = document.getElementById('file-info');
+    const fileName = document.getElementById('file-name');
+    const fileSize = document.getElementById('file-size');
+    const uploadBtn = document.getElementById('upload-btn');
+    const uploadForm = document.getElementById('upload-form');
+    const uploadOverlay = document.getElementById('upload-overlay');
+    
+    // Open file dialog when select button is clicked
+    selectFileBtn.addEventListener('click', () => {
+        fileInput.click();
+    });
+    
+    // Change file button
+    changeFileBtn.addEventListener('click', () => {
+        fileInput.click();
+    });
+    
+    // Handle file selection
+    fileInput.addEventListener('change', handleFileSelect);
+    
+    // Drag and drop functionality
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+        dropArea.classList.add('highlight');
+    }
+    
+    function unhighlight() {
+        dropArea.classList.remove('highlight');
+    }
+    
+    dropArea.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+            fileInput.files = files;
+            handleFileSelect();
+        }
+    }
+    
+    function handleFileSelect() {
+        if (fileInput.files && fileInput.files[0]) {
+            const file = fileInput.files[0];
+            
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!validTypes.includes(file.type)) {
+                alert('Please select a valid image file (JPG, PNG, or GIF)');
+                fileInput.value = '';
+                return;
+            }
+            
+            // Validate file size (max 10MB)
+            const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+            if (file.size > maxSize) {
+                alert('File is too large. Maximum size is 10MB.');
+                fileInput.value = '';
+                return;
+            }
+            
+            // Update preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                document.querySelector('.drop-area-content').style.display = 'none';
+                previewArea.style.display = 'block';
+                fileInfo.style.display = 'flex';
+                
+                // Update file info
+                fileName.textContent = file.name;
+                fileSize.textContent = formatFileSize(file.size);
+                
+                // Enable upload button
+                uploadBtn.disabled = false;
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes < 1024) {
+            return bytes + ' bytes';
+        } else if (bytes < 1024 * 1024) {
+            return (bytes / 1024).toFixed(1) + ' KB';
+        } else {
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+    }
+    
+    // Toggle sections (journal and album)
+    const toggleJournal = document.getElementById('toggle-journal');
+    const journalSection = document.getElementById('journal-section');
+    const toggleAlbum = document.getElementById('toggle-album');
+    const albumSection = document.getElementById('album-section');
+    
+    toggleJournal.addEventListener('click', function() {
+        if (journalSection.style.display === 'none') {
+            journalSection.style.display = 'block';
+            toggleJournal.querySelector('.fa-chevron-down').classList.replace('fa-chevron-down', 'fa-chevron-up');
+        } else {
+            journalSection.style.display = 'none';
+            toggleJournal.querySelector('.fa-chevron-up').classList.replace('fa-chevron-up', 'fa-chevron-down');
+        }
+    });
+    
+    toggleAlbum.addEventListener('click', function() {
+        if (albumSection.style.display === 'none') {
+            albumSection.style.display = 'block';
+            toggleAlbum.querySelector('.fa-chevron-down').classList.replace('fa-chevron-down', 'fa-chevron-up');
+        } else {
+            albumSection.style.display = 'none';
+            toggleAlbum.querySelector('.fa-chevron-up').classList.replace('fa-chevron-up', 'fa-chevron-down');
+        }
+    });
+    
+    // Album selection handling
+    const noAlbumRadio = document.getElementById('no_album');
+    const existingAlbumRadio = document.getElementById('existing_album');
+    const newAlbumRadio = document.getElementById('new_album');
+    const albumSelect = document.getElementById('album-select');
+    const newAlbumInput = document.getElementById('new-album-input');
+    const createNewAlbumField = document.getElementById('create_new_album');
+    
+    if (existingAlbumRadio) {
+        existingAlbumRadio.addEventListener('change', function() {
+            albumSelect.style.display = 'block';
+            newAlbumInput.style.display = 'none';
+            createNewAlbumField.value = 'false';
+        });
+    }
+    
+    newAlbumRadio.addEventListener('change', function() {
+        if (albumSelect) albumSelect.style.display = 'none';
+        newAlbumInput.style.display = 'block';
+        createNewAlbumField.value = 'true';
+    });
+    
+    noAlbumRadio.addEventListener('change', function() {
+        if (albumSelect) albumSelect.style.display = 'none';
+        newAlbumInput.style.display = 'none';
+        createNewAlbumField.value = 'false';
+    });
+
+    // Form submission
+    uploadForm.addEventListener('submit', function(e) {
+        if (fileInput.files.length === 0) {
+            e.preventDefault();
+            alert('Please select a file to upload');
+            return;
+        }
+        
+        // Handle album selection
+        if (newAlbumRadio.checked && !document.getElementById('new_album_name').value.trim()) {
+            e.preventDefault();
+            alert('Please enter a name for the new album');
+            return;
+        }
+        
+        if (existingAlbumRadio && existingAlbumRadio.checked && !document.getElementById('album_id').value) {
+            e.preventDefault();
+            alert('Please select an album');
+            return;
+        }
+        
+        // Show upload overlay
+        uploadOverlay.style.display = 'flex';
+    });
+});
+</script>
+{% endblock %}

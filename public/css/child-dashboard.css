@@ -7,6 +7,20 @@
     overflow: hidden;
 }
 
+/* Story mode buttons */
+.story-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    justify-content: center;
+}
+
+.story-buttons a.btn {
+    margin-top: 0;
+    font-size: 0.9rem;
+    padding: 8px 15px;
+}
+
 /* Decorative elements */
 .cloud {
     position: absolute;

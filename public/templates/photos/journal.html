@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Journal - Children's Castle{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photos.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="photo-journal-container">
+    <div class="journal-header">
+        <h1>Photo Journal</h1>
+        <div class="journal-actions">
+            <a href="{{ url_for('photos.upload_photo') }}" class="btn upload-journal-btn">
+                <i class="fas fa-plus"></i> Add Journal Entry
+            </a>
+        </div>
+    </div>
+    
+    {% if photos_by_date %}
+        {% for date, photos in photos_by_date.items() %}
+        <div class="journal-date-section">
+            <h2 class="journal-date-heading">
+                {{ date.strftime('%A, %B %d, %Y') }}
+            </h2>
+            
+            <div class="journal-entries-container">
+                {% for photo in photos %}
+                <div class="journal-entry-card">
+                    <div class="journal-entry-content">
+                        <div class="journal-entry-header">
+                            <h3 class="journal-entry-title">{{ photo.title or 'Untitled Entry' }}</h3>
+                            
+                            {% if photo.mood %}
+                            <div class="journal-entry-mood">
+                                {% if photo.mood == 'happy' %}😊 Happy
+                                {% elif photo.mood == 'excited' %}🤩 Excited
+                                {% elif photo.mood == 'calm' %}😌 Calm
+                                {% elif photo.mood == 'thoughtful' %}🤔 Thoughtful
+                                {% elif photo.mood == 'sad' %}😢 Sad
+                                {% elif photo.mood == 'anxious' %}😰 Anxious
+                                {% elif photo.mood == 'sleepy' %}😴 Sleepy
+                                {% elif photo.mood == 'proud' %}🥰 Proud
+                                {% elif photo.mood == 'inspired' %}✨ Inspired
+                                {% elif photo.mood == 'curious' %}🧐 Curious
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="journal-entry-media">
+                            <a href="{{ url_for('photos.view_photo', photo_id=photo.id) }}" class="journal-photo-link">
+                                {% if photo.thumbnail_filename %}
+                                <img src="{{ url_for('photos.get_raw_photo', photo_id=photo.id, thumbnail='true') }}" alt="{{ photo.title or 'Photo' }}">
+                                {% else %}
+                                <img src="{{ url_for('photos.get_raw_photo', photo_id=photo.id) }}" alt="{{ photo.title or 'Photo' }}">
+                                {% endif %}
+                            </a>
+                        </div>
+                        
+                        <div class="journal-entry-text">
+                            {% if photo.journal_entry %}
+                            <p>{{ photo.journal_entry|nl2br }}</p>
+                            {% endif %}
+                            
+                            {% if photo.description and photo.description != photo.journal_entry %}
+                            <p class="entry-description">{{ photo.description }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="journal-entry-meta">
+                            {% if photo.tags %}
+                            <div class="entry-tags">
+                                {% for tag in photo.tags.split(',') %}
+                                <span class="tag">{{ tag.strip() }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            <div class="entry-actions">
+                                <a href="{{ url_for('photos.view_photo', photo_id=photo.id) }}" class="btn btn-sm btn-view">
+                                    <i class="fas fa-external-link-alt"></i> View
+                                </a>
+                                
+                                {% if (photo.parent_id and photo.parent_id == current_user.id) or (photo.child_id and photo.child_id == current_user.id) %}
+                                <button type="button" class="btn btn-sm btn-favorite {% if photo.is_favorite %}favorited{% endif %}" 
+                                        onclick="toggleFavorite({{ photo.id }})" 
+                                        title="{% if photo.is_favorite %}Remove from favorites{% else %}Add to favorites{% endif %}">
+                                    <i class="{% if photo.is_favorite %}fas{% else %}far{% endif %} fa-heart"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <img src="{{ url_for('static', filename='images/icons/photos-empty.svg') }}" alt="No journal entries" class="empty-icon">
+            <h2>No Journal Entries Yet</h2>
+            <p>Add photos with journal entries to start your journal!</p>
+            <a href="{{ url_for('photos.upload_photo') }}" class="btn create-journal-entry-btn">
+                <i class="fas fa-plus"></i> Create First Journal Entry
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script>
+    function toggleFavorite(photoId) {
+        fetch(`/photos/toggle-favorite/${photoId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const btns = document.querySelectorAll(`.btn-favorite[onclick*="${photoId}"]`);
+                btns.forEach(btn => {
+                    const icon = btn.querySelector('i');
+                    
+                    if (data.is_favorite) {
+                        btn.classList.add('favorited');
+                        icon.classList.replace('far', 'fas');
+                        btn.title = 'Remove from favorites';
+                    } else {
+                        btn.classList.remove('favorited');
+                        icon.classList.replace('fas', 'far');
+                        btn.title = 'Add to favorites';
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+</script>
+{% endblock %}

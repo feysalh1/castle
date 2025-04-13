@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Child Login - Children's Castle</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading-animations.css') }}">
+    <style>
+        .pin-toggle {
+            margin-top: 10px;
+            text-align: center;
+        }
+        .pin-toggle label {
+            cursor: pointer;
+            color: #4a6da7;
+        }
+        .pin-toggle label:hover {
+            text-decoration: underline;
+        }
+        .pin-number-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 40px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #4a6da7;
+            margin-bottom: 10px;
+            visibility: hidden;
+        }
+        .pin-number-display.visible {
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>Children's Castle</h1>
+                <small>Developed for Menira</small>
+            </div>
+            <nav>
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('parent_login') }}">Parent Login</a>
+            </nav>
+        </div>
+    </header>
+    
+    <main>
+        <div class="container">
+            <!-- Flash Messages -->
+            <div class="flash-messages">
+                {% for message in get_flashed_messages(with_categories=true) %}
+                    <div class="flash {{ message[0] }}">
+                        {{ message[1] }}
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="auth-container">
+                <div class="auth-header">
+                    <h2>Child Login</h2>
+                    <p>Enter your username and PIN to start playing!</p>
+                </div>
+                
+                <form class="auth-form" method="POST" action="{{ url_for('child_login') }}" id="childLoginForm">
+                    <!-- CSRF Token -->
+                    {% if form %}
+                        {{ form.hidden_tag() }}
+                    {% else %}
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    {% endif %}
+                    
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pin">PIN Code</label>
+                        <input type="password" id="pin" name="pin" required>
+                    </div>
+                    
+                    <div class="pin-container">
+                        <div class="pin-number-display" id="pinNumberDisplay"></div>
+                        <div class="pin-display">
+                            <div class="pin-dot" id="dot1"></div>
+                            <div class="pin-dot" id="dot2"></div>
+                            <div class="pin-dot" id="dot3"></div>
+                            <div class="pin-dot" id="dot4"></div>
+                        </div>
+                        
+                        <div class="pin-toggle">
+                            <label><input type="checkbox" id="showPin" onchange="togglePinVisibility()"> Show PIN</label>
+                        </div>
+                        
+                        <div class="pin-pad">
+                            <button type="button" class="pin-button" onclick="addPin(1)">1</button>
+                            <button type="button" class="pin-button" onclick="addPin(2)">2</button>
+                            <button type="button" class="pin-button" onclick="addPin(3)">3</button>
+                            <button type="button" class="pin-button" onclick="addPin(4)">4</button>
+                            <button type="button" class="pin-button" onclick="addPin(5)">5</button>
+                            <button type="button" class="pin-button" onclick="addPin(6)">6</button>
+                            <button type="button" class="pin-button" onclick="addPin(7)">7</button>
+                            <button type="button" class="pin-button" onclick="addPin(8)">8</button>
+                            <button type="button" class="pin-button" onclick="addPin(9)">9</button>
+                            <button type="button" class="pin-button" style="visibility: hidden;"></button>
+                            <button type="button" class="pin-button" onclick="addPin(0)">0</button>
+                            <button type="button" class="pin-button" onclick="submitPin()">✓</button>
+                        </div>
+                        
+                        <div class="pin-actions">
+                            <span class="pin-clear" onclick="clearPin()">Clear PIN</span>
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="auth-links">
+                    <p>Are you a parent? <a href="{{ url_for('parent_login') }}">Login here</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Children's Castle. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script>
+        let currentPin = '';
+        let showingPin = false;
+        
+        function addPin(number) {
+            if (currentPin.length < 4) {
+                currentPin += number;
+                updatePinDisplay();
+                
+                if (currentPin.length === 4) {
+                    // Auto submit after 4 digits
+                    setTimeout(submitPin, 300);
+                }
+            }
+        }
+        
+        function clearPin() {
+            currentPin = '';
+            updatePinDisplay();
+        }
+        
+        function updatePinDisplay() {
+            // Update dots
+            for (let i = 1; i <= 4; i++) {
+                const dot = document.getElementById(`dot${i}`);
+                dot.classList.toggle('filled', i <= currentPin.length);
+            }
+            
+            // Update pin number display
+            document.getElementById('pinNumberDisplay').textContent = currentPin;
+            
+            // Update hidden input
+            document.getElementById('pin').value = currentPin;
+        }
+        
+        function togglePinVisibility() {
+            showingPin = document.getElementById('showPin').checked;
+            const pinDisplay = document.getElementById('pinNumberDisplay');
+            
+            if (showingPin) {
+                pinDisplay.classList.add('visible');
+            } else {
+                pinDisplay.classList.remove('visible');
+            }
+        }
+        
+        function submitPin() {
+            if (currentPin.length === 4) {
+                document.getElementById('childLoginForm').submit();
+            }
+        }
+    </script>
+    
+    <script src="{{ url_for('static', filename='js/loading-animations.js') }}"></script>
+</body>
+</html>

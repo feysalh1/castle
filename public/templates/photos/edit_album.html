@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Album - Children's Castle{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photos.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="album-form-container">
+    <div class="form-breadcrumb">
+        <a href="{{ url_for('photos.photos_dashboard') }}">Photos</a> &gt; 
+        <a href="{{ url_for('photos.list_albums') }}">Albums</a> &gt; 
+        <a href="{{ url_for('photos.view_album', album_id=album.id) }}">{{ album.name }}</a> &gt; 
+        <span>Edit</span>
+    </div>
+    
+    <h1 class="form-title">Edit Album</h1>
+    
+    <div class="album-form-card">
+        <form action="{{ url_for('photos.edit_album', album_id=album.id) }}" method="POST">
+            {{ form.csrf_token }}
+            
+            <div class="form-group">
+                <label for="name">Album Name</label>
+                <input type="text" name="name" id="name" required 
+                       placeholder="Give your album a name (e.g., Summer Vacation)" 
+                       value="{{ form.name.data or album.name }}">
+                {% if form.name.errors %}
+                <div class="form-error">
+                    {% for error in form.name.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea name="description" id="description" rows="3" 
+                          placeholder="Add a description (optional)">{{ form.description.data or album.description }}</textarea>
+                {% if form.description.errors %}
+                <div class="form-error">
+                    {% for error in form.description.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group privacy-setting">
+                <label>Privacy</label>
+                <div class="radio-options">
+                    <div class="radio-option">
+                        <input type="radio" name="is_private" id="private" value="true" 
+                               {% if form.is_private.data or (form.is_private.data is none and album.is_private) %}checked{% endif %}>
+                        <label for="private">
+                            <i class="fas fa-lock"></i> Private
+                            <span class="option-desc">Only visible to you and your parent/child</span>
+                        </label>
+                    </div>
+                    
+                    <div class="radio-option">
+                        <input type="radio" name="is_private" id="shared" value="false" 
+                               {% if form.is_private.data is sameas false or (form.is_private.data is none and not album.is_private) %}checked{% endif %}>
+                        <label for="shared">
+                            <i class="fas fa-users"></i> Shared
+                            <span class="option-desc">Visible to your family</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{{ url_for('photos.view_album', album_id=album.id) }}" class="btn cancel-btn">Cancel</a>
+                <button type="submit" class="btn submit-btn">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+{% endblock %}

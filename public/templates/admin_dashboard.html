@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Children's Castle</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 15px;
+        }
+        
+        .admin-title {
+            color: #4a6da7;
+        }
+        
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .stat-card h3 {
+            color: #555;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4a6da7;
+            margin-bottom: 5px;
+        }
+        
+        .stat-change {
+            font-size: 14px;
+            color: #4caf50;
+        }
+        
+        .stat-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        
+        .status-good {
+            background-color: #4caf50;
+        }
+        
+        .status-warning {
+            background-color: #ff9800;
+        }
+        
+        .status-critical {
+            background-color: #f44336;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .data-table th {
+            background-color: #f5f7fa;
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #555;
+        }
+        
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            margin: 30px 0 15px;
+            color: #4a6da7;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        
+        .admin-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .admin-btn {
+            background-color: #4a6da7;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .admin-btn:hover {
+            background-color: #3c5a8a;
+        }
+
+        .admin-btn.secondary {
+            background-color: #6c757d;
+        }
+        
+        .admin-btn.secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .logout-btn {
+            background-color: #f44336;
+        }
+        
+        .logout-btn:hover {
+            background-color: #d32f2f;
+        }
+        
+        .warning-btn {
+            background-color: #ff9800;
+        }
+        
+        .warning-btn:hover {
+            background-color: #e68a00;
+        }
+        
+        .danger-btn {
+            background-color: #f44336;
+        }
+        
+        .danger-btn:hover {
+            background-color: #d32f2f;
+        }
+        
+        .action-btns {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 50%;
+            max-width: 500px;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: black;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Flash messages */
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        
+        .flash {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        
+        .flash.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .flash.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .flash.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <div>
+                <h1 class="admin-title">Children's Castle</h1>
+                <p>Admin Dashboard</p>
+            </div>
+            <div>
+                <a href="{{ url_for('parent_dashboard') }}" class="admin-btn">Back to Dashboard</a>
+                <a href="{{ url_for('logout') }}" class="admin-btn logout-btn">Logout</a>
+            </div>
+        </div>
+        
+        <!-- Flash Messages -->
+        <div class="flash-messages">
+            {% for message in get_flashed_messages(with_categories=true) %}
+            <div class="flash {{ message[0] }}">
+                {{ message[1] }}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="stat-cards">
+            <div class="stat-card">
+                <h3>Total Parents</h3>
+                <div class="stat-value">{{ stats.parent_count }}</div>
+                <div class="stat-change">+{{ stats.new_parents_last_month }} in the last month</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Total Children</h3>
+                <div class="stat-value">{{ stats.child_count }}</div>
+                <div class="stat-change">+{{ stats.new_children_last_month }} in the last month</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Active Sessions Today</h3>
+                <div class="stat-value">{{ stats.active_sessions_today }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Stories Read (Total)</h3>
+                <div class="stat-value">{{ stats.total_stories_read }}</div>
+            </div>
+        </div>
+        
+        <h2 class="section-title">System Health</h2>
+        <div class="stat-cards">
+            <div class="stat-card">
+                <h3>CPU Usage</h3>
+                <div class="stat-value">{{ system_health.cpu_usage }}%</div>
+                <div class="stat-status {{ 'status-good' if system_health.cpu_usage < 80 else 'status-warning' if system_health.cpu_usage < 95 else 'status-critical' }}"></div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Memory Usage</h3>
+                <div class="stat-value">{{ system_health.memory_usage }}%</div>
+                <div class="stat-status {{ 'status-good' if system_health.memory_usage < 80 else 'status-warning' if system_health.memory_usage < 95 else 'status-critical' }}"></div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Disk Usage</h3>
+                <div class="stat-value">{{ system_health.disk_usage }}%</div>
+                <div class="stat-status {{ 'status-good' if system_health.disk_usage < 80 else 'status-warning' if system_health.disk_usage < 95 else 'status-critical' }}"></div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Database Size</h3>
+                <div class="stat-value">{{ system_health.database_size }} MB</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Database Status</h3>
+                <div class="stat-value">{{ "Connected" if system_health.database_status else "Error" }}</div>
+                <div class="stat-status {{ 'status-good' if system_health.database_status else 'status-critical' }}"></div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>OpenAI API</h3>
+                <div class="stat-value">{{ "Configured" if system_health.openai_api_configured else "Missing" }}</div>
+                <div class="stat-status {{ 'status-good' if system_health.openai_api_configured else 'status-critical' }}"></div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>ElevenLabs API</h3>
+                <div class="stat-value">{{ "Configured" if system_health.elevenlabs_api_configured else "Missing" }}</div>
+                <div class="stat-status {{ 'status-good' if system_health.elevenlabs_api_configured else 'status-critical' }}"></div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Errors (24h)</h3>
+                <div class="stat-value">{{ system_health.error_count_24h }}</div>
+                <div class="stat-status {{ 'status-good' if system_health.error_count_24h == 0 else 'status-warning' if system_health.error_count_24h < 10 else 'status-critical' }}"></div>
+            </div>
+        </div>
+        
+        {% if recent_errors and recent_errors|length > 0 %}
+        <h2 class="section-title">Recent Errors</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Source</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for error in recent_errors %}
+                <tr>
+                    <td>{{ error.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>{{ error.source }}</td>
+                    <td>{{ error.event_data.description if error.event_data and error.event_data.description else 'No description' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        <h2 class="section-title">Recent Parent Registrations</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Registration Date</th>
+                    <th>Children</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for parent in recent_parents %}
+                <tr>
+                    <td>{{ parent.username }}</td>
+                    <td>{{ parent.email }}</td>
+                    <td>{{ parent.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ parent.children|length }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <h2 class="section-title">User Management</h2>
+        <div class="admin-actions">
+            <a href="{{ url_for('admin_export_emails') }}" class="admin-btn">Export Email List (CSV)</a>
+        </div>
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Username</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Registration Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for parent in all_parents %}
+                <tr>
+                    <td>{{ parent.email }}</td>
+                    <td>{{ parent.username }}</td>
+                    <td>{{ parent.first_name or '-' }}</td>
+                    <td>{{ parent.last_name or '-' }}</td>
+                    <td>{{ parent.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td class="action-btns">
+                        <button onclick="openEditModal({{ parent.id }}, '{{ parent.username }}', '{{ parent.email }}', '{{ parent.first_name or '' }}', '{{ parent.last_name or '' }}')" class="admin-btn secondary">Edit</button>
+                        
+                        <form action="{{ url_for('admin_reset_password', user_id=parent.id) }}" method="post" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="admin-btn warning-btn">Reset Password</button>
+                        </form>
+                        
+                        {% if parent.id != 1 %}
+                        <button onclick="confirmDelete({{ parent.id }}, '{{ parent.username }}')" class="admin-btn danger-btn">Delete</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Edit User Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h2>Edit User</h2>
+            <form id="editUserForm" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="first_name">First Name:</label>
+                    <input type="text" id="first_name" name="first_name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="last_name">Last Name:</label>
+                    <input type="text" id="last_name" name="last_name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="new_password">New Password (leave blank to keep current):</label>
+                    <input type="password" id="new_password" name="new_password" placeholder="Minimum 8 characters">
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" onclick="closeEditModal()" class="admin-btn secondary">Cancel</button>
+                    <button type="submit" class="admin-btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeDeleteModal()">&times;</span>
+            <h2>Confirm Deletion</h2>
+            <p>Are you sure you want to delete the user <strong id="deleteUserName"></strong>?</p>
+            <p class="warning">This will permanently delete the user account and all associated data, including children accounts, progress, and rewards.</p>
+            
+            <form id="deleteUserForm" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="modal-footer">
+                    <button type="button" onclick="closeDeleteModal()" class="admin-btn secondary">Cancel</button>
+                    <button type="submit" class="admin-btn danger-btn">Delete User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Edit User Modal Functions
+        function openEditModal(userId, username, email, firstName, lastName) {
+            document.getElementById('editUserForm').action = '/admin/edit-user/' + userId;
+            document.getElementById('username').value = username;
+            document.getElementById('email').value = email;
+            document.getElementById('first_name').value = firstName;
+            document.getElementById('last_name').value = lastName;
+            document.getElementById('new_password').value = '';
+            
+            document.getElementById('editModal').style.display = 'block';
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+        
+        // Delete Confirmation Modal Functions
+        function confirmDelete(userId, username) {
+            document.getElementById('deleteUserForm').action = '/admin/delete-user/' + userId;
+            document.getElementById('deleteUserName').textContent = username;
+            
+            document.getElementById('deleteModal').style.display = 'block';
+        }
+        
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+        }
+        
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const editModal = document.getElementById('editModal');
+            const deleteModal = document.getElementById('deleteModal');
+            
+            if (event.target === editModal) {
+                editModal.style.display = 'none';
+            }
+            
+            if (event.target === deleteModal) {
+                deleteModal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

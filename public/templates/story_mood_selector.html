@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Story Mood Selector - Children's Castle{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/story-mode.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mood-selector.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shooting-star.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="shooting-stars-container">
+    <div class="shooting-star"></div>
+    <div class="shooting-star"></div>
+    <div class="shooting-star"></div>
+</div>
+
+<div class="mood-selector-container">
+    <h1 class="mood-title">How are you feeling today?</h1>
+    <p class="mood-subtitle">Choose a mood for your story adventure</p>
+    
+    <div class="moods-grid">
+        {% for mood in moods %}
+        <div class="mood-card {% if active_mood and active_mood.mood_type == mood.type %}active{% endif %}" 
+             data-mood="{{ mood.type }}" 
+             data-color="{{ mood.color }}">
+            <div class="mood-icon">
+                {% if mood.type == 'happy' %}
+                <img src="{{ url_for('static', filename='images/moods/happy.svg') }}" alt="Happy mood">
+                {% elif mood.type == 'calm' %}
+                <img src="{{ url_for('static', filename='images/moods/calm.svg') }}" alt="Calm mood">
+                {% elif mood.type == 'adventurous' %}
+                <img src="{{ url_for('static', filename='images/moods/adventurous.svg') }}" alt="Adventurous mood">
+                {% elif mood.type == 'sleepy' %}
+                <img src="{{ url_for('static', filename='images/moods/sleepy.svg') }}" alt="Sleepy mood">
+                {% elif mood.type == 'curious' %}
+                <img src="{{ url_for('static', filename='images/moods/curious.svg') }}" alt="Curious mood">
+                {% endif %}
+            </div>
+            <h3>{{ mood.type|capitalize }}</h3>
+            <div class="mood-intensity-slider">
+                <input type="range" min="1" max="10" value="{% if active_mood and active_mood.mood_type == mood.type %}{{ active_mood.intensity }}{% else %}5{% endif %}" 
+                       class="intensity-slider" data-mood="{{ mood.type }}">
+                <div class="intensity-labels">
+                    <span>Gentle</span>
+                    <span>Strong</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="mood-selector-buttons">
+        <button id="save-mood" class="btn primary-btn">Save and Continue</button>
+        <a href="{{ url_for('story_mode') }}" class="btn secondary-btn">Skip</a>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/shooting-star.js') }}"></script>
+<script src="{{ url_for('static', filename='js/mood-selector.js') }}"></script>
+{% endblock %}

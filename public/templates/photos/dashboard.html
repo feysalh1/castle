@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block title %}Photo Gallery - Children's Castle{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photos.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="photo-gallery-container">
+    <h1 class="gallery-title">Photo Gallery</h1>
+    
+    <div class="gallery-actions">
+        <a href="{{ url_for('photos.upload_photo') }}" class="upload-btn">
+            <i class="fas fa-plus"></i> Upload New Photo
+        </a>
+        
+        <div class="view-options">
+            <button class="view-btn grid-view active" title="Grid View">
+                <i class="fas fa-th"></i>
+            </button>
+            <button class="view-btn list-view" title="List View">
+                <i class="fas fa-list"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="filters">
+        <div class="filter-group">
+            <select class="filter-select" id="owner-filter">
+                <option value="all" {% if owner_filter == 'all' %}selected{% endif %}>All Photos</option>
+                <option value="mine" {% if owner_filter == 'mine' %}selected{% endif %}>My Photos</option>
+                <option value="family" {% if owner_filter == 'family' %}selected{% endif %}>Family Photos</option>
+            </select>
+            
+            <select class="filter-select" id="privacy-filter">
+                <option value="all" {% if privacy_filter == 'all' %}selected{% endif %}>All Privacy</option>
+                <option value="private" {% if privacy_filter == 'private' %}selected{% endif %}>Private Only</option>
+                <option value="shared" {% if privacy_filter == 'shared' %}selected{% endif %}>Shared Only</option>
+            </select>
+            
+            <select class="filter-select" id="sort-by">
+                <option value="date_desc" {% if sort_by == 'date_desc' %}selected{% endif %}>Newest First</option>
+                <option value="date_asc" {% if sort_by == 'date_asc' %}selected{% endif %}>Oldest First</option>
+                <option value="title_asc" {% if sort_by == 'title_asc' %}selected{% endif %}>Title A-Z</option>
+                <option value="title_desc" {% if sort_by == 'title_desc' %}selected{% endif %}>Title Z-A</option>
+                <option value="favorites" {% if sort_by == 'favorites' %}selected{% endif %}>Favorites</option>
+            </select>
+        </div>
+        
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Search photos..." value="{{ search_query }}">
+            <button id="search-btn"><i class="fas fa-search"></i></button>
+        </div>
+    </div>
+    
+    {% if photos %}
+        <div class="photo-grid" id="photos-container">
+            {% for photo in photos %}
+                <div class="photo-item">
+                    <div class="photo-wrapper">
+                        <img src="{{ url_for('photos.get_raw_photo', photo_id=photo.id, thumbnail='true') }}" alt="{{ photo.title or 'Photo' }}">
+                        <div class="photo-overlay">
+                            <a href="{{ url_for('photos.view_photo', photo_id=photo.id) }}" class="view-btn" title="View">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <button class="favorite-btn {% if photo.is_favorite %}active{% endif %}" title="Favorite" data-id="{{ photo.id }}">
+                                <i class="{% if photo.is_favorite %}fas{% else %}far{% endif %} fa-heart"></i>
+                            </button>
+                            {% if (photo.parent_id and photo.parent_id == current_user.id) or (photo.child_id and photo.child_id == current_user.id) %}
+                                <button class="delete-btn" title="Delete" data-id="{{ photo.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="photo-info">
+                        <h3 class="photo-title">{{ photo.title or 'Untitled' }}</h3>
+                        <div class="photo-meta">
+                            <div class="photo-date">{{ photo.uploaded_at.strftime('%b %d, %Y') }}</div>
+                            <div class="photo-badges">
+                                {% if photo.child_id %}
+                                    <span class="owner-badge child">Child</span>
+                                {% else %}
+                                    <span class="owner-badge parent">Parent</span>
+                                {% endif %}
+                                
+                                {% if photo.is_private %}
+                                    <span class="privacy-badge private">Private</span>
+                                {% else %}
+                                    <span class="privacy-badge shared">Shared</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <img src="{{ url_for('static', filename='images/icons/photos-empty.svg') }}" alt="No photos" class="empty-icon">
+            <h2>No Photos Found</h2>
+            <p>Upload your first photo to start building your family gallery.</p>
+            <a href="{{ url_for('photos.upload_photo') }}" class="btn primary-btn">Upload Photo</a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Confirm Delete Modal -->
+<div class="modal" id="delete-confirm-modal">
+    <div class="modal-content">
+        <h3>Delete Photo?</h3>
+        <p>Are you sure you want to delete this photo? This action cannot be undone.</p>
+        <div class="modal-actions">
+            <button id="cancel-delete" class="btn cancel-btn">Cancel</button>
+            <button id="confirm-delete" class="btn delete-btn">Delete</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // View toggle
+    const gridViewBtn = document.querySelector('.grid-view');
+    const listViewBtn = document.querySelector('.list-view');
+    const photosContainer = document.getElementById('photos-container');
+    
+    if (gridViewBtn && listViewBtn && photosContainer) {
+        gridViewBtn.addEventListener('click', function() {
+            photosContainer.className = 'photo-grid';
+            gridViewBtn.classList.add('active');
+            listViewBtn.classList.remove('active');
+            localStorage.setItem('photoViewPreference', 'grid');
+        });
+        
+        listViewBtn.addEventListener('click', function() {
+            photosContainer.className = 'photo-list';
+            listViewBtn.classList.add('active');
+            gridViewBtn.classList.remove('active');
+            localStorage.setItem('photoViewPreference', 'list');
+        });
+        
+        // Load saved preference
+        const savedView = localStorage.getItem('photoViewPreference');
+        if (savedView === 'list') {
+            listViewBtn.click();
+        }
+    }
+    
+    // Filters
+    const ownerFilter = document.getElementById('owner-filter');
+    const privacyFilter = document.getElementById('privacy-filter');
+    const sortBy = document.getElementById('sort-by');
+    const searchInput = document.getElementById('search-input');
+    const searchBtn = document.getElementById('search-btn');
+    
+    // Apply filters function
+    function applyFilters() {
+        const owner = ownerFilter.value;
+        const privacy = privacyFilter.value;
+        const sort = sortBy.value;
+        const search = searchInput.value.trim();
+        
+        // Build URL with query parameters
+        let url = '{{ url_for("photos.photos_dashboard") }}?';
+        url += `owner=${owner}&privacy=${privacy}&sort=${sort}`;
+        
+        if (search) {
+            url += `&search=${encodeURIComponent(search)}`;
+        }
+        
+        // Navigate to filtered URL
+        window.location.href = url;
+    }
+    
+    // Add event listeners to filter elements
+    if (ownerFilter) ownerFilter.addEventListener('change', applyFilters);
+    if (privacyFilter) privacyFilter.addEventListener('change', applyFilters);
+    if (sortBy) sortBy.addEventListener('change', applyFilters);
+    
+    // Search button
+    if (searchBtn) {
+        searchBtn.addEventListener('click', applyFilters);
+    }
+    
+    // Search input - enter key
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                applyFilters();
+            }
+        });
+    }
+    
+    // Favorite buttons
+    const favoriteButtons = document.querySelectorAll('.favorite-btn');
+    
+    favoriteButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const photoId = this.dataset.id;
+            
+            fetch(`/photos/toggle-favorite/${photoId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the button appearance
+                    const icon = this.querySelector('i');
+                    
+                    if (data.is_favorite) {
+                        this.classList.add('active');
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                    } else {
+                        this.classList.remove('active');
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                    }
+                    
+                    // If we're on the favorites view, we might need to refresh
+                    if (sortBy.value === 'favorites' && !data.is_favorite) {
+                        // Refresh after a delay so the user can see the change
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 500);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error toggling favorite:', error);
+            });
+        });
+    });
+    
+    // Delete functionality
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    const deleteModal = document.getElementById('delete-confirm-modal');
+    const cancelDeleteBtn = document.getElementById('cancel-delete');
+    const confirmDeleteBtn = document.getElementById('confirm-delete');
+    let currentPhotoId = null;
+    
+    deleteButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            currentPhotoId = this.dataset.id;
+            deleteModal.style.display = 'flex';
+        });
+    });
+    
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', function() {
+            deleteModal.style.display = 'none';
+            currentPhotoId = null;
+        });
+    }
+    
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function() {
+            if (currentPhotoId) {
+                fetch(`/photos/delete/${currentPhotoId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Refresh the page to show updated gallery
+                        window.location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting photo:', error);
+                });
+            }
+        });
+    }
+    
+    // Close modal if clicked outside
+    window.addEventListener('click', function(event) {
+        if (event.target === deleteModal) {
+            deleteModal.style.display = 'none';
+            currentPhotoId = null;
+        }
+    });
+});
+</script>
+{% endblock %}
