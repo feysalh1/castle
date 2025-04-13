@@ -1,67 +1,67 @@
 #!/bin/bash
-# Firebase deployment script using CI token
+# This script handles Firebase deployment
 
-# Display banner
-echo "=================================================="
-echo "    Children's Castle Firebase Deployment Tool    "
-echo "=================================================="
-echo
+# Set error handling
+set -e
 
-# Check if required environment variables are set
-if [ -z "$FIREBASE_TOKEN" ]; then
-  echo "❌ Error: FIREBASE_TOKEN is not set."
-  echo "Please add your Firebase token as a secret in Replit:"
-  echo "1. Go to Tools > Secrets"
-  echo "2. Add a new secret with key FIREBASE_TOKEN"
-  echo "3. Set the value to your Firebase CI token"
-  echo "4. Restart the Replit environment"
-  echo
-  echo "To generate a token, run 'firebase login:ci' on your local machine."
-  exit 1
+echo "=== Children's Castle Firebase Deployment ==="
+echo "Deploying to Firebase project: story-time-fun-1"
+
+# Make sure the public directory exists
+if [ ! -d "public" ]; then
+  echo "Creating public directory..."
+  mkdir -p public
 fi
 
-if [ -z "$FIREBASE_API_KEY" ]; then
-  echo "❌ Error: FIREBASE_API_KEY is not set."
-  echo "Please add your Firebase API key as a secret in Replit"
-  exit 1
+# Make sure there's an index.html file
+if [ ! -f "public/index.html" ]; then
+  echo "Creating basic index.html..."
+  cat > public/index.html << EOL
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Children's Castle</title>
+  <meta http-equiv="refresh" content="0;URL='/'" />
+</head>
+<body>
+  <p>Redirecting to application...</p>
+  <script>window.location.href = '/';</script>
+</body>
+</html>
+EOL
 fi
 
-if [ -z "$FIREBASE_APP_ID" ]; then
-  echo "❌ Error: FIREBASE_APP_ID is not set."
-  echo "Please add your Firebase App ID as a secret in Replit"
-  exit 1
-fi
+# Create a simpler firebase.json for direct hosting
+echo "Creating simplified firebase.json..."
+cat > firebase.json << EOL
+{
+  "hosting": {
+    "site": "story-time-fun-1",
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
+EOL
 
-# Run deployment script
-echo "📤 Deploying to Firebase Hosting..."
-echo
+# Make sure .firebaserc exists
+echo "Creating .firebaserc..."
+cat > .firebaserc << EOL
+{
+  "projects": {
+    "default": "story-time-fun-1"
+  }
+}
+EOL
 
-# First run prepare script
-echo "🔧 Preparing for deployment..."
-bash ./prepare_for_deploy.sh
+# Run the deploy command
+echo "Deploying to Firebase..."
+firebase deploy --only hosting:story-time-fun-1
 
-# Deploy to Firebase
-echo
-echo "🚀 Deploying to Firebase Hosting..."
-firebase deploy --token "$FIREBASE_TOKEN" --only hosting
-
-# Check deployment status
-if [ $? -eq 0 ]; then
-  echo
-  echo "✅ Deployment successful!"
-  echo "Your site should be available at:"
-  echo "https://childrencastles.web.app"
-  echo "or at your custom domain if configured: https://childrencastles.com"
-  echo
-  echo "📝 Custom Domain Setup Instructions:"
-  echo "1. Go to Firebase Console → Hosting"
-  echo "2. Click 'Add custom domain'"
-  echo "3. Enter 'childrencastles.com'"
-  echo "4. Follow the verification steps"
-  echo "5. Add the TXT record to your domain registrar for verification"
-  echo "6. Add the A records for your domain to point to Firebase's IP addresses"
-  echo "7. Wait for DNS propagation (can take 24-48 hours)"
-else
-  echo
-  echo "❌ Deployment failed. Please check the error messages above."
-fi
+echo "=== Deployment completed ==="
+echo "Your site should be available at: https://story-time-fun-1.web.app"

@@ -1,6 +1,7 @@
 
 {
   "hosting": {
+    "site": "story-time-fun-1",
     "public": "public",
     "cleanUrls": true,
     "trailingSlash": false,
