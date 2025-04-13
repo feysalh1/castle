@@ -50,7 +50,7 @@ An engaging, mobile-friendly interactive storytime web application designed for 
 
 ## Deployment Options
 
-There are two main deployment options for Children's Castle:
+There are three main deployment options for Children's Castle:
 
 ### Option 1: Replit Deployment
 
@@ -62,7 +62,7 @@ The simplest option is to use Replit's built-in deployment:
 
 See `REPLIT_VS_FIREBASE.md` for more details.
 
-### Option 2: Firebase + Cloud Run
+### Option 2: Firebase + Cloud Run Manual Deployment
 
 For a more professional setup, deploy with Firebase Hosting and Cloud Run:
 
@@ -71,9 +71,23 @@ For a more professional setup, deploy with Firebase Hosting and Cloud Run:
    ./deploy_to_cloud_run.sh
    ```
 2. Follow the prompts to configure your deployment
-3. Your app will be available at `https://your-project-id.web.app`
+3. Your app will be available at `https://story-time-fun-1.web.app`
 
 See `FULL_DEPLOYMENT_GUIDE.md` for detailed instructions.
+
+### Option 3: GitHub Actions Automated Deployment (Recommended)
+
+For continuous integration and deployment:
+
+1. Push your code to GitHub repository: https://github.com/feysalh1/castle
+2. GitHub Actions will automatically deploy to Firebase
+3. Your app will be available at `https://story-time-fun-1.web.app` and `https://childrencastles.com`
+
+This option requires:
+- Firebase Service Account added to GitHub Secrets
+- GitHub Actions workflow configured (already done in this repository)
+
+See `FIREBASE_GITHUB_INTEGRATION.md` for detailed setup instructions.
 
 ## Custom Domain Setup
 

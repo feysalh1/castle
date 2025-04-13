@@ -1,77 +1,78 @@
 # Custom Domain Setup for Children's Castle
 
-This guide will help you set up your custom domain (childrencastles.com) with Firebase Hosting.
+This guide walks you through connecting your custom domain "childrencastles.com" to your Firebase Hosting project.
 
-## Prerequisites
+## Step 1: Add Your Custom Domain in Firebase Console
 
-1. You own the domain "childrencastles.com"
-2. You have access to the domain's DNS settings
-3. Your Firebase project is set up and configured
-
-## Step 1: Add Custom Domain in Firebase Console
-
-1. Go to the [Firebase Console](https://console.firebase.google.com/)
-2. Select your project (story-time-fun)
-3. In the left sidebar, click on "Hosting"
-4. Click "Add custom domain"
-5. Enter your domain: `childrencastles.com`
-6. Select "Add domain"
+1. Go to the [Firebase Console](https://console.firebase.google.com/project/story-time-fun-1/hosting/sites)
+2. Select the "Hosting" section
+3. Click "Add custom domain"
+4. Enter your domain: `childrencastles.com`
+5. Click "Continue"
 
 ## Step 2: Verify Domain Ownership
 
-Firebase will provide you with a TXT record to add to your domain's DNS settings:
-
-1. Go to your domain registrar's website (like GoDaddy, Namecheap, Google Domains, etc.)
-2. Find the DNS management section
-3. Add the TXT record provided by Firebase:
+1. Firebase will generate a TXT record for domain verification
+2. Add this TXT record to your domain's DNS settings at your domain registrar:
    - Type: TXT
-   - Name/Host: @ (or sometimes just leave blank)
-   - Value/Data: [The verification string provided by Firebase]
+   - Name: @ (or leave empty, depending on your registrar)
+   - Value: [The verification code provided by Firebase]
    - TTL: 3600 (or 1 hour)
-4. Save the changes
+3. Return to Firebase and click "Verify"
+4. It may take some time for DNS changes to propagate (up to 48 hours)
 
-## Step 3: Configure DNS Records
+## Step 3: Configure DNS Settings
 
-After verification, Firebase will provide A records to point your domain to Firebase Hosting:
+Once your domain is verified, Firebase will provide you with specific A records:
 
-1. Go back to your domain registrar's DNS settings
-2. Add the A records provided by Firebase:
+1. Add the A records to your domain's DNS settings:
    - Type: A
-   - Name/Host: @ (for the root domain)
-   - Value/Data: [IP addresses provided by Firebase, typically multiple]
+   - Name: @ (or leave empty for the root domain)
+   - Value: [IP addresses provided by Firebase, typically multiple records]
    - TTL: 3600 (or 1 hour)
-3. Optionally, add a CNAME record for the www subdomain:
+
+2. If you want to use www.childrencastles.com as well:
+   - Add a CNAME record:
    - Type: CNAME
-   - Name/Host: www
-   - Value/Data: childrencastles.web.app
+   - Name: www
+   - Value: childrencastles.com
    - TTL: 3600 (or 1 hour)
-4. Save the changes
 
-## Step 4: Wait for DNS Propagation
+## Step 4: Set Up SSL Certificate
 
-DNS changes can take 24-48 hours to fully propagate across the internet. However, they often take effect much sooner (30 minutes to a few hours).
+Firebase Hosting automatically provisions and renews SSL certificates for your custom domain. Once your DNS is properly configured:
+
+1. Firebase will begin the SSL provisioning process
+2. This may take up to 24 hours to complete
+3. You'll see the status in the Firebase Hosting console
 
 ## Step 5: Test Your Custom Domain
 
-After DNS propagation, visit your custom domain in a web browser:
-- https://childrencastles.com
-- https://www.childrencastles.com (if you set up the www subdomain)
+After DNS propagation and SSL certificate provisioning:
 
-## Step 6: Set Up SSL Certificate
-
-Firebase automatically provisions and manages SSL certificates for your custom domain. This process happens automatically after the DNS settings are properly configured.
+1. Visit your custom domain: https://childrencastles.com
+2. Make sure the website loads correctly and SSL is working (green lock icon)
+3. Test functionality to ensure everything works as expected
 
 ## Troubleshooting
 
-If your custom domain is not working properly:
+If your custom domain isn't working properly:
 
-1. **Check DNS Settings**: Verify that all DNS records are correctly configured according to Firebase's instructions.
-2. **Check Domain Status in Firebase Console**: Go to the Hosting section in Firebase Console and check the status of your custom domain.
-3. **DNS Propagation**: Remember that DNS changes can take time to propagate.
-4. **Clear Browser Cache**: Sometimes browsers cache old DNS information, so try clearing your browser cache or using a different browser.
-5. **Contact Firebase Support**: If issues persist, consider reaching out to Firebase support.
+1. **DNS Propagation**: Wait 24-48 hours for DNS changes to fully propagate
+2. **DNS Configuration**: Double-check your DNS records match exactly what Firebase provided
+3. **SSL Issues**: If you see SSL warnings, wait 24 hours for SSL provisioning to complete
+4. **Firebase Status**: Check if all Firebase records are correctly added in the Hosting console
 
-## Additional Resources
+## Managing Multiple Domains
 
-- [Firebase Custom Domain Documentation](https://firebase.google.com/docs/hosting/custom-domain)
-- [Google Cloud DNS Documentation](https://cloud.google.com/dns/docs)
+If you want to add additional domains later:
+
+1. Follow the same process to add and verify each domain
+2. You can manage all your domains from the Firebase Hosting console
+3. Each domain will need its own verification and DNS records
+
+## Important Notes
+
+- Keep your domain registration active to maintain control of your domain
+- Firebase will handle SSL certificate renewal automatically
+- If you change DNS providers, you'll need to re-add the DNS records

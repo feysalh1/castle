@@ -1,78 +1,85 @@
-# Setting up GitHub Integration with Firebase for Children's Castle
+# Firebase GitHub Integration Guide
 
-This guide explains the process of connecting your Children's Castle app to GitHub for continuous deployment via Firebase Hosting.
+This guide explains how to set up continuous deployment from GitHub to Firebase Hosting for your "story-time-fun-1" project.
+
+## Prerequisites
+
+1. A GitHub account
+2. Your Children's Castle code pushed to GitHub repository: https://github.com/feysalh1/castle
+3. Firebase project: "story-time-fun-1"
+4. Firebase CLI installed locally (for testing)
 
 ## Step 1: Create a Firebase Service Account
 
-1. Go to the [Firebase Console](https://console.firebase.google.com/)
-2. Select your project: `story-time-fun`
-3. Go to Project Settings > Service accounts
-4. Click "Generate new private key" button
-5. Save the JSON file securely - you'll need this for GitHub secrets
+1. Go to the [Firebase Console](https://console.firebase.google.com/project/story-time-fun-1/settings/serviceaccounts/adminsdk)
+2. Select "Project settings" > "Service accounts"
+3. Click "Generate new private key"
+4. Save the JSON file securely - this contains sensitive credentials!
 
-## Step 2: Set Up GitHub Repository
+## Step 2: Add GitHub Secret
 
-1. Create a new repository on GitHub or use an existing one
-2. Push your Children's Castle app code to the repository
-3. Make sure your repository has the following Firebase files:
-   - `.firebaserc`: Contains your project ID
-   - `firebase.json`: Contains hosting configuration
-   - `prepare_github_deploy.sh`: Script for preparing files for deployment
-   - `.github/workflows/firebase-deploy.yml`: GitHub Actions workflow file
+1. Go to your GitHub repository: https://github.com/feysalh1/castle
+2. Navigate to "Settings" > "Secrets and variables" > "Actions"
+3. Click "New repository secret"
+4. For the name, enter: `FIREBASE_SERVICE_ACCOUNT`
+5. For the value, paste the entire contents of the JSON file from Step 1
+6. Click "Add secret"
 
-## Step 3: Configure GitHub Secrets
+## Step 3: Enable GitHub Actions
 
-1. In your GitHub repository, go to Settings > Secrets and variables > Actions
-2. Add the following secrets:
-   - `FIREBASE_SERVICE_ACCOUNT`: Paste the entire JSON content from step 1
-   - `FIREBASE_API_KEY`: Your Firebase API key (from Firebase project settings)
-   - `FIREBASE_APP_ID`: Your Firebase App ID (from Firebase project settings)
+1. In your GitHub repository, click the "Actions" tab
+2. You should see a workflow named "Firebase Deploy"
+3. Click "I understand my workflows, go ahead and enable them"
 
-## Step 4: Configure App Root Directory and Live Branch
+## Step 4: Custom Domain Setup
 
-### App Root Directory
-- By default, the firebase.json file specifies `public` as the root directory for hosting
-- Our GitHub Actions workflow automatically creates this directory and copies necessary files
-- No changes needed to the app root directory configuration
-
-### Live Branch
-- In the GitHub Actions workflow file, we've specified that pushes to the `main` branch trigger live deployment
-- If your primary branch is named differently (e.g., `master`), update the workflow file accordingly
-- Pull requests to the main branch will create temporary preview URLs for testing
-
-## Step 5: Testing the Integration
-
-1. Make a small change to your codebase
-2. Push the change to your GitHub repository
-3. Go to the Actions tab in your GitHub repository
-4. You should see the workflow running automatically
-5. Once complete, your changes will be live at:
-   - `https://childrencastles.web.app`
-   - `https://childrencastles.com` (if custom domain is configured)
-
-## Step 6: Troubleshooting
-
-If your deployment fails, check the following:
-
-1. GitHub Actions logs for detailed error messages
-2. Ensure all secrets are correctly set up
-3. Verify the Firebase project ID in `.firebaserc` matches your actual project
-4. Check that the service account has the necessary permissions
-
-## Firebase GitHub App (Alternative Approach)
-
-Firebase also offers a GitHub App integration:
+To use your custom domain "childrencastles.com" with Firebase:
 
 1. Go to Firebase Console > Hosting
-2. Click "Connect to GitHub"
-3. Follow the prompts to install the Firebase GitHub app
-4. Select your repository
-5. Configure branch and build settings
+2. Click "Add custom domain"
+3. Enter "childrencastles.com" and follow the verification steps
+4. Add the provided TXT record to your domain's DNS settings
+5. Once verified, add the A records as instructed by Firebase
+6. Wait for DNS propagation (can take up to 48 hours)
 
-This approach may be simpler but has fewer customization options than GitHub Actions.
+## Step 5: Test the Deployment
+
+1. Make a small change to your repository (e.g., update a README)
+2. Commit and push the change to the main branch
+3. Go to the Actions tab to watch the deployment progress
+4. Once complete, your site will be live at:
+   - https://story-time-fun-1.web.app
+   - https://childrencastles.com (after DNS propagation)
+
+## Preview Channels for Testing
+
+For pull requests, GitHub Actions automatically creates preview channels:
+
+1. Create a new branch for your feature
+2. Make changes and create a Pull Request to the main branch
+3. GitHub Actions will deploy a preview version
+4. A comment will be added to your PR with the preview URL
+5. The preview channel expires after 7 days
+
+## Troubleshooting
+
+If deployment fails:
+
+1. Check the GitHub Actions logs for specific error messages
+2. Verify the FIREBASE_SERVICE_ACCOUNT secret is correctly set
+3. Ensure your firebase.json is properly configured
+4. Check if your repository has the necessary files (package.json, public/index.html)
+5. Run the prepare_github_deploy.sh script locally to test the setup
+
+## Security Best Practices
+
+1. Never commit Firebase service account keys to your repository
+2. Use GitHub secrets for all sensitive information
+3. Review permissions for your GitHub repository and Firebase project
+4. Regularly rotate your Firebase service account key
 
 ## Additional Resources
 
-- [Firebase GitHub Actions Documentation](https://github.com/marketplace/actions/deploy-to-firebase-hosting)
-- [Firebase GitHub App Documentation](https://firebase.google.com/docs/hosting/github-integration)
-- [Firebase CLI Documentation](https://firebase.google.com/docs/cli)
+- [Firebase Hosting Documentation](https://firebase.google.com/docs/hosting)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [Firebase GitHub Action](https://github.com/FirebaseExtended/action-hosting-deploy)
