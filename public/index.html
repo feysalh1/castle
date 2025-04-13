@@ -1,98 +1,89 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Children's Castle</title>
-  <script>
-    // Don't redirect automatically - show the landing page with links
-    // The commented code below will be active once the custom domain is fully set up
-    /*
-    if (window.location.hostname === 'story-time-fun.web.app' || 
-        window.location.hostname === 'story-time-fun.firebaseapp.com') {
-      window.location.href = 'https://childrencastles.com' + window.location.pathname;
-    }
-    */
-  </script>
-  <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background-color: #f5f5f5;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      text-align: center;
-      background-color: white;
-      padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      max-width: 80%;
-    }
-    h1 {
-      color: #4a6cbf;
-    }
-    p {
-      color: #555;
-    }
-    .spinner {
-      width: 40px;
-      height: 40px;
-      margin: 20px auto;
-      border: 4px solid rgba(74, 108, 191, 0.2);
-      border-top-color: #4a6cbf;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    .btn {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 10px 20px;
-      background-color: #4a6cbf;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      transition: background-color 0.3s;
-    }
-    .btn:hover {
-      background-color: #3a5bad;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Children's Castle</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #4a6da7;
+            margin-bottom: 10px;
+        }
+        
+        p {
+            margin: 15px 0;
+            line-height: 1.5;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: #4a6da7;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #3a5a8f;
+        }
+        
+        .info {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        a {
+            color: #4a6da7;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Children's Castle</h1>
-    <p>An interactive learning and entertainment platform for children</p>
-    
-    <div style="margin-top: 30px;">
-      <h2>Welcome to Children's Castle!</h2>
-      <p>Your child's adventure into interactive learning and storytelling begins here.</p>
-      <p>Our application is available at:</p>
-      
-      <div style="margin: 25px 0; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto;">
-        <p><strong>Firebase Hosting:</strong> <a href="https://story-time-fun.web.app" class="link">story-time-fun.web.app</a></p>
-        <p><strong>Future Domain:</strong> <a href="#" class="link">childrencastles.com</a> (coming soon)</p>
-      </div>
-      
-      <p>This is our landing page for search engines and informational purposes.</p>
-      <p>We're excited for you to experience our interactive stories and games!</p>
-      
-      <a href="https://story-time-fun.web.app/app" class="btn">Enter Children's Castle</a>
+    <div class="container">
+        <h1>Children's Castle</h1>
+        <p>An interactive learning and entertainment platform for children</p>
+        
+        <div>
+            <h2>Welcome to Children's Castle!</h2>
+            <p>Your child's adventure into interactive learning and storytelling begins here.</p>
+            
+            <p>Our application is available at:</p>
+            <p><strong>Firebase Hosting:</strong> <a href="https://story-time-fun.web.app" target="_blank">story-time-fun.web.app</a></p>
+            <p><strong>Future Domain:</strong> <a href="https://childrencastles.com" target="_blank">childrencastles.com</a> (coming soon)</p>
+            
+            <a href="/app" class="btn">Enter Children's Castle</a>
+        </div>
+        
+        <div class="info">
+            <p>This is our landing page for search engines and informational purposes.</p>
+            <p>We're excited for you to experience our interactive stories and games!</p>
+        </div>
     </div>
-  </div>
-  <style>
-    .link {
-      color: #4a6cbf;
-      text-decoration: underline;
-      font-weight: bold;
-    }
-  </style>
 </body>
 </html>
