@@ -71,7 +71,7 @@ For a more professional setup, deploy with Firebase Hosting and Cloud Run:
    ./deploy_to_cloud_run.sh
    ```
 2. Follow the prompts to configure your deployment
-3. Your app will be available at `https://story-time-fun-1.web.app`
+3. Your app will be available at `https://story-time-fun.web.app`
 
 See `FULL_DEPLOYMENT_GUIDE.md` for detailed instructions.
 
@@ -81,7 +81,7 @@ For continuous integration and deployment:
 
 1. Push your code to GitHub repository: https://github.com/feysalh1/castle
 2. GitHub Actions will automatically deploy to Firebase
-3. Your app will be available at `https://story-time-fun-1.web.app` and `https://childrencastles.com`
+3. Your app will be available at `https://story-time-fun.web.app` and `https://childrencastles.com`
 
 This option requires:
 - Firebase Service Account added to GitHub Secrets

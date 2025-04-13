@@ -6,7 +6,7 @@ This guide explains how to set up continuous deployment from GitHub to Firebase 
 
 1. A GitHub account
 2. Your Children's Castle code pushed to GitHub repository: https://github.com/feysalh1/castle
-3. Firebase project: "story-time-fun-1"
+3. Firebase project: "story-time-fun"
 4. Firebase CLI installed locally (for testing)
 
 ## Step 1: Create a Firebase Service Account
