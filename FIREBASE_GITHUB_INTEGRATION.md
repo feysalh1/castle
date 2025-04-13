@@ -11,7 +11,7 @@ This guide explains how to set up continuous deployment from GitHub to Firebase 
 
 ## Step 1: Create a Firebase Service Account
 
-1. Go to the [Firebase Console](https://console.firebase.google.com/project/story-time-fun-1/settings/serviceaccounts/adminsdk)
+1. Go to the [Firebase Console](https://console.firebase.google.com/project/story-time-fun/settings/serviceaccounts/adminsdk)
 2. Select "Project settings" > "Service accounts"
 3. Click "Generate new private key"
 4. Save the JSON file securely - this contains sensitive credentials!
@@ -48,7 +48,7 @@ To use your custom domain "childrencastles.com" with Firebase:
 2. Commit and push the change to the main branch
 3. Go to the Actions tab to watch the deployment progress
 4. Once complete, your site will be live at:
-   - https://story-time-fun-1.web.app
+   - https://story-time-fun.web.app
    - https://childrencastles.com (after DNS propagation)
 
 ## Preview Channels for Testing

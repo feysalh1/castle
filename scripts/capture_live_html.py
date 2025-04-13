@@ -129,18 +129,18 @@ def clean_html_for_static(html, page_url):
             // Firebase configuration with environment variable placeholders
             const firebaseConfig = {
                 apiKey: "FIREBASE_API_KEY",
-                authDomain: "story-time-fun-1.firebaseapp.com",
-                projectId: "story-time-fun-1",
-                storageBucket: "story-time-fun-1.firebasestorage.app",
+                authDomain: "story-time-fun.firebaseapp.com",
+                projectId: "story-time-fun",
+                storageBucket: "story-time-fun.firebasestorage.app",
                 messagingSenderId: "225122848236",
                 appId: "FIREBASE_APP_ID",
             };
             
             // Fix for popup sign-in issues
-            if (window.location.hostname === 'story-time-fun-1.web.app' || 
+            if (window.location.hostname === 'story-time-fun.web.app' || 
                 window.location.hostname === 'childrencastles.web.app' ||
                 window.location.hostname === 'childrencastles.com') {
-                firebaseConfig.authDomain = 'story-time-fun-1.firebaseapp.com';
+                firebaseConfig.authDomain = 'story-time-fun.firebaseapp.com';
             }
             
             // Initialize Firebase
