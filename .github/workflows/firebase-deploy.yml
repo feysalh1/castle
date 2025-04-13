@@ -34,6 +34,7 @@ jobs:
           projectId: story-time-fun-1
           channelId: live
           target: hosting
+          firebaseHostingSite: story-time-fun-1
 
   deploy_preview:
     if: github.event_name == 'pull_request'
@@ -61,4 +62,5 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
           projectId: story-time-fun-1
           channelId: 'pr-${{ github.event.number }}'
+          firebaseHostingSite: story-time-fun-1
           expires: '7d'

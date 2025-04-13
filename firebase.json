@@ -74,6 +74,18 @@
         }
       }
     ],
+    "redirects": [
+      {
+        "source": "https://story-time-fun-1.web.app/**",
+        "destination": "https://childrencastles.com/:1",
+        "type": 301
+      },
+      {
+        "source": "https://story-time-fun-1.firebaseapp.com/**",
+        "destination": "https://childrencastles.com/:1",
+        "type": 301
+      }
+    ],
     "appAssociation": "AUTO"
   }
 }
