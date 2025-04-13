@@ -473,6 +473,7 @@ def guest_login():
             
             # Approve some books for the demo child
             # Get books suitable for age 4-5
+            books = []  # Initialize books variable
             age_group = AgeGroup.query.filter_by(name='4-5 years').first()
             if age_group:
                 books = Book.query.filter_by(age_group_id=age_group.id).limit(5).all()
