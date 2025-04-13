@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="150px" height="150px" viewBox="0 0 150 150" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Upload Photo</title>
+    <g id="Upload-Icon" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <!-- Background Circle -->
+        <circle id="Background" fill="#F5F7FF" cx="75" cy="75" r="75"></circle>
+        
+        <!-- Cloud shape -->
+        <path d="M115,90 C124.4,90 132,82.4 132,73 C132,64.4 125.7,57.3 117.3,56.1 C115.5,43.3 104.4,33.5 91,33.5 C78.8,33.5 68.5,41.4 65.3,52.3 C63.7,51.8 62,51.5 60.2,51.5 C49.7,51.5 41.1,60.2 41.1,70.7 C41.1,71.6 41.2,72.4 41.3,73.3 C35.5,76.2 31.5,82.2 31.5,89.2 C31.5,99.1 39.4,107 49.3,107 L115,107 C124.4,107 132,99.4 132,90 C132,81.6 124.4,90 115,90 Z" id="Cloud" fill="#FFFFFF"></path>
+        
+        <!-- Upload arrow -->
+        <path d="M75,55 L95,75 L85,75 L85,110 L65,110 L65,75 L55,75 L75,55 Z" id="Upload-Arrow" fill="#6A3093"></path>
+        
+        <!-- Camera -->
+        <rect id="Camera-Body" fill="#A044FF" x="60" y="40" width="30" height="20" rx="5"></rect>
+        <circle id="Camera-Lens" fill="#FFFFFF" cx="75" cy="50" r="7"></circle>
+        <circle id="Camera-Lens-Inner" fill="#6A3093" cx="75" cy="50" r="3"></circle>
+        <rect id="Camera-Flash" fill="#FFDD99" x="65" y="43" width="5" height="5" rx="1"></rect>
+    </g>
+</svg>

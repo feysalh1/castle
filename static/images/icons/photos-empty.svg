@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200px" height="200px" viewBox="0 0 200 200" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Photos Empty State</title>
+    <g id="Photos-Empty" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Background" fill="#F5F7FF" x="0" y="0" width="200" height="200" rx="20"></rect>
+        
+        <!-- Stack of photos -->
+        <rect id="Photo1" fill="#FFFFFF" x="40" y="70" width="120" height="100" rx="10" transform="rotate(-10 40 70)"></rect>
+        <rect id="Photo2" fill="#E1E6FF" x="50" y="60" width="120" height="100" rx="10" transform="rotate(-5 50 60)"></rect>
+        <rect id="Photo3" fill="#FFFFFF" x="60" y="50" width="120" height="100" rx="10"></rect>
+        
+        <!-- Photo elements -->
+        <rect id="Sky" fill="#A0C4FF" x="70" y="60" width="100" height="60" rx="5"></rect>
+        <circle id="Sun" fill="#FFDD99" cx="90" cy="80" r="12"></circle>
+        <rect id="Ground" fill="#AADDBB" x="70" y="120" width="100" height="20"></rect>
+        
+        <!-- Decorative elements -->
+        <path d="M150,70 L160,60 L170,70 L165,70 L165,90 L155,90 L155,70 Z" id="Upload-Arrow" fill="#6A3093" opacity="0.8"></path>
+        
+        <!-- Mountain -->
+        <polygon id="Mountain" fill="#6A3093" opacity="0.3" points="120 120 150 80 180 120"></polygon>
+        
+        <!-- House -->
+        <rect id="House-Body" fill="#FF9F8E" x="80" y="100" width="30" height="20"></rect>
+        <polygon id="House-Roof" fill="#C25D48" points="95 85 75 100 115 100"></polygon>
+        <rect id="House-Door" fill="#6A3093" x="90" y="110" width="10" height="10"></rect>
+        
+        <!-- Photo corners -->
+        <path d="M70,60 L80,60 L80,70 L70,70 Z" id="Corner1" fill="#DDDDDD"></path>
+        <path d="M160,60 L170,60 L170,70 L160,70 Z" id="Corner2" fill="#DDDDDD"></path>
+        <path d="M70,140 L80,140 L80,130 L70,130 Z" id="Corner3" fill="#DDDDDD"></path>
+        <path d="M160,140 L170,140 L170,130 L160,130 Z" id="Corner4" fill="#DDDDDD"></path>
+        
+        <!-- Camera icon -->
+        <circle id="Camera-Body" fill="#6A3093" cx="100" cy="30" r="15"></circle>
+        <circle id="Camera-Lens" fill="#FFFFFF" cx="100" cy="30" r="7"></circle>
+        <circle id="Camera-Lens-Inner" fill="#A044FF" cx="100" cy="30" r="3"></circle>
+        <rect id="Camera-Flash" fill="#FFDD99" x="88" y="18" width="5" height="5" rx="1"></rect>
+    </g>
+</svg>

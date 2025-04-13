@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Photo - Children's Castle{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photos.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="photo-upload-container">
+    <h1 class="upload-title">Upload a Photo</h1>
+    
+    <div class="upload-card">
+        <form action="{{ url_for('photos.upload_photo') }}" method="POST" enctype="multipart/form-data" id="upload-form">
+            {{ form.csrf_token }}
+            
+            <div class="drop-area" id="drop-area">
+                <div class="drop-area-content">
+                    <img src="{{ url_for('static', filename='images/icons/upload.svg') }}" alt="Upload" class="upload-icon">
+                    <p>Drag & Drop your photo here</p>
+                    <p class="drag-text">or</p>
+                    <button type="button" class="btn select-file-btn" id="select-file-btn">Select File</button>
+                    <input type="file" name="photo" id="file-input" accept=".jpg,.jpeg,.png,.gif" hidden>
+                </div>
+                
+                <div class="preview-area" id="preview-area" style="display: none;">
+                    <img src="" alt="Preview" id="image-preview">
+                    <button type="button" class="btn change-file-btn" id="change-file-btn">Change Photo</button>
+                </div>
+            </div>
+            
+            <div class="upload-fields">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" name="title" id="title" placeholder="Give your photo a title">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea name="description" id="description" rows="3" placeholder="Add a description (optional)"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tags">Tags (comma separated)</label>
+                    <input type="text" name="tags" id="tags" placeholder="vacation, family, summer">
+                </div>
+                
+                <div class="form-group privacy-setting">
+                    <label>Privacy</label>
+                    <div class="radio-options">
+                        <div class="radio-option">
+                            <input type="radio" name="is_private" id="private" value="true" checked>
+                            <label for="private">
+                                <i class="fas fa-lock"></i> Private
+                                <span class="option-desc">Only visible to you and your parent/child</span>
+                            </label>
+                        </div>
+                        
+                        <div class="radio-option">
+                            <input type="radio" name="is_private" id="shared" value="false">
+                            <label for="shared">
+                                <i class="fas fa-users"></i> Shared
+                                <span class="option-desc">Visible to your family</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="file-info" id="file-info" style="display: none;">
+                    <div class="file-details">
+                        <span id="file-name"></span>
+                        <span id="file-size"></span>
+                    </div>
+                    <div class="file-type-icon">
+                        <i class="far fa-file-image"></i>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <a href="{{ url_for('photos.photos_dashboard') }}" class="btn cancel-btn">Cancel</a>
+                    <button type="submit" class="btn upload-submit-btn" id="upload-btn" disabled>Upload Photo</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Upload in progress overlay -->
+<div class="upload-overlay" id="upload-overlay" style="display: none;">
+    <div class="upload-progress">
+        <div class="spinner"></div>
+        <h3>Uploading Photo...</h3>
+        <p>Please wait while your photo is being uploaded.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropArea = document.getElementById('drop-area');
+    const fileInput = document.getElementById('file-input');
+    const selectFileBtn = document.getElementById('select-file-btn');
+    const changeFileBtn = document.getElementById('change-file-btn');
+    const previewArea = document.getElementById('preview-area');
+    const imagePreview = document.getElementById('image-preview');
+    const fileInfo = document.getElementById('file-info');
+    const fileName = document.getElementById('file-name');
+    const fileSize = document.getElementById('file-size');
+    const uploadBtn = document.getElementById('upload-btn');
+    const uploadForm = document.getElementById('upload-form');
+    const uploadOverlay = document.getElementById('upload-overlay');
+    
+    // Open file dialog when select button is clicked
+    selectFileBtn.addEventListener('click', () => {
+        fileInput.click();
+    });
+    
+    // Change file button
+    changeFileBtn.addEventListener('click', () => {
+        fileInput.click();
+    });
+    
+    // Handle file selection
+    fileInput.addEventListener('change', handleFileSelect);
+    
+    // Drag and drop functionality
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+        dropArea.classList.add('highlight');
+    }
+    
+    function unhighlight() {
+        dropArea.classList.remove('highlight');
+    }
+    
+    dropArea.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+            fileInput.files = files;
+            handleFileSelect();
+        }
+    }
+    
+    function handleFileSelect() {
+        if (fileInput.files && fileInput.files[0]) {
+            const file = fileInput.files[0];
+            
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!validTypes.includes(file.type)) {
+                alert('Please select a valid image file (JPG, PNG, or GIF)');
+                fileInput.value = '';
+                return;
+            }
+            
+            // Validate file size (max 10MB)
+            const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+            if (file.size > maxSize) {
+                alert('File is too large. Maximum size is 10MB.');
+                fileInput.value = '';
+                return;
+            }
+            
+            // Update preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                document.querySelector('.drop-area-content').style.display = 'none';
+                previewArea.style.display = 'block';
+                fileInfo.style.display = 'flex';
+                
+                // Update file info
+                fileName.textContent = file.name;
+                fileSize.textContent = formatFileSize(file.size);
+                
+                // Enable upload button
+                uploadBtn.disabled = false;
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes < 1024) {
+            return bytes + ' bytes';
+        } else if (bytes < 1024 * 1024) {
+            return (bytes / 1024).toFixed(1) + ' KB';
+        } else {
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+    }
+    
+    // Form submission
+    uploadForm.addEventListener('submit', function(e) {
+        if (fileInput.files.length === 0) {
+            e.preventDefault();
+            alert('Please select a file to upload');
+            return;
+        }
+        
+        // Show upload overlay
+        uploadOverlay.style.display = 'flex';
+    });
+});
+</script>
+{% endblock %}
