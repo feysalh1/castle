@@ -214,7 +214,7 @@ cat > public/firebase-config-test.html << EOL
     <script>
         // Your Firebase configuration - copied directly from Firebase Console for story-time-fun project
         const firebaseConfig = {
-          apiKey: "AIzaSyAPTQO3lnt0GSyDgVCZjtj4i3gk3Qi6Vyo",
+          apiKey: ""AIzaSyAPTQO3lnt0GSyDgVCZjtj4i3gk3Qi6Vyo""AIzaSyAPTQO3lnt0GSyDgVCZjtj4i3gk3Qi6Vyo"",
           authDomain: "story-time-fun.firebaseapp.com",
           projectId: "story-time-fun",
           storageBucket: "story-time-fun.appspot.com",
