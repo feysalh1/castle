@@ -750,6 +750,73 @@ class EducationalGame(db.Model):
         return f'<EducationalGame {self.title}>'
 
 
+class Photo(db.Model):
+    """Secure photo storage for children and parents"""
+    __tablename__ = 'photos'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(256), nullable=False)
+    original_filename = db.Column(db.String(256), nullable=True)
+    file_path = db.Column(db.String(512), nullable=False)
+    file_size = db.Column(db.Integer, nullable=False)  # Size in bytes
+    mime_type = db.Column(db.String(128), nullable=False)
+    
+    # Security and access control
+    child_id = db.Column(db.Integer, db.ForeignKey('children.id'), nullable=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey('parents.id'), nullable=True)
+    
+    # Only one of child_id or parent_id should be filled
+    # If parent_id is filled, it's a parent's photo
+    # If child_id is filled, it's a child's photo
+    
+    # Extra metadata
+    title = db.Column(db.String(256), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    tags = db.Column(db.String(512), nullable=True)  # Comma-separated tags
+    is_favorite = db.Column(db.Boolean, default=False)
+    
+    # Timestamps
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Access control
+    is_private = db.Column(db.Boolean, default=True)  # If True, only visible to the uploader and linked parent/child
+    
+    # Relationships
+    # Define relationships in a way that works with nullable foreign keys
+    child = db.relationship('Child', backref=db.backref('photos', lazy=True, cascade="all, delete-orphan"), 
+                           foreign_keys=[child_id], primaryjoin="Photo.child_id==Child.id")
+    parent = db.relationship('Parent', backref=db.backref('photos', lazy=True, cascade="all, delete-orphan"), 
+                            foreign_keys=[parent_id], primaryjoin="Photo.parent_id==Parent.id")
+    
+    def __repr__(self):
+        owner = f"child:{self.child_id}" if self.child_id else f"parent:{self.parent_id}"
+        return f'<Photo {self.id} by {owner}: {self.filename}>'
+        
+    def get_secure_url(self):
+        """Generate a secure URL for accessing the photo, including security tokens"""
+        from app import app
+        import jwt
+        import time
+        
+        # Generate a token that expires in 1 hour
+        token_data = {
+            'photo_id': self.id,
+            'user_type': 'child' if self.child_id else 'parent',
+            'user_id': self.child_id if self.child_id else self.parent_id,
+            'exp': int(time.time()) + 3600  # 1 hour expiration
+        }
+        
+        token = jwt.encode(
+            token_data,
+            app.config.get('SECRET_KEY', 'children-castle-app-secret'),
+            algorithm='HS256'
+        )
+        
+        # Return a URL that includes the token
+        return f"/photos/view/{self.id}?token={token}"
+
+
 class StoryMood(db.Model):
     """Mood settings for dynamic storytelling"""
     __tablename__ = 'story_moods'
