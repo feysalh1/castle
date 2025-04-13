@@ -211,15 +211,8 @@ def index(path):
             return redirect(url_for('child_dashboard'))
     # Create empty form for CSRF protection in the guest login form
     form = EmptyForm()
-    return render_template('login_landing.html', 
-                          form=form,
-                          firebase_api_key=app.config.get('FIREBASE_API_KEY'),
-                          firebase_project_id=app.config.get('FIREBASE_PROJECT_ID'),
-                          firebase_app_id=app.config.get('FIREBASE_APP_ID'),
-                          firebase_measurement_id=app.config.get('FIREBASE_MEASUREMENT_ID'),
-                          firebase_messaging_sender_id=app.config.get('FIREBASE_MESSAGING_SENDER_ID'),
-                          firebase_storage_bucket=app.config.get('FIREBASE_STORAGE_BUCKET'),
-                          firebase_auth_domain=app.config.get('FIREBASE_AUTH_DOMAIN'))
+    # Firebase config is injected via context processor in main.py
+    return render_template('login_landing.html', form=form)
 
 
 @app.route('/parent/register', methods=['GET', 'POST'])
@@ -320,22 +313,8 @@ def parent_login():
             return redirect(next_page)
         return redirect(url_for('parent_dashboard'))
     
-    # Get Firebase configuration from environment
-    firebase_api_key = os.environ.get('FIREBASE_API_KEY')
-    firebase_project_id = os.environ.get('FIREBASE_PROJECT_ID')
-    firebase_app_id = os.environ.get('FIREBASE_APP_ID')
-    
-    return render_template(
-        'parent_login.html', 
-        form=form,
-        firebase_config_script=f"""
-            <script>
-                window.FIREBASE_API_KEY = "{firebase_api_key}";
-                window.FIREBASE_PROJECT_ID = "{firebase_project_id}";
-                window.FIREBASE_APP_ID = "{firebase_app_id}";
-            </script>
-        """
-    )
+    # Firebase config is injected via context processor in main.py
+    return render_template('parent_login.html', form=form)
 
 
 @app.route('/parent/reset-password', methods=['GET', 'POST'])
