@@ -18,11 +18,11 @@ firebase login
 
 # Step 3: Select your Firebase project
 echo "Selecting Firebase project..."
-firebase use childrens-castle || firebase use --add
+firebase use story-time-fun || firebase use --add
 
 # Step 4: Deploy the application
 echo "Deploying to Firebase..."
 firebase deploy --only hosting
 
 echo "Deployment complete! Your application is now live."
-echo "You can access it at https://childrens-castle.web.app"
+echo "You can access it at https://story-time-fun.web.app"

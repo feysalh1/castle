@@ -115,6 +115,20 @@ if not db_connected:
 # Import database commands
 import db_commands
 
+# Add global template context for Firebase configuration
+@app.context_processor
+def inject_firebase_config():
+    """Inject Firebase configuration into all templates"""
+    return {
+        'firebase_api_key': app.config.get('FIREBASE_API_KEY'),
+        'firebase_project_id': app.config.get('FIREBASE_PROJECT_ID'),
+        'firebase_app_id': app.config.get('FIREBASE_APP_ID'),
+        'firebase_measurement_id': app.config.get('FIREBASE_MEASUREMENT_ID'),
+        'firebase_messaging_sender_id': app.config.get('FIREBASE_MESSAGING_SENDER_ID'),
+        'firebase_storage_bucket': app.config.get('FIREBASE_STORAGE_BUCKET'),
+        'firebase_auth_domain': app.config.get('FIREBASE_AUTH_DOMAIN')
+    }
+
 # Import app functions AFTER database initialization
 # The functions and routes are already defined in app.py
 # We do NOT import app as a module to avoid circular imports
