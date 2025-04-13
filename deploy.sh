@@ -140,8 +140,15 @@ echo -e "${YELLOW}Step 6: Setting active Firebase project...${NC}"
 firebase use "$FIREBASE_PROJECT" || firebase use --add
 echo
 
-# Step 7: Deploy the application
-echo -e "${YELLOW}Step 7: Deploying to Firebase Hosting...${NC}"
+# Step 7: Process Firebase configuration
+echo -e "${YELLOW}Step 7: Processing Firebase configuration...${NC}"
+chmod +x ./process_firebase_config.sh
+./process_firebase_config.sh
+echo -e "${GREEN}Firebase configuration processed.${NC}"
+echo
+
+# Step 8: Deploy the application
+echo -e "${YELLOW}Step 8: Deploying to Firebase Hosting...${NC}"
 firebase deploy --only hosting
 echo
 

@@ -9,7 +9,7 @@ import platform
 import sys
 import uuid
 from datetime import datetime, timedelta, date
-from flask import Flask, render_template, redirect, url_for, flash, request, session, jsonify, send_file, abort
+from flask import Flask, render_template, redirect, url_for, flash, request, session, jsonify, send_file, abort, Response
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_wtf.csrf import CSRFProtect
@@ -204,6 +204,31 @@ class ResetPasswordForm(FlaskForm):
 def firebase_test_page():
     """Serve the Firebase configuration test page"""
     return send_file('public/firebase-config-test.html')
+
+@app.route('/firebase-test-improved.html')
+def firebase_test_improved_page():
+    """Serve the improved Firebase configuration test page"""
+    return send_file('public/firebase-test-improved.html')
+
+@app.route('/js/firebase-config.js')
+def firebase_config_js():
+    """Serve the Firebase configuration JavaScript file"""
+    # Process the template on the fly to inject environment variables
+    template_path = 'static/js/firebase-config.js'
+    with open(template_path, 'r') as file:
+        content = file.read()
+    
+    # Replace environment variables
+    content = content.replace('${FIREBASE_API_KEY}', os.environ.get('FIREBASE_API_KEY', ''))
+    content = content.replace('${FIREBASE_AUTH_DOMAIN}', os.environ.get('FIREBASE_AUTH_DOMAIN', ''))
+    content = content.replace('${FIREBASE_PROJECT_ID}', os.environ.get('FIREBASE_PROJECT_ID', ''))
+    content = content.replace('${FIREBASE_STORAGE_BUCKET}', os.environ.get('FIREBASE_STORAGE_BUCKET', ''))
+    content = content.replace('${FIREBASE_MESSAGING_SENDER_ID}', os.environ.get('FIREBASE_MESSAGING_SENDER_ID', ''))
+    content = content.replace('${FIREBASE_APP_ID}', os.environ.get('FIREBASE_APP_ID', ''))
+    content = content.replace('${FIREBASE_MEASUREMENT_ID}', os.environ.get('FIREBASE_MEASUREMENT_ID', ''))
+    
+    # Return as JavaScript
+    return Response(content, mimetype='application/javascript')
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
