@@ -1,0 +1,40 @@
+name: Firebase Deploy
+
+on:
+  push:
+    branches:
+      - main  # or master, depending on your default branch
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  deploy:
+    name: Deploy to Firebase
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Prepare for deployment
+        run: |
+          chmod +x ./prepare_github_deploy.sh
+          ./prepare_github_deploy.sh
+
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          channelId: live
+          projectId: story-time-fun
+          target: childrencastles  # Optional, if you have multiple hosting targets
