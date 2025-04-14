@@ -63,6 +63,15 @@ read FIREBASE_MEASUREMENT_ID
 echo -n "ELEVENLABS_API_KEY: "
 read ELEVENLABS_API_KEY
 
+echo -n "Use Firebase Storage for photos? (y/n, default: y): "
+read USE_FIREBASE_STORAGE
+if [[ "$USE_FIREBASE_STORAGE" == "y" || "$USE_FIREBASE_STORAGE" == "Y" || -z "$USE_FIREBASE_STORAGE" ]]; then
+    USE_FIREBASE_STORAGE="true"
+else
+    USE_FIREBASE_STORAGE="false"
+fi
+echo "Firebase Storage for photos set to: $USE_FIREBASE_STORAGE"
+
 # Update cloudbuild.yaml with the correct environment variables
 echo "Updating cloudbuild.yaml with environment variables..."
 sed -i.bak \

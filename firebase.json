@@ -23,6 +23,20 @@
         }
       },
       {
+        "source": "/app",
+        "run": {
+          "serviceId": "childrens-castle",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/app/**",
+        "run": {
+          "serviceId": "childrens-castle",
+          "region": "us-central1"
+        }
+      },
+      {
         "source": "/",
         "destination": "/index.html"
       },
