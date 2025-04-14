@@ -9,13 +9,6 @@
     ],
     "rewrites": [
       {
-        "source": "/app/**",
-        "run": {
-          "serviceId": "children-castle-app",
-          "region": "us-central1"
-        }
-      },
-      {
         "source": "/",
         "destination": "/index-firebase.html"
       },

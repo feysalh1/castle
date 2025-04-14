@@ -1,13 +1,12 @@
-
 {
   "projects": {
-    "default": "story-time-fun"
+    "default": "1:952095451786:web:b3d6229418a1fd06972693"
   },
   "targets": {
-    "story-time-fun": {
+    "1:952095451786:web:b3d6229418a1fd06972693": {
       "hosting": {
         "main": [
-          "story-time-fun"
+          "1:952095451786:web:b3d6229418a1fd06972693"
         ]
       }
     }
