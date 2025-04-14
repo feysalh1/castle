@@ -1,10 +1,9 @@
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: "story-time-fun.firebaseapp.com",
-  projectId: "story-time-fun",
-  storageBucket: "story-time-fun.appspot.com",
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  projectId: process.env.FIREBASE_PROJECT_ID,
   appId: process.env.FIREBASE_APP_ID,
+  authDomain: `${process.env.FIREBASE_PROJECT_ID}.firebaseapp.com`,
+  storageBucket: `${process.env.FIREBASE_PROJECT_ID}.appspot.com`,
   measurementId: "G-RM452TNB0W"
 };
