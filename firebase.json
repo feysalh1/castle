@@ -9,8 +9,29 @@
     ],
     "rewrites": [
       {
-        "source": "**",
+        "source": "/api/**",
+        "run": {
+          "serviceId": "childrens-castle",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/static/**",
+        "run": {
+          "serviceId": "childrens-castle",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/",
         "destination": "/index.html"
+      },
+      {
+        "source": "/**",
+        "run": {
+          "serviceId": "childrens-castle",
+          "region": "us-central1"
+        }
       }
     ],
     "redirects": [
