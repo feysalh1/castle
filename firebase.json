@@ -9,12 +9,8 @@
     ],
     "rewrites": [
       {
-        "source": "/",
-        "destination": "/index-firebase.html"
-      },
-      {
         "source": "**",
-        "destination": "/index-firebase.html"
+        "destination": "/index.html"
       }
     ],
     "redirects": [
