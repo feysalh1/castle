@@ -210,6 +210,11 @@ def firebase_test_improved_page():
     """Serve the improved Firebase configuration test page"""
     return send_file('public/firebase-test-improved.html')
 
+@app.route('/firebase-test')
+def firebase_test():
+    """Test Firebase configuration"""
+    return render_template('firebase_test.html')
+
 @app.route('/js/firebase-config.js')
 def firebase_config_js():
     """Serve the Firebase configuration JavaScript file"""

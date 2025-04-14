@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Configuration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4a6da7;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3a5a8f;
+        }
+    </style>
+</head>
+<body>
+    <h1>Firebase Configuration Test</h1>
+    <p>This page tests the dynamic loading of Firebase configuration.</p>
+    
+    <div class="container">
+        <h2>1. Firebase Config Script Test</h2>
+        <div id="config-status">Loading config...</div>
+        <pre id="config-display"></pre>
+    </div>
+    
+    <div class="container">
+        <h2>2. Firebase Initialization Test</h2>
+        <div id="init-status">Waiting for config...</div>
+    </div>
+    
+    <div class="container">
+        <h2>3. Environment Variable Check</h2>
+        <div>
+            <p>Flask App Config:</p>
+            <ul>
+                <li>FIREBASE_API_KEY: {{ 'Set' if firebase_api_key else 'Not set' }}</li>
+                <li>FIREBASE_PROJECT_ID: {{ firebase_project_id or 'Not set' }}</li>
+                <li>FIREBASE_AUTH_DOMAIN: {{ firebase_auth_domain or 'Not set' }}</li>
+                <li>FIREBASE_APP_ID: {{ firebase_app_id or 'Not set' }}</li>
+            </ul>
+        </div>
+    </div>
+    
+    <button onclick="location.reload()">Reload Test</button>
+
+    <!-- Load the Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js" type="module"></script>
+    
+    <!-- Load the dynamic config -->
+    <script src="{{ url_for('firebase_config_js') }}"></script>
+    
+    <!-- Test script -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        
+        // Display the firebase config (with API key masked)
+        const configDisplay = document.getElementById('config-display');
+        const configStatus = document.getElementById('config-status');
+        const initStatus = document.getElementById('init-status');
+        
+        try {
+            // Check if firebaseConfig exists and display it
+            if (typeof firebaseConfig !== 'undefined') {
+                // Create a copy with masked API key for display
+                const displayConfig = JSON.parse(JSON.stringify(firebaseConfig));
+                
+                if (displayConfig.apiKey) {
+                    const keyLength = displayConfig.apiKey.length;
+                    if (keyLength > 8) {
+                        displayConfig.apiKey = 
+                            displayConfig.apiKey.substring(0, 4) + 
+                            '...' + 
+                            displayConfig.apiKey.substring(keyLength - 4);
+                    }
+                }
+                
+                configDisplay.textContent = JSON.stringify(displayConfig, null, 2);
+                configStatus.innerHTML = '<span class="success">Firebase config loaded successfully!</span>';
+                
+                // Try to initialize Firebase
+                try {
+                    const app = initializeApp(firebaseConfig);
+                    initStatus.innerHTML = '<span class="success">Firebase initialized successfully!</span>';
+                } catch (error) {
+                    initStatus.innerHTML = `<span class="error">Firebase initialization error: ${error.message}</span>`;
+                    console.error("Firebase initialization error:", error);
+                }
+            } else {
+                configStatus.innerHTML = '<span class="error">Error: firebaseConfig not found!</span>';
+                configDisplay.textContent = "firebaseConfig global variable is not defined.";
+            }
+        } catch (error) {
+            configStatus.innerHTML = `<span class="error">Error processing config: ${error.message}</span>`;
+            console.error("Error:", error);
+        }
+    </script>
+</body>
+</html>
