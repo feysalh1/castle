@@ -48,6 +48,9 @@ ELEVENLABS_API_KEY=your-elevenlabs-key
 
 # Application Settings
 SESSION_SECRET=your-session-secret
+
+# Firebase Storage Settings
+USE_FIREBASE_STORAGE=true  # Enable Firebase Storage for photos in production
 ```
 
 ## Step 2: Deploy to Google Cloud Run
