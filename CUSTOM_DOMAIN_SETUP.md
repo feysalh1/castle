@@ -102,8 +102,42 @@ Once setup is complete:
 2. The site should load with a valid SSL certificate (secure padlock icon)
 3. Test all functionality to ensure routing is working properly
 
+## Step 6: Configure Firebase Storage for Custom Domain (New Feature)
+
+The Photos feature in Children's Castle now uses Firebase Storage for improved scalability and content delivery. Follow these steps to configure it with your custom domain:
+
+1. **Update CORS Settings**:
+   
+   Create a file named `cors-config.json`:
+   ```json
+   [
+     {
+       "origin": ["https://childrencastles.com", "https://www.childrencastles.com", "https://app.childrencastles.com"],
+       "method": ["GET", "HEAD"],
+       "maxAgeSeconds": 3600
+     }
+   ]
+   ```
+
+2. **Apply CORS Configuration**:
+   ```bash
+   gsutil cors set cors-config.json gs://story-time-fun.appspot.com
+   ```
+
+3. **Update Cloud Run Environment Variables**:
+   ```bash
+   gcloud run services update children-castle-app \
+     --update-env-vars="USE_FIREBASE_STORAGE=true"
+   ```
+
+4. **Test Photos Functionality**:
+   - Upload photos in the application
+   - Verify thumbnails and full-size images load correctly
+   - Check that the URLs use Firebase Storage paths
+
 ## Resources
 
 - [Firebase Custom Domain Documentation](https://firebase.google.com/docs/hosting/custom-domain)
+- [Firebase Storage Documentation](https://firebase.google.com/docs/storage)
 - [Let's Encrypt SSL Certificates](https://letsencrypt.org/)
 - [DNS Propagation Checker](https://www.whatsmydns.net/)

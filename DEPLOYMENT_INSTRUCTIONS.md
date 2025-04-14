@@ -70,7 +70,7 @@ gcloud run deploy children-castle-app \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated \
-  --set-env-vars="FIREBASE_API_KEY=${FIREBASE_API_KEY},FIREBASE_AUTH_DOMAIN=${FIREBASE_AUTH_DOMAIN},FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID},FIREBASE_STORAGE_BUCKET=${FIREBASE_STORAGE_BUCKET},FIREBASE_MESSAGING_SENDER_ID=${FIREBASE_MESSAGING_SENDER_ID},FIREBASE_APP_ID=${FIREBASE_APP_ID},FIREBASE_MEASUREMENT_ID=${FIREBASE_MEASUREMENT_ID},DATABASE_URL=${DATABASE_URL},PGUSER=${PGUSER},PGPASSWORD=${PGPASSWORD},PGDATABASE=${PGDATABASE},PGHOST=${PGHOST},PGPORT=${PGPORT},OPENAI_API_KEY=${OPENAI_API_KEY},ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY},SESSION_SECRET=${SESSION_SECRET}"
+  --set-env-vars="FIREBASE_API_KEY=${FIREBASE_API_KEY},FIREBASE_AUTH_DOMAIN=${FIREBASE_AUTH_DOMAIN},FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID},FIREBASE_STORAGE_BUCKET=${FIREBASE_STORAGE_BUCKET},FIREBASE_MESSAGING_SENDER_ID=${FIREBASE_MESSAGING_SENDER_ID},FIREBASE_APP_ID=${FIREBASE_APP_ID},FIREBASE_MEASUREMENT_ID=${FIREBASE_MEASUREMENT_ID},DATABASE_URL=${DATABASE_URL},PGUSER=${PGUSER},PGPASSWORD=${PGPASSWORD},PGDATABASE=${PGDATABASE},PGHOST=${PGHOST},PGPORT=${PGPORT},OPENAI_API_KEY=${OPENAI_API_KEY},ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY},SESSION_SECRET=${SESSION_SECRET},USE_FIREBASE_STORAGE=${USE_FIREBASE_STORAGE}"
 ```
 
 Or use the provided script:
@@ -220,7 +220,50 @@ jobs:
             --platform managed \
             --region us-central1 \
             --allow-unauthenticated \
-            --update-env-vars="FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }},FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_AUTH_DOMAIN }},FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }},FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_STORAGE_BUCKET }},FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_MESSAGING_SENDER_ID }},FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }},FIREBASE_MEASUREMENT_ID=${{ secrets.FIREBASE_MEASUREMENT_ID }},DATABASE_URL=${{ secrets.DATABASE_URL }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},ELEVENLABS_API_KEY=${{ secrets.ELEVENLABS_API_KEY }},SESSION_SECRET=${{ secrets.SESSION_SECRET }}"
+            --update-env-vars="FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }},FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_AUTH_DOMAIN }},FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }},FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_STORAGE_BUCKET }},FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_MESSAGING_SENDER_ID }},FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }},FIREBASE_MEASUREMENT_ID=${{ secrets.FIREBASE_MEASUREMENT_ID }},DATABASE_URL=${{ secrets.DATABASE_URL }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},ELEVENLABS_API_KEY=${{ secrets.ELEVENLABS_API_KEY }},SESSION_SECRET=${{ secrets.SESSION_SECRET }},USE_FIREBASE_STORAGE=true"
+```
+
+## Firebase Storage Configuration
+
+For the Photos feature, Children's Castle utilizes Firebase Storage for better scalability and content delivery:
+
+1. **Enable Firebase Storage**: Set `USE_FIREBASE_STORAGE=true` in your environment variables
+2. **Storage Security Rules**: Configure rules to restrict access to authorized users
+
+```
+// Firebase Storage security rules
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Authentication required
+    match /{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow public access to thumbnails (optional)
+    match /photos/thumbnails/{photoId} {
+      allow read: if true;
+    }
+  }
+}
+```
+
+3. **CORS Configuration**: Set up proper CORS for direct access from browsers
+
+```bash
+# Example CORS configuration for Firebase Storage
+gsutil cors set cors-config.json gs://story-time-fun.appspot.com
+```
+
+cors-config.json:
+```json
+[
+  {
+    "origin": ["https://childrencastles.com", "https://story-time-fun.web.app"],
+    "method": ["GET", "HEAD"],
+    "maxAgeSeconds": 3600
+  }
+]
 ```
 
 ## Resources
@@ -228,5 +271,6 @@ jobs:
 - [Firebase Hosting Documentation](https://firebase.google.com/docs/hosting)
 - [Cloud Run Documentation](https://cloud.google.com/run/docs)
 - [Firebase & Cloud Run Integration](https://firebase.google.com/docs/hosting/cloud-run)
+- [Firebase Storage Documentation](https://firebase.google.com/docs/storage)
 - [GitHub Actions for Firebase](https://github.com/marketplace/actions/deploy-to-firebase-hosting)
 - [GitHub Actions for Google Cloud](https://github.com/google-github-actions/setup-gcloud)
