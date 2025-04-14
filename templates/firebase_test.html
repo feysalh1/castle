@@ -75,13 +75,10 @@
     
     <button onclick="location.reload()">Reload Test</button>
 
-    <!-- Load the Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js" type="module"></script>
-    
-    <!-- Load the dynamic config -->
+    <!-- Load the dynamic config first -->
     <script src="{{ url_for('firebase_config_js') }}"></script>
     
-    <!-- Test script -->
+    <!-- Test script with Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         
@@ -113,6 +110,7 @@
                 try {
                     const app = initializeApp(firebaseConfig);
                     initStatus.innerHTML = '<span class="success">Firebase initialized successfully!</span>';
+                    console.log("Firebase test successful - initialized with app ID:", firebaseConfig.appId);
                 } catch (error) {
                     initStatus.innerHTML = `<span class="error">Firebase initialization error: ${error.message}</span>`;
                     console.error("Firebase initialization error:", error);

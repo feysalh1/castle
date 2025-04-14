@@ -233,21 +233,16 @@ def firebase_config_js():
         # Convert to JSON string
         config_json = json.dumps(firebase_config, indent=2)
         
-        # Create JavaScript content
+        # Create JavaScript content - using ES modules
         js_content = f"""// Firebase configuration for Children's Castle
 // Generated on: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 // This file is dynamically generated - do not edit manually
 
 const firebaseConfig = {config_json};
 
-// Initialize Firebase
-try {{
-    const app = firebase.initializeApp(firebaseConfig);
-    console.log("Firebase initialized with project ID:", firebaseConfig.projectId);
-    console.log("Loading system initialized");
-}} catch (error) {{
-    console.error("Firebase initialization error:", error);
-}}
+// Firebase initialization is handled by the importing module
+// This script only provides the configuration
+console.log("Firebase config loaded successfully");
 """
         
         # Return as JavaScript

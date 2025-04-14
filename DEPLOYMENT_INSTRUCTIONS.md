@@ -1,122 +1,229 @@
-# Getting Children's Castle Live
+# Children's Castle: Complete Deployment Instructions
 
-This guide explains how to deploy Children's Castle to make it live on the web using Firebase Hosting. Follow these instructions to complete the deployment process.
+This guide provides step-by-step instructions for deploying the Children's Castle application using Firebase Hosting for static content and Google Cloud Run for the Flask backend.
 
 ## Prerequisites
 
-Before you start, make sure you have the following:
+Before you begin, ensure you have:
 
-1. A Firebase account (free tier is sufficient)
-2. The Firebase CLI installed (the deployment script will install it if needed)
-3. The environment variables set up correctly in your `.env` file
-4. Your code pushed to your GitHub repository (if using GitHub Actions)
+1. A Firebase project (story-time-fun)
+2. Google Cloud credentials (same project as Firebase)
+3. Firebase CLI installed: `npm install -g firebase-tools`
+4. Google Cloud SDK installed and configured
+5. Domain name (optional): childrencastles.com
+6. Git repository with your code
 
-## Option 1: Manual Deployment (Recommended for First Deployment)
+## Deployment Overview
 
-For your first deployment or for testing changes, it's best to deploy manually:
+Children's Castle uses a hybrid architecture:
+- **Firebase Hosting**: Serves static assets and handles routing
+- **Google Cloud Run**: Runs the Flask backend for dynamic content
+- **Postgres Database**: Managed by Google Cloud SQL or other provider
 
-1. Open your terminal in the project directory
-2. Make sure you have the latest code
-3. Run the deployment script:
+## Step 1: Prepare Your Environment Variables
 
-   ```bash
-   ./deploy.sh
-   ```
-
-The script will:
-- Check if Firebase CLI is installed and install it if needed
-- Run the preparation script to prepare your files
-- Ensure all required files exist
-- Check if you're logged in to Firebase and prompt you to login if needed
-- Deploy your application to Firebase Hosting
-- Display the URLs where your application is now available
-
-## Option 2: GitHub Actions Deployment (For Continuous Deployment)
-
-For automatic deployments whenever you push changes to your main branch:
-
-1. Make sure you've set up the GitHub repository with the necessary secrets:
-   - `FIREBASE_TOKEN` - Generated using `firebase login:ci`
-   - `FIREBASE_API_KEY`
-   - `FIREBASE_AUTH_DOMAIN`
-   - `FIREBASE_PROJECT_ID`
-   - `FIREBASE_STORAGE_BUCKET`
-   - `FIREBASE_MESSAGING_SENDER_ID`
-   - `FIREBASE_APP_ID`
-   - `FIREBASE_MEASUREMENT_ID`
-
-2. Push your changes to the main branch:
-
-   ```bash
-   git add .
-   git commit -m "Your commit message"
-   git push origin main
-   ```
-
-3. GitHub Actions will automatically deploy your application when changes are pushed to the main branch.
-
-4. You can monitor the deployment in the "Actions" tab of your GitHub repository.
-
-## Verifying Your Deployment
-
-After deployment, your application will be available at:
-
-- `https://[YOUR_FIREBASE_PROJECT_ID].web.app`
-- `https://[YOUR_FIREBASE_PROJECT_ID].firebaseapp.com`
-
-For example, if your Firebase project ID is `story-time-fun`, your URLs would be:
-- `https://story-time-fun.web.app`
-- `https://story-time-fun.firebaseapp.com`
-
-## Setting Up a Custom Domain (Optional)
-
-If you want to use a custom domain like `childrencastles.com`:
-
-1. Make sure you own the domain
-2. Follow the instructions in `CUSTOM_DOMAIN_SETUP.md` to connect your domain to Firebase Hosting
-
-## Troubleshooting Common Deployment Issues
-
-### Firebase CLI Not Found
-
-If you see an error about Firebase CLI not being found:
+Create a `.env` file with all necessary variables:
 
 ```
-firebase: command not found
+# Firebase Configuration
+FIREBASE_API_KEY=your-api-key
+FIREBASE_AUTH_DOMAIN=your-project-id.firebaseapp.com
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_STORAGE_BUCKET=your-project-id.appspot.com
+FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
+FIREBASE_APP_ID=your-app-id
+FIREBASE_MEASUREMENT_ID=your-measurement-id
+
+# Database Configuration
+DATABASE_URL=postgresql://username:password@host:port/database?sslmode=require
+PGUSER=your-db-user
+PGPASSWORD=your-db-password
+PGDATABASE=your-db-name
+PGHOST=your-db-host
+PGPORT=your-db-port
+
+# API Keys
+OPENAI_API_KEY=your-openai-key
+ELEVENLABS_API_KEY=your-elevenlabs-key
+
+# Application Settings
+SESSION_SECRET=your-session-secret
 ```
 
-Run:
+## Step 2: Deploy to Google Cloud Run
+
+1. Build and deploy the Flask backend:
+
 ```bash
-npm install -g firebase-tools
+# Build the Docker container
+docker build -t gcr.io/story-time-fun/children-castle-app:latest .
+
+# Push to Google Container Registry
+docker push gcr.io/story-time-fun/children-castle-app:latest
+
+# Deploy to Cloud Run
+gcloud run deploy children-castle-app \
+  --image gcr.io/story-time-fun/children-castle-app:latest \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --set-env-vars="FIREBASE_API_KEY=${FIREBASE_API_KEY},FIREBASE_AUTH_DOMAIN=${FIREBASE_AUTH_DOMAIN},FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID},FIREBASE_STORAGE_BUCKET=${FIREBASE_STORAGE_BUCKET},FIREBASE_MESSAGING_SENDER_ID=${FIREBASE_MESSAGING_SENDER_ID},FIREBASE_APP_ID=${FIREBASE_APP_ID},FIREBASE_MEASUREMENT_ID=${FIREBASE_MEASUREMENT_ID},DATABASE_URL=${DATABASE_URL},PGUSER=${PGUSER},PGPASSWORD=${PGPASSWORD},PGDATABASE=${PGDATABASE},PGHOST=${PGHOST},PGPORT=${PGPORT},OPENAI_API_KEY=${OPENAI_API_KEY},ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY},SESSION_SECRET=${SESSION_SECRET}"
 ```
 
-### Firebase Authentication Issues
+Or use the provided script:
 
-If you have issues logging in to Firebase:
+```bash
+./deploy_to_cloud_run.sh
+```
 
-1. Run `firebase logout` and then `firebase login` to refresh your authentication
-2. Ensure you have the correct permissions for the Firebase project
+2. After deployment, note the Cloud Run service URL:
+   - Example: `https://children-castle-app-abcdef123-uc.a.run.app`
 
-### Deployment Failures
+## Step 3: Configure Firebase Hosting
 
-If deployment fails with errors:
+1. Update `firebase.json` with the Cloud Run service:
 
-1. Check that your Firebase project ID in `.firebaserc` matches your actual Firebase project ID
-2. Verify that all Firebase configuration variables are correctly set
-3. Look for specific error messages in the output that may indicate the issue
+```json
+{
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/app/**",
+        "run": {
+          "serviceId": "children-castle-app",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
+```
 
-### "Cannot GET /" Error After Deployment
+2. Deploy to Firebase Hosting:
 
-If you see a "Cannot GET /" error when visiting your site:
+```bash
+firebase deploy --only hosting
+```
 
-1. Verify that `public/index-firebase.html` exists and is correctly set up
-2. Check that the `rewrites` section in `firebase.json` is correctly configured
-3. Try deploying again with `firebase deploy --only hosting`
+Or use the provided script:
 
-## Getting Help
+```bash
+./deploy_firebase.sh
+```
 
-If you encounter issues not covered here:
+## Step 4: Set Up Custom Domain (Optional)
 
-1. Check the [Firebase Hosting documentation](https://firebase.google.com/docs/hosting)
-2. Run `firebase --help` for command-line help
-3. Visit the [Firebase support community](https://firebase.google.com/community)
+### Firebase Hosting Domain
+
+1. In the Firebase console, go to Hosting > Add custom domain
+2. Enter your domain: `childrencastles.com`
+3. Follow the verification process
+4. Update your DNS records as instructed
+
+### Cloud Run Domain Mapping
+
+1. Map your domain to the Cloud Run service:
+
+```bash
+gcloud beta run domain-mappings create \
+  --service children-castle-app \
+  --domain app.childrencastles.com \
+  --region us-central1
+```
+
+2. Update your DNS records for the subdomain
+
+## Step 5: Verify Your Deployment
+
+1. Test the Firebase hosted content: `https://story-time-fun.web.app`
+2. Test the Cloud Run backend: `/app/*` paths should be served by Cloud Run
+3. Check Firebase Authentication is working: Sign-in features
+4. Verify database connections: User data should persist
+
+## Troubleshooting
+
+### Firebase Issues
+
+- **Authentication Errors**: Check Firebase Configuration in environment variables
+- **Hosting Not Updating**: Verify `firebase.json` configuration
+- **Missing Static Assets**: Check the "public" directory contents
+
+### Cloud Run Issues
+
+- **Server Errors**: Check Cloud Run logs in Google Cloud Console
+- **Environment Variables Missing**: Verify all env vars were set in deployment
+- **Database Connection Issues**: Check connection string and SSL settings
+
+### Domain Issues
+
+- **SSL Errors**: Ensure certificates are properly provisioned
+- **Routing Issues**: Check `firebase.json` rewrites configuration
+
+## Automatic Deployment with GitHub Actions
+
+For continuous deployment, set up GitHub Actions:
+
+1. Create `.github/workflows/firebase-deploy.yml`:
+
+```yaml
+name: Deploy to Firebase Hosting on merge
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm ci && npm run build
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          channelId: live
+          projectId: story-time-fun
+```
+
+2. Create `.github/workflows/cloud-run-deploy.yml`:
+
+```yaml
+name: Deploy to Cloud Run on merge
+on:
+  push:
+    branches: [ main ]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: story-time-fun
+      - run: |
+          gcloud builds submit --tag gcr.io/story-time-fun/children-castle-app
+          gcloud run deploy children-castle-app \
+            --image gcr.io/story-time-fun/children-castle-app \
+            --platform managed \
+            --region us-central1 \
+            --allow-unauthenticated \
+            --update-env-vars="FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }},FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_AUTH_DOMAIN }},FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }},FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_STORAGE_BUCKET }},FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_MESSAGING_SENDER_ID }},FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }},FIREBASE_MEASUREMENT_ID=${{ secrets.FIREBASE_MEASUREMENT_ID }},DATABASE_URL=${{ secrets.DATABASE_URL }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},ELEVENLABS_API_KEY=${{ secrets.ELEVENLABS_API_KEY }},SESSION_SECRET=${{ secrets.SESSION_SECRET }}"
+```
+
+## Resources
+
+- [Firebase Hosting Documentation](https://firebase.google.com/docs/hosting)
+- [Cloud Run Documentation](https://cloud.google.com/run/docs)
+- [Firebase & Cloud Run Integration](https://firebase.google.com/docs/hosting/cloud-run)
+- [GitHub Actions for Firebase](https://github.com/marketplace/actions/deploy-to-firebase-hosting)
+- [GitHub Actions for Google Cloud](https://github.com/google-github-actions/setup-gcloud)
