@@ -5,6 +5,7 @@ This module provides routes for uploading, viewing, and managing photos.
 import os
 import uuid
 import datetime
+import logging
 from datetime import datetime
 import secrets
 from PIL import Image
@@ -374,28 +375,73 @@ def upload_photo():
         file_ext = original_filename.rsplit('.', 1)[1].lower()
         unique_filename = f"{uuid.uuid4().hex}.{file_ext}"
         
-        # Create file path
-        filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
+        # Determine storage type (use Firebase in production)
+        use_firebase = os.environ.get('USE_FIREBASE_STORAGE', '').lower() == 'true'
+        storage_type = 'firebase' if use_firebase else 'local'
+        firebase_storage_path = None
+        firebase_thumbnail_path = None
+        firebase_url = None
+        firebase_thumbnail_url = None
         
         # Get file size
         photo_file.seek(0, os.SEEK_END)
         file_size = photo_file.tell()
         photo_file.seek(0)
         
-        # Save the file
-        photo_file.save(filepath)
+        # Handle file storage based on storage type
+        if storage_type == 'firebase':
+            try:
+                # Import Firebase storage module
+                from firebase_storage import upload_photo_to_firebase
+                
+                # Generate a photo ID that will be used in the storage path
+                photo_id_for_path = uuid.uuid4().hex
+                
+                # Upload to Firebase Storage
+                firebase_storage_path, firebase_url, firebase_thumbnail_path, firebase_thumbnail_url = upload_photo_to_firebase(
+                    photo_file, 
+                    original_filename,
+                    photo_id_for_path
+                )
+                
+                # Use these as the canonical filenames in the database
+                unique_filename = firebase_storage_path
+                thumb_filename = firebase_thumbnail_path
+                
+                # Log success
+                logging.info(f"Photo uploaded to Firebase Storage: {firebase_storage_path}")
+                
+            except Exception as e:
+                # If Firebase upload fails, continue with local storage
+                logging.error(f"Error uploading to Firebase Storage: {e}")
+                storage_type = 'local'  # Fall back to local storage
+                firebase_storage_path = None
+                firebase_thumbnail_path = None
+                firebase_url = None
+                firebase_thumbnail_url = None
+                
+                # Continue with local storage below
         
-        # Create thumbnail
-        try:
-            with Image.open(filepath) as img:
-                img.thumbnail((300, 300))
-                thumb_filename = f"thumb_{unique_filename}"
-                thumb_path = os.path.join(UPLOAD_FOLDER, thumb_filename)
-                img.save(thumb_path)
-        except Exception as e:
-            # If thumbnail creation fails, continue without it
-            thumb_filename = None
-            print(f"Error creating thumbnail: {e}")
+        # For local storage or fallback if Firebase failed
+        if storage_type == 'local':
+            # Create file path
+            filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
+            
+            # Save the file locally
+            photo_file.save(filepath)
+            
+            # Create thumbnail
+            try:
+                with Image.open(filepath) as img:
+                    img.thumbnail((300, 300))
+                    thumb_filename = f"thumb_{unique_filename}"
+                    thumb_path = os.path.join(UPLOAD_FOLDER, thumb_filename)
+                    img.save(thumb_path)
+            except Exception as e:
+                # If thumbnail creation fails, continue without it
+                thumb_filename = None
+                logging.error(f"Error creating thumbnail: {e}")
+                print(f"Error creating thumbnail: {e}")
         
         # Create database entry
         photo = Photo(
@@ -621,17 +667,29 @@ def delete_photo(photo_id):
     
     # Delete files
     try:
-        # Delete main file
-        filepath = os.path.join(UPLOAD_FOLDER, photo.filename)
-        if os.path.isfile(filepath):
-            os.remove(filepath)
-        
-        # Delete thumbnail if it exists
-        if photo.thumbnail_filename:
-            thumb_path = os.path.join(UPLOAD_FOLDER, photo.thumbnail_filename)
-            if os.path.isfile(thumb_path):
-                os.remove(thumb_path)
+        # Check storage type
+        if photo.storage_type == 'firebase' and photo.firebase_storage_path:
+            # Delete from Firebase Storage
+            from firebase_storage import delete_photo_from_firebase
+            delete_success = delete_photo_from_firebase(
+                photo.firebase_storage_path,
+                photo.firebase_thumbnail_path
+            )
+            if not delete_success:
+                logging.warning(f"Could not delete Firebase storage files for photo {photo.id}")
+        else:
+            # Delete from local storage
+            filepath = os.path.join(UPLOAD_FOLDER, photo.filename)
+            if os.path.isfile(filepath):
+                os.remove(filepath)
+            
+            # Delete thumbnail if it exists
+            if photo.thumbnail_filename:
+                thumb_path = os.path.join(UPLOAD_FOLDER, photo.thumbnail_filename)
+                if os.path.isfile(thumb_path):
+                    os.remove(thumb_path)
     except Exception as e:
+        logging.error(f"Error deleting files: {e}")
         print(f"Error deleting files: {e}")
     
     # Delete database entry
