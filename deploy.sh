@@ -160,4 +160,5 @@ echo -e "${BLUE}If you've set up a custom domain, your site will also be availab
 echo -e "${YELLOW}https://childrencastles.com${NC} (Once DNS propagation is complete)"
 echo
 echo -e "${BLUE}To set up a custom domain, follow the instructions in:${NC}"
-echo -e "${YELLOW}CUSTOM_DOMAIN_SETUP.md${NC}"
+echo -e "${YELLOW}CHILDRENCASTLES_DOMAIN_SETUP.md${NC} (For childrencastles.com)"
+echo -e "${YELLOW}CUSTOM_DOMAIN_SETUP.md${NC} (For other domains)"
