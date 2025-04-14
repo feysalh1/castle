@@ -800,6 +800,13 @@ class Photo(db.Model):
     file_size = db.Column(db.Integer, nullable=False)  # Size in bytes
     file_type = db.Column(db.String(10), nullable=False)  # jpg, png, etc.
     
+    # Firebase Storage integration
+    firebase_storage_path = db.Column(db.String(256), nullable=True)
+    firebase_thumbnail_path = db.Column(db.String(256), nullable=True)
+    firebase_url = db.Column(db.String(512), nullable=True)
+    firebase_thumbnail_url = db.Column(db.String(512), nullable=True)
+    storage_type = db.Column(db.String(20), default='local', nullable=False)  # 'local' or 'firebase'
+    
     # Security and access control
     child_id = db.Column(db.Integer, db.ForeignKey('children.id'), nullable=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('parents.id'), nullable=True)

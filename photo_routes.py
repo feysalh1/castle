@@ -405,6 +405,12 @@ def upload_photo():
             file_size=file_size,
             file_type=file_ext,
             title=form.title.data,
+            # Add Firebase storage fields if applicable
+            storage_type=storage_type,
+            firebase_storage_path=firebase_storage_path,
+            firebase_thumbnail_path=firebase_thumbnail_path,
+            firebase_url=firebase_url,
+            firebase_thumbnail_url=firebase_thumbnail_url,
             description=form.description.data,
             tags=form.tags.data,
             is_private=form.is_private.data,
@@ -512,6 +518,15 @@ def get_raw_photo(photo_id):
     # Full-size image by default, thumbnail if requested
     use_thumbnail = request.args.get('thumbnail', '').lower() == 'true'
     
+    # Check if this is a Firebase Storage photo
+    if photo.storage_type == 'firebase' and photo.firebase_url:
+        # For Firebase Storage, redirect to the proper URL
+        if use_thumbnail and photo.firebase_thumbnail_url:
+            return redirect(photo.firebase_thumbnail_url)
+        else:
+            return redirect(photo.firebase_url)
+    
+    # For local storage, serve the file directly
     # Determine file path
     if use_thumbnail and photo.thumbnail_filename:
         filepath = os.path.join(UPLOAD_FOLDER, photo.thumbnail_filename)
