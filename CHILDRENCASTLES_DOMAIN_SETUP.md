@@ -1,138 +1,75 @@
-# ChildrenCastles.com Domain Setup Guide
+# Setting Up Custom Domain "childrencastles.com" with Firebase Hosting
 
-This guide provides specific instructions for setting up the childrencastles.com domain with Children's Castle application.
+This guide provides step-by-step instructions for connecting the custom domain "childrencastles.com" to your Firebase Hosting project.
 
-## Domain Configuration Overview
+## Prerequisites
 
-The Children's Castle application uses three key components:
+1. You own the domain "childrencastles.com"
+2. You have access to your domain's DNS settings through your domain registrar
+3. Your Firebase project is already set up and deployed to Firebase Hosting
+4. You have the Firebase CLI installed and are logged in
 
-1. **Firebase Hosting** for static content at childrencastles.com
-2. **Cloud Run** for the backend application at app.childrencastles.com
-3. **Firebase Storage** for photo storage and delivery
+## Steps to Connect Your Custom Domain
 
-## Step 1: Domain Registration & DNS Setup
+### 1. Add Your Custom Domain in Firebase Console
 
-1. **Domain Registration**: 
-   - Register childrencastles.com through your preferred registrar
-   - Ensure you have access to DNS settings
+1. Go to the [Firebase Console](https://console.firebase.google.com/)
+2. Select your project "story-time-fun"
+3. In the left sidebar, click on "Hosting"
+4. Click on "Add custom domain"
+5. Enter "childrencastles.com" and click "Continue"
+6. Also add "www.childrencastles.com" if you want the www subdomain
+7. Verify domain ownership following Firebase's instructions
 
-2. **DNS Provider Setup**:
-   - Point your domain to Cloudflare, Google Domains, or your preferred DNS provider
-   - Set up the nameservers as instructed by your DNS provider
+### 2. Configure DNS Settings at Your Domain Registrar
 
-## Step 2: Firebase Hosting Configuration
+#### Option A: Using Firebase's Nameservers (Recommended)
 
-1. **Add Domain to Firebase**:
-   ```bash
-   firebase hosting:channel:deploy production
-   firebase hosting:channel:delete preview
-   firebase hosting:sites:add childrencastles.com
-   ```
+Firebase will provide you with nameserver addresses. At your domain registrar:
 
-2. **Add Domain Records**:
-   In your DNS provider's dashboard, add:
-   
-   ```
-   # A Records for root domain
-   A @ 151.101.1.195
-   A @ 151.101.65.195
-   
-   # CNAME for www subdomain
-   CNAME www childrencastles.com
-   ```
+1. Log in to your domain registrar account
+2. Navigate to the DNS settings or nameserver settings
+3. Replace the current nameservers with the ones provided by Firebase
+4. Save the changes
 
-3. **Verify Domain Ownership**:
-   - Follow the Firebase console prompts for domain verification
-   - Add the TXT record provided by Firebase to your DNS settings
+This may take 24-48 hours to propagate.
 
-## Step 3: Cloud Run Backend Configuration
+#### Option B: Using A Records and CNAME Records
 
-1. **Map app Subdomain to Cloud Run**:
-   ```bash
-   gcloud beta run domain-mappings create \
-     --service children-castle-app \
-     --domain app.childrencastles.com \
-     --region us-central1
-   ```
+If you prefer not to use Firebase's nameservers, you can add individual DNS records:
 
-2. **Add DNS Records for app Subdomain**:
-   Add the A records provided by Google Cloud to your DNS settings:
-   
-   ```
-   # Example records (actual values will be provided by Google Cloud)
-   A app 34.120.160.1
-   A app 34.120.160.2
-   A app 34.120.160.3
-   A app 34.120.160.4
-   ```
+1. Log in to your domain registrar account
+2. Navigate to the DNS settings
+3. Add the A records for the apex domain (childrencastles.com) provided by Firebase
+4. Add the CNAME record for the www subdomain (www.childrencastles.com) provided by Firebase
+5. Save the changes
 
-## Step 4: Firebase Storage Configuration
+### 3. Verify and Wait for SSL Certificate Provisioning
 
-1. **Configure CORS for the Domain**:
-   Create a file named `cors-config.json`:
-   
-   ```json
-   [
-     {
-       "origin": [
-         "https://childrencastles.com", 
-         "https://www.childrencastles.com", 
-         "https://app.childrencastles.com"
-       ],
-       "method": ["GET", "HEAD"],
-       "maxAgeSeconds": 3600
-     }
-   ]
-   ```
+1. After DNS propagation (may take 24-48 hours), Firebase will automatically provision SSL certificates for your domain
+2. You can check the status in the Firebase Console under Hosting > Your Domain
 
-2. **Apply CORS Configuration**:
-   ```bash
-   gsutil cors set cors-config.json gs://story-time-fun.appspot.com
-   ```
+### 4. Update Application URLs
 
-3. **Enable Firebase Storage in Environment**:
-   ```bash
-   gcloud run services update children-castle-app \
-     --update-env-vars="USE_FIREBASE_STORAGE=true"
-   ```
+Make sure to update references to your application URL in your code:
 
-## Step 5: SSL Certificates
+1. Update any absolute URLs in your application to use the new domain
+2. Update Firebase Authentication authorized domains list to include your custom domain
+3. Update any external services that might be configured to use your previous domain
 
-1. **Firebase Hosting SSL**:
-   - Firebase automatically provisions SSL certificates through Let's Encrypt
-   - This typically happens within 24 hours after DNS propagation
+## Troubleshooting
 
-2. **Cloud Run SSL**:
-   - Google Cloud automatically provisions SSL certificates for mapped domains
-   - This typically happens within 24 hours after DNS propagation
+1. **DNS Not Propagated**: Use tools like [dnschecker.org](https://dnschecker.org/) to check if your DNS changes have propagated
+2. **SSL Certificate Issues**: Ensure your DNS settings exactly match what Firebase provided
+3. **Domain Not Working**: Check the Firebase Console for any specific error messages related to your domain
 
-## Step 6: Verification and Testing
+## Maintaining Your Custom Domain
 
-1. **Test Main Website**:
-   - Visit https://childrencastles.com
-   - Verify SSL certificate is valid
-   - Check that static content loads correctly
+1. Ensure your domain registration is kept up to date
+2. If you change DNS providers, you'll need to update your settings again
+3. SSL certificates will be automatically renewed by Firebase
 
-2. **Test Backend Application**:
-   - Visit https://app.childrencastles.com
-   - Verify authentication and dynamic content
-   - Test photo uploads and retrieval
-
-3. **Test Firebase Storage**:
-   - Upload photos through the application
-   - Inspect URLs to confirm Firebase Storage usage
-   - Verify thumbnails and full-size photos load correctly
-
-## Contact Information
-
-For domain registration and DNS assistance:
-- Technical Contact: [Your Email]
-- Domain Registrar: [Registrar Name]
-- DNS Provider: [DNS Provider Name]
-
-## Resources
+## Related Documentation
 
 - [Firebase Custom Domain Documentation](https://firebase.google.com/docs/hosting/custom-domain)
-- [Cloud Run Domain Mapping](https://cloud.google.com/run/docs/mapping-custom-domains)
-- [Firebase Storage Security](https://firebase.google.com/docs/storage/security)
-- [GSUtil CORS Configuration](https://cloud.google.com/storage/docs/configuring-cors)
+- [Firebase CLI Reference](https://firebase.google.com/docs/cli)

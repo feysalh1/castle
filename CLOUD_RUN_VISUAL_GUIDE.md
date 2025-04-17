@@ -1,129 +1,104 @@
-# Visual Guide to Deploying Children's Castle on Cloud Run
+# Cloud Run Deployment Visual Guide
 
-This step-by-step guide includes screenshots and detailed instructions for deploying the application with Google Cloud Run and Firebase.
+This document provides a visual guide to deploying Children's Castle to Google Cloud Run.
 
-## Step 1: Setup Google Cloud Project
+## Prerequisites
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create a new project or select an existing one:
+1. A Google Cloud account with billing enabled
+2. The Google Cloud SDK (gcloud) installed locally
+3. Firebase CLI installed locally
+4. Your application code ready for deployment
 
-   ![Create New Project](https://storage.googleapis.com/gweb-cloudblog-publish/images/new_project.max-700x700.png)
+## Deployment Steps
 
-3. Note your Project ID - you'll need it for deployment
+### 1. Set Up Google Cloud Project
 
-## Step 2: Enable Required APIs
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
+2. Select your project "story-time-fun" or create a new one
+3. Enable the Cloud Run API if not already enabled
 
-1. Go to "APIs & Services" > "Library"
-2. Search for and enable the following APIs:
-   - Cloud Run API
-   - Cloud Build API
-   - Container Registry API
-   - Firebase Hosting API
+### 2. Prepare Your Application
 
-   ![Enable APIs](https://storage.googleapis.com/gweb-cloudblog-publish/images/enable_apis.max-700x700.png)
-
-## Step 3: Setup Firebase Project
-
-1. Go to [Firebase Console](https://console.firebase.google.com)
-2. Add a project, selecting the same Google Cloud project:
-
-   ![Add Firebase Project](https://miro.medium.com/max/1400/1*M-OlzBHUXSyLqGGUK4j9lA.png)
-
-3. Navigate to "Authentication" and enable Google sign-in method
-4. Add your application domain to the authorized domains list
-
-## Step 4: Configure Secrets and Environment Variables
-
-1. Collect all necessary API keys and credentials:
-   - DATABASE_URL
-   - OPENAI_API_KEY
-   - FIREBASE_API_KEY
-   - FIREBASE_PROJECT_ID
-   - FIREBASE_APP_ID
-   - ELEVENLABS_API_KEY
-
-2. Either update the `cloudbuild.yaml` file directly or use the `deploy_to_cloud_run.sh` script that prompts for these values
-
-## Step 5: Deploy Using the Terminal
-
-1. Open a terminal in your project directory
-2. Make the deployment script executable:
-   ```
-   chmod +x deploy_to_cloud_run.sh
+1. Make sure your app is listening on the port defined by the `PORT` environment variable:
+   ```python
+   port = int(os.environ.get('PORT', 5000))
+   app.run(host='0.0.0.0', port=port)
    ```
 
-3. Run the deployment script:
-   ```
-   ./deploy_to_cloud_run.sh
-   ```
+2. Ensure your Dockerfile is correctly set up:
+   ```dockerfile
+   FROM python:3.11-slim
 
-4. Follow the prompts to provide API keys and configuration
+   WORKDIR /app
 
-## Step 6: Alternative Manual Deployment
+   COPY requirements.txt .
+   RUN pip install --no-cache-dir -r requirements.txt
 
-If you prefer to deploy manually:
+   COPY . .
 
-1. Build and push the Docker container:
-   ```
-   gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/childrens-castle
-   ```
+   ENV PORT=5000
 
-2. Deploy to Cloud Run:
-   ```
-   gcloud run deploy childrens-castle \
-     --image gcr.io/YOUR_PROJECT_ID/childrens-castle \
-     --platform managed \
-     --region us-central1 \
-     --allow-unauthenticated \
-     --set-env-vars="DATABASE_URL=YOUR_DATABASE_URL,OPENAI_API_KEY=YOUR_OPENAI_KEY,..."
+   CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 main:app
    ```
 
-3. Deploy to Firebase Hosting:
+### 3. Build and Deploy Using gcloud
+
+Run the deployment script:
+```bash
+./deploy_to_cloud_run.sh
+```
+
+This will:
+1. Build your Docker image
+2. Upload it to Google Container Registry
+3. Deploy it to Cloud Run
+
+### 4. Configure Firebase Hosting to Work with Cloud Run
+
+1. Update your `firebase.json` file with the correct rewrites:
+   ```json
+   "rewrites": [
+     {
+       "source": "/api/**",
+       "run": {
+         "serviceId": "childrens-castle",
+         "region": "us-central1"
+       }
+     },
+     {
+       "source": "/**",
+       "destination": "/index.html"
+     }
+   ]
    ```
-   firebase deploy --only hosting
+
+2. Deploy your Firebase configuration:
+   ```bash
+   ./deploy_firebase.sh
    ```
 
-## Step 7: Verify Deployment
+### 5. Set Up Custom Domain (Optional)
 
-1. After deployment, check your Firebase Hosting URL:
-   ```
-   https://YOUR_PROJECT_ID.web.app
-   ```
+1. In the Cloud Run console, select your service
+2. Click on "Domain Mappings"
+3. Click "Add Mapping"
+4. Enter your domain (e.g., "api.childrencastles.com")
+5. Follow the verification steps
 
-2. Test all functionality:
-   - Login with different methods
-   - Access story and game modes
-   - Verify database connections
-   - Test audio generation
+### 6. Testing Your Deployment
 
-## Step 8: Custom Domain Setup
-
-1. In Firebase Console, go to Hosting > Add custom domain
-2. Enter your domain (e.g., childrencastles.com)
-3. Verify domain ownership by adding TXT record
-4. Add the A records and CNAME records as instructed:
-
-   ![Custom Domain Setup](https://firebase.google.com/docs/hosting/images/custom-domain-dns-settings.png)
-
-5. Wait for DNS propagation and SSL certificate issuance
+1. Visit your Cloud Run URL to verify the backend is working
+2. Visit your Firebase Hosting URL to verify the frontend is working
+3. Test the integration between frontend and backend
 
 ## Troubleshooting
 
-If you encounter issues:
+1. **Error: Permission Denied** - Make sure you have the necessary IAM permissions
+2. **Error: Service Unavailable** - Check your application logs in Cloud Run
+3. **Error: Firebase Hosting not connecting to Cloud Run** - Verify your rewrites in firebase.json
 
-1. Check Cloud Run logs:
-   ```
-   gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=childrens-castle"
-   ```
+## Additional Resources
 
-2. Verify environment variables are set correctly:
-   ```
-   gcloud run services describe childrens-castle
-   ```
-
-3. Check Firebase Hosting configuration:
-   ```
-   firebase hosting:sites:get
-   ```
-
-4. Ensure your Firebase configuration in the app points to the correct project
+- [Cloud Run Documentation](https://cloud.google.com/run/docs)
+- [Firebase Hosting with Cloud Run](https://firebase.google.com/docs/hosting/cloud-run)
+- [Troubleshooting Cloud Run](https://cloud.google.com/run/docs/troubleshooting)

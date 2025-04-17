@@ -1,71 +1,51 @@
 #!/bin/bash
 
-# Deploy Firebase-specific components for Children's Castle
+# Deploy the application to Firebase Hosting
+# This script should be run after the application is ready for deployment
 
-echo "Starting Firebase deployment for Children's Castle..."
+echo "===== Starting Firebase Deployment ====="
+echo "Deploying to project: story-time-fun"
 
-# Check if Firebase CLI is installed
-if ! command -v firebase &> /dev/null; then
-    echo "Firebase CLI not found. Installing..."
+# Check if firebase CLI is available
+if ! command -v firebase &> /dev/null
+then
+    echo "Firebase CLI is not installed. Installing..."
     npm install -g firebase-tools
 fi
 
-# Make sure we're logged in
-echo "Checking Firebase login status..."
-firebase login:list
-
-# Check for the presence of firebase-config.js
-if [ ! -f "public/firebase-config.js" ]; then
-    echo "ERROR: public/firebase-config.js not found."
-    echo "Please create this file with your Firebase configuration."
-    exit 1
+# Check if user is logged in to Firebase
+if ! firebase projects:list &> /dev/null
+then
+    echo "Not logged in to Firebase. Please log in:"
+    firebase login
 fi
 
-# Check for firebase.json
-if [ ! -f "firebase.json" ]; then
-    echo "ERROR: firebase.json not found."
-    echo "Please create a Firebase configuration file."
-    exit 1
-fi
+# Export Firebase configuration to the public directory
+echo "Exporting Firebase configuration..."
+python setup_env.py firebase-json --output public/firebase-config.js
 
-# Optional: Create a 404 page if not exists
-if [ ! -f "public/404.html" ]; then
-    echo "Creating a simple 404 page..."
-    cat > public/404.html << EOF
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Page Not Found - Children's Castle</title>
-    <link rel="stylesheet" href="/css/main.css">
-    <style>
-        .container { text-align: center; padding: 40px; }
-        h1 { margin-bottom: 20px; }
-        .back-link { margin-top: 30px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Page Not Found</h1>
-        <p>The page you requested could not be found.</p>
-        <div class="back-link">
-            <a href="/" class="btn">Go back to home page</a>
-        </div>
-    </div>
-</body>
-</html>
-EOF
-fi
+# Update Firebase configuration from environment
+echo "Updating Firebase configuration in public directory..."
+sed -i 's/{/{const firebaseConfig = {/g' public/firebase-config.js
+echo "};
 
-# Deploy to Firebase
+// Initialize Firebase
+try {
+  const app = firebase.initializeApp(firebaseConfig);
+  console.log('Firebase initialized successfully in static hosting');
+} catch (e) {
+  console.error('Firebase initialization error:', e);
+}" >> public/firebase-config.js
+
+# Deploy to Firebase Hosting
 echo "Deploying to Firebase Hosting..."
 firebase deploy --only hosting
 
-echo "Firebase deployment completed."
-echo "Your app should be available at: https://story-time-fun.web.app"
+echo "===== Firebase Deployment Complete ====="
 echo ""
-echo "Next steps:"
-echo "1. Configure custom domain in Firebase console"
-echo "2. Deploy backend to Cloud Run with: ./deploy_to_cloud_run.sh"
-echo "3. Update Firebase rewrites if needed for the Cloud Run service"
+echo "Your application is now available at:"
+echo "  - https://story-time-fun.web.app"
+echo "  - https://story-time-fun.firebaseapp.com"
+echo ""
+echo "To set up your custom domain 'childrencastles.com', follow the instructions in:"
+echo "CHILDRENCASTLES_DOMAIN_SETUP.md"

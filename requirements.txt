@@ -92,3 +92,4 @@ WTForms==3.2.1
 sendgrid
 beautifulsoup4
 firebase-admin
+python-dotenv
