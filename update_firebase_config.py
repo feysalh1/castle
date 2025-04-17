@@ -1,83 +1,154 @@
 #!/usr/bin/env python3
 """
-Script to update Firebase configuration files with the current environment variables.
-This ensures that both the static and public versions of firebase-config.js
-have the same, correct configuration.
+Update Firebase configuration files across the project.
+This script ensures all Firebase configuration files are in sync with environment variables.
 """
 
 import os
 import sys
+from datetime import datetime
 
-
-def update_firebase_config():
-    """
-    Update Firebase configuration files with the current environment variables.
-    """
-    # Default values from our current configuration
-    default_config = {
-        "apiKey": "AIzaSyAPTQO3lnt0GSyDgVCZjtj4i3gk3Qi6Vyo",
-        "authDomain": "story-time-fun.firebaseapp.com",
-        "projectId": "story-time-fun",
-        "storageBucket": "story-time-fun.firebasestorage.app",
-        "messagingSenderId": "225122848236",
-        "appId": "1:225122848236:web:b52d382202a2ce6a73c4c9",
-        "measurementId": "G-RM452TNB0W"
-    }
+def load_env_variables():
+    """Load environment variables from .env file if not already set"""
+    try:
+        # Try to import dotenv
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        print("Warning: python-dotenv not installed. Using existing environment variables.")
     
-    # Get environment variables with defaults from our configuration
-    firebase_api_key = os.environ.get("FIREBASE_API_KEY", default_config["apiKey"])
-    firebase_auth_domain = os.environ.get("FIREBASE_AUTH_DOMAIN", default_config["authDomain"])
-    firebase_project_id = os.environ.get("FIREBASE_PROJECT_ID", default_config["projectId"])
-    firebase_storage_bucket = os.environ.get("FIREBASE_STORAGE_BUCKET", default_config["storageBucket"])
-    firebase_messaging_sender_id = os.environ.get("FIREBASE_MESSAGING_SENDER_ID", default_config["messagingSenderId"])
-    firebase_app_id = os.environ.get("FIREBASE_APP_ID", default_config["appId"])
-    firebase_measurement_id = os.environ.get("FIREBASE_MEASUREMENT_ID", default_config["measurementId"])
+    # Required Firebase configuration variables
+    required_vars = [
+        'FIREBASE_API_KEY',
+        'FIREBASE_PROJECT_ID',
+        'FIREBASE_APP_ID',
+        'FIREBASE_MEASUREMENT_ID',
+        'FIREBASE_MESSAGING_SENDER_ID',
+        'FIREBASE_STORAGE_BUCKET',
+        'FIREBASE_AUTH_DOMAIN'
+    ]
+    
+    # Check for missing variables
+    missing_vars = []
+    for var in required_vars:
+        if not os.environ.get(var):
+            missing_vars.append(var)
+    
+    if missing_vars:
+        print("Error: Missing required environment variables:")
+        for var in missing_vars:
+            print(f"  - {var}")
+        print("\nPlease set these variables in your .env file or environment.")
+        sys.exit(1)
+    
+    # Return configuration dict
+    return {
+        'apiKey': os.environ.get('FIREBASE_API_KEY'),
+        'authDomain': os.environ.get('FIREBASE_AUTH_DOMAIN'),
+        'projectId': os.environ.get('FIREBASE_PROJECT_ID'),
+        'storageBucket': os.environ.get('FIREBASE_STORAGE_BUCKET'),
+        'messagingSenderId': os.environ.get('FIREBASE_MESSAGING_SENDER_ID'),
+        'appId': os.environ.get('FIREBASE_APP_ID'),
+        'measurementId': os.environ.get('FIREBASE_MEASUREMENT_ID')
+    }
 
-    # Create the template with proper formatting
-    firebase_config_template = f"""// Firebase configuration for Children's Castle
+def update_static_js_config(config):
+    """Update static/js/firebase-config.js"""
+    filepath = "static/js/firebase-config.js"
+    
+    try:
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        
+        with open(filepath, 'w') as f:
+            f.write(f"""// Firebase configuration for Children's Castle
 // This file is generated automatically from environment variables
-// Last updated: {sys.argv[1] if len(sys.argv) > 1 else "manually"}
+// Last updated: {datetime.now().strftime('%Y-%m-%d')}
 
 const firebaseConfig = {{
-  apiKey: "{firebase_api_key}",
-  authDomain: "{firebase_auth_domain}",
-  projectId: "{firebase_project_id}",
-  storageBucket: "{firebase_storage_bucket}",
-  messagingSenderId: "{firebase_messaging_sender_id}",
-  appId: "{firebase_app_id}",
-  measurementId: "{firebase_measurement_id}"
+  apiKey: "{config['apiKey']}",
+  authDomain: "{config['authDomain']}",
+  projectId: "{config['projectId']}",
+  storageBucket: "{config['storageBucket']}",
+  messagingSenderId: "{config['messagingSenderId']}",
+  appId: "{config['appId']}",
+  measurementId: "{config['measurementId']}"
 }};
 
 // Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
-console.log("Firebase config loaded successfully");
-console.log("Firebase initialized with project ID:", firebaseConfig.projectId);
-console.log("Loading system initialized");
-"""
+try {{
+  const app = firebase.initializeApp(firebaseConfig);
+  console.log("Firebase config loaded successfully");
+  console.log("Firebase initialized with project ID:", firebaseConfig.projectId);
+  console.log("Loading system initialized");
+}} catch (e) {{
+  console.error("Firebase initialization error:", e);
+}}
+""")
+        print(f"Updated {filepath}")
+        return True
+    except Exception as e:
+        print(f"Error updating {filepath}: {e}")
+        return False
 
-    # List of files to update
-    config_files = [
-        "static/js/firebase-config.js",
-        "public/firebase-config.js"
-    ]
+def update_public_config(config):
+    """Update public/firebase-config.js"""
+    filepath = "public/firebase-config.js"
+    
+    try:
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        
+        with open(filepath, 'w') as f:
+            f.write(f"""// Firebase configuration for Children's Castle
+// This file is generated automatically from environment variables
+// Last updated: {datetime.now().strftime('%Y-%m-%d')}
 
-    # Update all config files
-    for file_path in config_files:
-        try:
-            with open(file_path, "w") as f:
-                f.write(firebase_config_template)
-            print(f"Updated {file_path}")
-        except Exception as e:
-            print(f"Error updating {file_path}: {e}")
-            return False
+const firebaseConfig = {{
+  apiKey: "{config['apiKey']}",
+  authDomain: "{config['authDomain']}",
+  projectId: "{config['projectId']}",
+  storageBucket: "{config['storageBucket']}",
+  messagingSenderId: "{config['messagingSenderId']}",
+  appId: "{config['appId']}",
+  measurementId: "{config['measurementId']}"
+}};
 
-    return True
+// Initialize Firebase
+try {{
+  const app = firebase.initializeApp(firebaseConfig);
+  console.log("Firebase config loaded successfully in static hosting");
+}} catch (e) {{
+  console.error("Firebase initialization error:", e);
+}}
+""")
+        print(f"Updated {filepath}")
+        return True
+    except Exception as e:
+        print(f"Error updating {filepath}: {e}")
+        return False
 
+def main():
+    """Main function to update all Firebase configuration files"""
+    print("Updating Firebase configuration files...")
+    
+    # Load environment variables
+    config = load_env_variables()
+    
+    # Update configuration files
+    success = []
+    success.append(update_static_js_config(config))
+    success.append(update_public_config(config))
+    
+    # Print results
+    if all(success):
+        print("\nAll Firebase configuration files updated successfully!")
+        print("Project: " + config['projectId'])
+        print("Storage Bucket: " + config['storageBucket'])
+        print("App ID: " + config['appId'])
+    else:
+        print("\nSome configuration files could not be updated. Check the errors above.")
+        sys.exit(1)
 
 if __name__ == "__main__":
-    if update_firebase_config():
-        print("Firebase configuration updated successfully")
-        sys.exit(0)
-    else:
-        print("Failed to update Firebase configuration")
-        sys.exit(1)
+    main()
